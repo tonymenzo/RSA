@@ -1,0 +1,81 @@
+--- FragmentationFlavZpT_8312.cc	2024-11-27 12:07:01.101390681 -0500
++++ FragmentationFlavZpT_8312_hack.cc	2024-12-05 17:08:46.764716785 -0500
+@@ -1631,6 +1631,12 @@
+ 
+ double StringZ::zFrag( int idOld, int idNew, double mT2) {
+ 
++  // Write the squared transverse mass to a file
++  ofstream file_mT2("mT2_i.txt", ios::in | ios::out | ios::app);
++  // Output the squared transverse mass to the file.
++  file_mT2 << setprecision(10) << mT2 << endl;
++  file_mT2.close();
++
+   // Find if old or new flavours correspond to diquarks.
+   int idOldAbs = abs(idOld);
+   int idNewAbs = abs(idNew);
+@@ -1718,7 +1724,7 @@
+ double StringZ::zLund( double a, double b, double c,
+   double head, double bNow, int idFrag, bool isOldSQuark, bool isNewSQuark,
+   bool isOldDiquark, bool isNewDiquark) {
+-
++ 
+   // Special cases for c = 1, a = 0 and a = c.
+   bool cIsUnity = (abs( c - 1.) < CFROMUNITY);
+   bool aIsZero = (a < AFROMZERO);
+@@ -1771,6 +1777,14 @@
+   double fPrel = 1.;
+   double fVal = 1.;
+   bool   accept = false;
++
++  // Convenient variables for tuning accept-reject.
++  deque<double> acceptRejectDeq;
++  deque<double> fPrelDeq;
++  int MAX_REJECT = 99;
++  // Override default value of the over-sampling factor (head).
++  head = 10;
++
+   do {
+     // Choice of z flat good enough for distribution peaked in the middle;
+     // if not this z can be reused as a random number in general.
+@@ -1856,9 +1870,41 @@
+         wgts.reweightValueByIndex(iWgt, accept ? wgt :
+           (1. - wgt*fPrb)/(1. - fPrb));
+       }
++
++      // Append rejected values to end of deque and the accepted value to the front.
++      if (!accept){
++        acceptRejectDeq.push_back(z);
++        fPrelDeq.push_back(fPrel);
++        // If the number of rejections exceeds the maximum, clear the last element of the deq.
++        if (acceptRejectDeq.size() > (unsigned)MAX_REJECT) {
++          acceptRejectDeq.pop_back();
++          fPrelDeq.pop_back();
++        }
++      } else {
++        acceptRejectDeq.push_front(z);
++        fPrelDeq.push_front(fPrel);
++      }
+     }
+   } while (!accept);
+ 
++  // Stream the accepted and rejected values to a file. 
++  ofstream file_ar("acceptReject_i.txt", ios::in | ios::out | ios::app);
++  // Output the accepted and rejected values to the file.
++  for (auto i = acceptRejectDeq.begin(); i != acceptRejectDeq.end(); ++i) {
++    file_ar << setprecision(10) << *i << ' ';
++  }
++  file_ar << endl;
++  file_ar.close();
++
++  // Stream the fPrel values to a file
++  ofstream file_fPrel("fPrel_i.txt", ios::in | ios::out | ios::app);
++  // Output the fPrel values to the file.
++  for (auto i = fPrelDeq.begin(); i != fPrelDeq.end(); ++i) {
++    file_fPrel << setprecision(10) << *i << ' ';
++  }
++  file_fPrel << endl;
++  file_fPrel.close();
++
+   // Done.
+   return z;
+ 
