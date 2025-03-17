@@ -18,6 +18,9 @@ from lund_weight import LundWeight
 from pseudo_chi2_loss import PseudoChiSquareLoss
 from wasserstein_loss import WassersteinLoss
 
+
+
+
 class RSA_tuner():
     def __init__(self, epochs, dim_multiplicity, dim_accept_reject, over_sample_factor, params_base,
                  sim_observable_dataloader, sim_z_dataloader, sim_fPrel_dataloader, exp_observable_dataloader,
@@ -86,19 +89,20 @@ class RSA_tuner():
         for i in tqdm(range(self.epochs), ncols = 100):
             device = "cpu"
             batch_counter = 0
-            for (x,y,z,w) in zip(self.sim_z_base, self.sim_mT_base, self.sim_observable_base, self.exp_observable):
+            for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
                 print('Batch #', batch_counter)
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
                 # Reset the gradients in the optimizer
                 optimizer.zero_grad()
                 # Compute the weights
-                weights = self.weight_nexus(x, y, z)
+                weights = self.weight_nexus(x, y)
                 # Compute the loss
                 loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
                 #loss = self.wasserstein_loss(z, w, weights)
                 print('----------------------------------------------')
                 print('Loss:', loss.clone().detach().numpy())
                 # Compute gradients via backprop
+                # torch.autograd.set_detect_anomaly(True)
                 loss.backward()
                 
                 if self.print_details:
@@ -114,7 +118,8 @@ class RSA_tuner():
                 # Update the network weights
                 optimizer.step()
                 # Update the learning rate scheduler
-                scheduler.step(loss)
+                if scheduler != None:
+                    scheduler.step(loss)
                 # Iterate the batch counter
                 batch_counter+=1
 
@@ -179,6 +184,9 @@ class RSA_tuner():
         # Initialize gradient tensor
         a_b_gradient = torch.zeros(len(a_b_init_grid), 2)
         loss_grid = torch.zeros(len(a_b_init_grid))
+        mu_metric = torch.zeros(len(a_b_init_grid))
+        N_eff_metric = torch.zeros(len(a_b_init_grid))
+
         device = 'cpu'
         init_counter = 0
         for a_b_init in tqdm(a_b_init_grid, ncols=100):
@@ -194,7 +202,12 @@ class RSA_tuner():
                 weights = self.weight_nexus(x, y)
                 # Compute the loss
                 loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
-                #loss = self.wasserstein_loss(z, w, weights)
+                # loss = self.wasserstein_loss(z, w, weights)
+
+                # Compute Performance Metrics
+                mu = torch.mean(weights)
+                N_eff = torch.sum(weights) ** 2 / torch.sum(weights ** 2)
+                
                 
                 # Compute gradients via backprop
                 loss.backward()
@@ -218,10 +231,14 @@ class RSA_tuner():
             a_b_gradient[init_counter] = a_b_gradient_i.clone()
             # Write to the master loss tensor
             loss_grid[init_counter] = loss.clone().detach()
+            # Metrics:
+            mu_metric[init_counter] = mu.clone().detach()
+            N_eff_metric[init_counter] = N_eff.clone().detach()
             # Iterate the init_counter
             init_counter += 1
+
         # Convert the gradient and loss tensors to numpy arrays
         a_b_gradient = a_b_gradient.numpy()
         loss_grid = loss_grid.numpy()
         # Return the gradients and losses
-        return a_b_gradient, loss_grid
+        return a_b_gradient, loss_grid, [mu_metric, N_eff_metric]

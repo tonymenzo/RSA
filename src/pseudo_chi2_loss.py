@@ -103,8 +103,13 @@ class PseudoChiSquareLoss(torch.nn.Module):
             maximum = torch.max(torch.maximum(sim_observable[:], exp_observable[:]))
 
             # Perform the binning of the macroscopic observables
-            histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(sim_observable[:].unsqueeze(0), weights = weights, bins = int(maximum - minimum), min = minimum, max = maximum)
-            histo_exp, bins_exp, _ = self.histogram(exp_observable[:].unsqueeze(0), bins = int(maximum - minimum), min = minimum, max = maximum)
+            if int(maximum - minimum) <= 1:
+                print(int((maximum-minimum) * 100))
+                histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(sim_observable[:].unsqueeze(0), weights = weights, bins = int((maximum-minimum) * 100), min = minimum, max = maximum)
+                histo_exp, bins_exp, _ = self.histogram(exp_observable[:].unsqueeze(0), bins = int((maximum-minimum) * 100), min = minimum, max = maximum)
+            else:
+                histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(sim_observable[:].unsqueeze(0), weights = weights, bins = int(maximum - minimum), min = minimum, max = maximum)
+                histo_exp, bins_exp, _ = self.histogram(exp_observable[:].unsqueeze(0), bins = int(maximum - minimum), min = minimum, max = maximum)
             #histo_sim, bins_sim = self.differentiable_histogram(sim_observable[:], weights = weights, bins = int(maximum - minimum), min = minimum, max = maximum)
             #histo_exp, bins_exp = self.differentiable_histogram(exp_observable[:], bins = int(maximum - minimum), min = minimum, max = maximum)
 
@@ -113,8 +118,8 @@ class PseudoChiSquareLoss(torch.nn.Module):
             epsilon = 1e-10
             # The uncertainty on a weighted bin is given by sig^2 = sum_i (w_i^2) where w_i represents all weights in the given bin.
             # For a normalized distribution the weighted/unweighted uncertainty is normalized by the 'area' of the distribution squared.
-            uncertainty_sim = weight_sum_sq_sim / torch.pow((torch.sum(histo_sim) + epsilon), 2)
-            uncertainty_exp = (histo_exp * (1 - histo_exp / torch.sum(histo_exp))) / torch.pow((torch.sum(histo_exp) + epsilon), 2) # Poisson uncertainty
+            uncertainty_sim = weight_sum_sq_sim / torch.pow((torch.sum(histo_sim) + epsilon), 2) + epsilon
+            uncertainty_exp = (histo_exp * (1 - histo_exp / torch.sum(histo_exp))) / torch.pow((torch.sum(histo_exp) + epsilon), 2) + epsilon # Poisson uncertainty
 
             # Normalize the histograms
             histo_sim = histo_sim / torch.sum(histo_sim)
@@ -122,6 +127,7 @@ class PseudoChiSquareLoss(torch.nn.Module):
 
             # Compute the chi-squared statistic
             pseudo_chi2 = torch.pow((histo_sim - histo_exp), 2) / (uncertainty_sim + uncertainty_exp)
+
         else:
             # Perform the binning of the macroscopic observables
             histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(sim_observable[:].unsqueeze(0), weights = weights, bins = self.bins)
@@ -136,7 +142,7 @@ class PseudoChiSquareLoss(torch.nn.Module):
             # Normalize the simulated histogram
             histo_sim = histo_sim / torch.sum(histo_sim)
 
-            # Compute the chi-squared statistic
+            # Compute the chi-squared statistic)
             pseudo_chi2 = torch.pow((histo_sim - self.histo_exp_norm), 2) / (uncertainty_sim + uncertainty_exp)
 
         if self.print_details:
@@ -144,7 +150,13 @@ class PseudoChiSquareLoss(torch.nn.Module):
             if self.fixed_binning:
                 histo_sim_OG, bins_sim_OG, _ = self.histogram(sim_observable[:].unsqueeze(0), bins = self.bins)
             else:
-                histo_sim_OG, bins_sim_OG, _, _ = self.histogram(sim_observable[:].unsqueeze(0), bins = int(maximum - minimum), min = minimum, max = maximum)
+                if int(maximum - minimum) <= 1:
+                    # print(int((maximum-minimum) * 100))
+                    # print(sim_observable[:].shape)
+                    histo_sim_OG, bins_sim_OG, _ = self.histogram(sim_observable[:], bins = int((maximum - minimum)*100), min = minimum, max = maximum)
+                else:
+                    histo_sim_OG, bins_sim_OG, _, _ = self.histogram(sim_observable[:].unsqueeze(0), bins = int((maximum - minimum)), min = minimum, max = maximum)
+                # histo_sim_OG, bins_sim_OG, _, _ = self.histogram(sim_observable[:].unsqueeze(0), bins = int(maximum - minimum), min = minimum, max = maximum)
                 #histo_sim_OG, bins_sim_OG, _, _ = self.histogram(sim_observable[:], bins = int(maximum - minimum), min = minimum, max = maximum)
             
             # Normalize the base histogram
@@ -160,8 +172,10 @@ class PseudoChiSquareLoss(torch.nn.Module):
                 ax.plot(self.bins.detach().numpy()[0:-1], self.histo_exp_norm.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')
                 ax.errorbar(self.bins.detach().numpy()[0:-1], self.histo_exp_norm.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
             else:
-                ax.plot(bins_exp.detach().numpy(), histo_exp.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')#label = r'$\mathrm{Exp.}$')
-                ax.errorbar(bins_exp.detach().numpy(), histo_exp.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
+                ax.plot(bins_exp.detach().numpy()[0:-1], histo_exp.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')#label = r'$\mathrm{Exp.}$')
+                ax.errorbar(bins_exp.detach().numpy()[0:-1], histo_exp.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
+                # ax.plot(bins_exp.detach().numpy(), histo_exp.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')#label = r'$\mathrm{Exp.}$')
+                # ax.errorbar(bins_exp.detach().numpy(), histo_exp.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
             ax.plot(bins_sim_OG.detach().numpy()[0:-1], histo_sim_OG.detach().numpy(), '-o', label = 'Sim.', color = 'tab:green')#label = r'$\mathrm{Sim.}$')
 
             # Plot the error bars

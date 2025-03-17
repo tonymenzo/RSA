@@ -47,7 +47,15 @@ class LundWeight(nn.Module):
         aIsC = (torch.abs(a - c) < self.AFROMC)
         # Determine position of maximum.
         if aIsZero:
-            return b / c if c > b else 1.
+            # print(a,b,c)
+            # print('torch.all', torch.all(c > b))
+            
+            # return b / c if torch.all(c > b) else torch.ones_like(b) * 1.0
+            # z = torch.where(c > b, b / c, torch.ones_like(b) * 1.0)
+            # z.retain_grad()
+            # print("z_requires_grad", z.requires_grad)
+            # return torch.ones_like(b) * 1.0
+            return b / c if c > b else 1. #problematic -> if b is a tensor with multiple values
         elif aIsC:
             return b / (b + c)
         else:
@@ -113,7 +121,7 @@ class LundWeight(nn.Module):
             
             # Determine position of maximum.
             zMax = self.zMaxCalc(a, b_exp, c)
-            
+
             # Be careful of -inf values in aCoeff, z is being rounded to exactly 1.
             aCoef = torch.log(1. - z_unmasked) - torch.log(1. - zMax)
             if torch.isneginf(aCoef).any():
@@ -127,10 +135,11 @@ class LundWeight(nn.Module):
             # Special cases for a = 0.
             if ~aIsZero:
                 fExp = fExp + a * aCoef
-            
+
             # Feed through numerical stabilizer
             fVal = torch.exp(torch.clamp(fExp, min=-self.EXPMAX, max=self.EXPMAX))
             
+
             # Assign computed values back to the likelihood tensor
             likelihood[combined_mask] = fVal
         
@@ -186,5 +195,7 @@ class LundWeight(nn.Module):
             
         # The final event weight is the product of accepted and rejected weights
         weights = accept_weights * reject_weights
+
+        print(weights.requires_grad)
     
         return weights

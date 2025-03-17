@@ -101,7 +101,7 @@ class DeepSetsClassifier(nn.Module):
         if device == None: 
             device = self.device
         else:
-            print(device)
+            # print(device)
             self.rho = self.rho.to(device) 
             self.phi = self.phi.to(device)
             
@@ -115,6 +115,7 @@ class DeepSetsClassifier(nn.Module):
         non_zero_mask = mask
         # Process non-zero entries
         non_zero_x = x[non_zero_mask]  # shape: (num_non_zero, input_dim)
+        # non_zero_x = non_zero_x.to(device)
         processed_non_zero_x = self.phi(non_zero_x)  # shape: (num_non_zero, output_dim)
         
         # Initialize output tensor
@@ -155,6 +156,7 @@ class DeepSetsClassifier(nn.Module):
             learning_rate (float): Learning rate for the optimizer
             pretraining_epochs (int): Number of pretraining epochs with MSE loss
         """
+
         # Choose optimizer
         optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         
@@ -175,18 +177,27 @@ class DeepSetsClassifier(nn.Module):
             for (exp_batch, sim_batch) in zip(train_exp_loader_tdqm, train_sim_loader):
                 
                 optimizer.zero_grad()
-                
-                exp_data = exp_batch[0]#.to(device)
-                exp_mask = exp_batch[1]#.to(device)
-                sim_data = sim_batch[0]#.to(device)
-                sim_mask = sim_batch[1]#.to(device)
+                # print(exp_batch[0].size())
+                # print(np.shape(exp_batch))
+
+                # exp_data = exp_batch[0]#.to(device)
+                # exp_mask = exp_batch[1]#.to(device)
+                # sim_data = sim_batch[0]#.to(device)
+                # sim_mask = sim_batch[1]#.to(device)
+
+
+                # print("exp_batch.size", exp_batch.size())
+                exp_data = exp_batch
+                sim_data = sim_batch
 
                 # Combine the data and masks
-                combined_data = torch.cat([exp_batch[0], sim_batch[0]], dim=0)
-                combined_mask = torch.cat([exp_batch[1], sim_batch[1]], dim=0)
+                combined_data = torch.cat([exp_batch, sim_batch], dim=0)
+                # combined_data = torch.cat([exp_batch[0], sim_batch[0]], dim=0)
+                # combined_mask = torch.cat([exp_batch[1], sim_batch[1]], dim=0)
 
                 # Forward pass with the combined data
-                combined_output = self(combined_data, combined_mask)
+                combined_output = self(combined_data, device=device)
+                # combined_output = self(combined_data, combined_mask)
 
                 # Separate the outputs, should do more gracefully in preprocessing
                 exp_output = combined_output[:exp_batch[0].size(0)] 
@@ -231,13 +242,19 @@ class DeepSetsClassifier(nn.Module):
             with torch.no_grad():
                 for (exp_batch, sim_batch) in zip(train_sim_loader_tdqm, val_sim_loader):
                 
-                    exp_data = exp_batch[0]
-                    exp_mask = exp_batch[1]
-                    sim_data = sim_batch[0]
-                    sim_mask = sim_batch[1]
+                    # exp_data = exp_batch[0]
+                    # exp_mask = exp_batch[1]
+                    # sim_data = sim_batch[0]
+                    # sim_mask = sim_batch[1]
 
-                    exp_output = self(exp_data, exp_mask)
-                    sim_output = self(sim_data, sim_mask)
+                    exp_data = exp_batch
+                    sim_data = sim_batch
+
+                    # exp_output = self(exp_data, exp_mask)
+                    # sim_output = self(sim_data, sim_mask)
+
+                    exp_output = self(exp_data, device=device)
+                    sim_output = self(sim_data, device=device)
                     
                     # Labeling and loss calculation:
                     if epoch_n < pretraining_epochs:
@@ -303,6 +320,8 @@ class DeepSetsClassifier(nn.Module):
 
                 exp_output = classifier(exp_data)
                 sim_output = classifier(sim_data)
+                # exp_output = self(exp_data)  ??
+                # sim_output = self(sim_data)
 
                 exp_labels = torch.ones(exp_output.size(0))
                 sim_labels = torch.zeros(sim_output.size(0))
