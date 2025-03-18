@@ -285,7 +285,7 @@
      aNow = aNonC;
      bNow = bNonC;
    } else if (idFrag == 5 && useNonStandB) {
-@@ -1667,17 +1716,38 @@
+@@ -1667,17 +1711,33 @@
  
    // Shape parameters of Lund symmetric fragmentation function.
    double aShape = aNow;
@@ -320,11 +320,6 @@
 +  if (idFrag == 4)  cShape += rFactC * bNow * mc2;
 +  if (idFrag == 5)  cShape += rFactB * bNow * mb2;
 +  if (idFrag >  5)  cShape += rFactH * bNow * mT2;
-+
-+  // Print out the shape parameters.
-+  cout << "idOld = " << idOld << ", idNew = " << idNew << endl
-+       << "aShape = " << aShape << ", bNow = " << bNow
-+       << ", cShape = " << cShape << endl;
 +
    if (!infoPtr->weightContainerPtr->weightsFragmentation.
      weightParms[WeightsFragmentation::Z].empty())
