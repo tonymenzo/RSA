@@ -1,0 +1,397 @@
+--- include/Pythia8/FragmentationFlavZpT.h	2024-05-23 19:06:00.000000000 -0700
++++ include/Pythia8/FragmentationFlavZpT.h	2025-03-14 10:05:00.764521000 -0700
+@@ -266,10 +266,19 @@
+ public:
+ 
+   // Constructor.
+-  StringZ() : useNonStandC(), useNonStandB(), useNonStandH(), usePetersonC(),
+-    usePetersonB(), usePetersonH(), mc2(), mb2(), aLund(), bLund(),
+-    aExtraSQuark(), aExtraDiquark(), rFactC(), rFactB(), rFactH(), aNonC(),
+-    aNonB(), aNonH(), bNonC(), bNonB(), bNonH(), epsilonC(), epsilonB(),
++  StringZ() : useNonStandD(), useNonStandU(), useNonStandS(), // RSA
++    useNonStandC(), useNonStandB(), useNonStandH(), usePetersonC(),
++    usePetersonB(), usePetersonH(), mc2(), mb2(),
++    md2(), mu2(), ms2(), // RSA
++    aLund(), bLund(),
++    aExtraDQuark(), aExtraUQuark(), // RSA
++    aExtraSQuark(), aExtraDiquark(), 
++    aExtraCQuark(), aExtraBQuark(), rFactD(), rFactU(), rFactS(), // RSA
++    rFactC(), rFactB(), rFactH(),
++    aNonD(), aNonU(), aNonS(), // RSA
++    aNonC(), aNonB(), aNonH(),
++    bNonD(), bNonU(), bNonS(), // RSA
++    bNonC(), bNonB(), bNonH(), epsilonC(), epsilonB(),
+     epsilonH(), stopM(), stopNF(), stopS() {}
+ 
+   // Destructor.
+@@ -307,10 +316,20 @@
+   static const double CFROMUNITY, AFROMZERO, AFROMC, EXPMAX;
+ 
+   // Initialization data, to be read from Settings.
+-  bool   useNonStandC, useNonStandB, useNonStandH,
++  bool   useNonStandD, useNonStandU, useNonStandS, // RSA
++         useNonStandC, useNonStandB, useNonStandH,
+          usePetersonC, usePetersonB, usePetersonH;
+-  double mc2, mb2, aLund, bLund, aExtraSQuark, aExtraDiquark, rFactC,
+-         rFactB, rFactH, aNonC, aNonB, aNonH, bNonC, bNonB, bNonH,
++  double mc2, mb2,
++         md2, mu2, ms2,  // RSA
++         aLund, bLund,
++         aExtraDQuark, aExtraUQuark, // RSA
++         aExtraSQuark, aExtraDiquark, 
++         aExtraCQuark, aExtraBQuark, rFactD, rFactU, rFactS, // RSA
++         rFactC, rFactB, rFactH,
++         aNonD, aNonU, aNonS, // RSA
++         aNonC, aNonB, aNonH,
++         bNonD, bNonU, bNonS, // RSA
++         bNonC, bNonB, bNonH,
+          epsilonC, epsilonB, epsilonH, stopM, stopNF, stopS;
+ 
+ };
+--- share/Pythia8/xmldoc/Fragmentation.xml 2024-05-23 19:06:00.000000000 -0700
++++ share/Pythia8/xmldoc/Fragmentation.xml 2025-03-14 11:06:31.373616000 -0700
+@@ -101,16 +101,36 @@
+     f(z) = (1/z) * z^{a_i} * ((1-z)/z)^{a_j} * exp(-b * m_T^2 / z) 
+ </eq> 
+ This is only implemented for s quarks and diquarks relative to normal quarks: 
+- 
+-<parm name="StringZ:aExtraSQuark" default="0.0" min="0.0" max="2.0"> 
+-allows a larger <ei>a</ei> for s quarks, with total 
++
++<parm name="StringZ:aExtraDQuark" default="0.0" min="-2.0" max="2.0">
++allows a larger (or smaller) <ei>a</ei> for d quarks, with total
++<ei>a = aLund + aExtraDQuark</ei>.
++</parm>
++
++<parm name="StringZ:aExtraUQuark" default="0.0" min="-2.0" max="2.0">
++allows a larger (or smaller) <ei>a</ei> for u quarks, with total
++<ei>a = aLund + aExtraUQuark</ei>.
++</parm>
++
++<parm name="StringZ:aExtraSQuark" default="0.0" min="-2.0" max="2.0"> 
++allows a larger (or smaller) <ei>a</ei> for s quarks, with total 
+ <ei>a = aLund + aExtraSQuark</ei>. 
+ </parm> 
+  
+-<parm name="StringZ:aExtraDiquark" default="0.97" min="0.0" max="2.0"> 
+-allows a larger <ei>a</ei> for diquarks, with total 
++<parm name="StringZ:aExtraDiquark" default="0.97" min="-2.0" max="2.0"> 
++allows a larger (or smaller) <ei>a</ei> for diquarks, with total 
+ <ei>a = aLund + aExtraDiquark</ei>. 
+-</parm> 
++</parm>
++
++<parm name="StringZ:aExtraCQuark" default="0.0" min="-2.0" max="2.0">
++allows a larger (or smaller) <ei>a</ei> for c quarks, with total
++<ei>a = aLund + aExtraCQuark</ei>.
++</parm>
++
++<parm name="StringZ:aExtraBQuark" default="0.0" min="-2.0" max="2.0">
++allows a larger (or smaller) <ei>a</ei> for b quarks, with total
++<ei>a = aLund + aExtraBQuark</ei>.
++</parm>
+  
+ <p/> 
+ Finally, the Bowler modification <ref>Bow81</ref> introduces an extra 
+@@ -121,6 +141,18 @@
+ for heavy quarks. To keep some flexibility, a multiplicative factor 
+ <ei>r_Q</ei> is introduced, which ought to be unity (provided that 
+ quark masses were uniquely defined) but can be set in 
++
++<parm name="StringZ:rFactD" default="0.0" min="0.0" max="2.0">
++<ei>r_d</ei>, i.e. the above parameter for <ei>d</ei> quarks.
++</parm>
++
++<parm name="StringZ:rFactU" default="0.0" min="0.0" max="2.0">
++<ei>r_u</ei>, i.e. the above parameter for <ei>u</ei> quarks.
++</parm>
++
++<parm name="StringZ:rFactS" default="0.0" min="0.0" max="2.0">
++<ei>r_s</ei>, i.e. the above parameter for <ei>s</ei> quarks.
++</parm>
+  
+ <parm name="StringZ:rFactC" default="1.32" min="0.0" max="2.0"> 
+ <ei>r_c</ei>, i.e. the above parameter for <ei>c</ei> quarks. 
+@@ -145,7 +177,19 @@
+ </eq> 
+ The below switches and values can be used to achieve this. They should 
+ be used with caution and constitute clear deviations from the Lund 
+-philosophy. 
++philosophy.
++
++<flag name="StringZ:useNonstandardD" default="off">
++use the above nonstandard Lund ansatz for <ei>d</ei> quarks.
++</flag>
++
++<flag name="StringZ:useNonstandardU" default="off">
++use the above nonstandard Lund ansatz for <ei>u</ei> quarks.
++</flag>
++
++<flag name="StringZ:useNonstandardS" default="off">
++use the above nonstandard Lund ansatz for <ei>s</ei> quarks.
++</flag>
+  
+ <flag name="StringZ:useNonstandardC" default="off"> 
+ use the above nonstandard Lund ansatz for <ei>c</ei> quarks. 
+@@ -158,6 +202,21 @@
+ <flag name="StringZ:useNonstandardH" default="off"> 
+ use the above nonstandard Lund ansatz for hypothetical heavier quarks. 
+ </flag> 
++
++<parm name="StringZ:aNonstandardD" default="0.68" min="0.0" max="2.0">
++The <ei>a</ei> parameter in the nonstandard Lund ansatz for
++<ei>d</ei> quarks (defaults to Monash).
++</parm>
++
++<parm name="StringZ:aNonstandardU" default="0.68" min="0.0" max="2.0">
++The <ei>a</ei> parameter in the nonstandard Lund ansatz for
++<ei>u</ei> quarks (defaults to Monash).
++</parm>
++
++<parm name="StringZ:aNonstandardS" default="0.68" min="0.0" max="2.0">
++The <ei>a</ei> parameter in the nonstandard Lund ansatz for
++<ei>s</ei> quarks (defaults to Monash).
++</parm>
+  
+ <parm name="StringZ:aNonstandardC" default="0.3" min="0.0" max="2.0"> 
+ The <ei>a</ei> parameter in the nonstandard Lund ansatz for 
+@@ -174,6 +233,21 @@
+ hypothetical heavier quarks. 
+ </parm> 
+  
++<parm name="StringZ:bNonstandardD" default="0.98" min="0.2" max="2.0">
++The <ei>b</ei> parameter in the nonstandard Lund ansatz for
++<ei>d</ei> quarks (defaults to Monash).
++</parm>
++
++<parm name="StringZ:bNonstandardU" default="0.98" min="0.2" max="2.0">
++The <ei>b</ei> parameter in the nonstandard Lund ansatz for
++<ei>u</ei> quarks (defaults to Monash).
++</parm>
++
++<parm name="StringZ:bNonstandardS" default="0.98" min="0.2" max="2.0">
++The <ei>b</ei> parameter in the nonstandard Lund ansatz for
++<ei>s</ei> quarks (defaults to Monash).
++</parm>
++
+ <parm name="StringZ:bNonstandardC" default="0.8" min="0.2" max="2.0"> 
+ The <ei>b</ei> parameter in the nonstandard Lund ansatz for 
+ <ei>c</ei> quarks. 
+--- src/FragmentationFlavZpT.cc	2024-05-23 19:06:00.000000000 -0700
++++ src/FragmentationFlavZpT.cc	2025-03-17 10:00:40.612163000 -0700
+@@ -1530,14 +1530,24 @@
+ void StringZ::init() {
+ 
+   // c and b quark masses.
++  md2           = pow2( particleDataPtr->m0(1)); // RSA
++  mu2           = pow2( particleDataPtr->m0(2)); // RSA
++  ms2           = pow2( particleDataPtr->m0(3)); // RSA
+   mc2           = pow2( particleDataPtr->m0(4));
+   mb2           = pow2( particleDataPtr->m0(5));
+ 
+   // Paramaters of Lund/Bowler symmetric fragmentation function.
+   aLund         = parm("StringZ:aLund");
+   bLund         = parm("StringZ:bLund");
++  aExtraDQuark  = parm("StringZ:aExtraDquark"); // RSA
++  aExtraUQuark  = parm("StringZ:aExtraUquark"); // RSA
+   aExtraSQuark  = parm("StringZ:aExtraSQuark");
+   aExtraDiquark = parm("StringZ:aExtraDiquark");
++  aExtraCQuark  = parm("StringZ:aExtraCquark"); // RSA
++  aExtraBQuark  = parm("StringZ:aExtraBquark"); // RSA
++  rFactD        = parm("StringZ:rFactD"); // RSA
++  rFactU        = parm("StringZ:rFactU"); // RSA
++  rFactS        = parm("StringZ:rFactS"); // RSA
+   rFactC        = parm("StringZ:rFactC");
+   rFactB        = parm("StringZ:rFactB");
+   rFactH        = parm("StringZ:rFactH");
+@@ -1552,12 +1562,21 @@
+   }
+ 
+   // Flags and parameters of nonstandard Lund fragmentation functions.
++  useNonStandD  = flag("StringZ:useNonstandardD"); // RSA
++  useNonStandU  = flag("StringZ:useNonstandardU"); // RSA
++  useNonStandS  = flag("StringZ:useNonstandardS"); // RSA
+   useNonStandC  = flag("StringZ:useNonstandardC");
+   useNonStandB  = flag("StringZ:useNonstandardB");
+   useNonStandH  = flag("StringZ:useNonstandardH");
++  aNonD         = parm("StringZ:aNonstandardD"); // RSA
++  aNonU         = parm("StringZ:aNonstandardU"); // RSA
++  aNonS         = parm("StringZ:aNonstandardS"); // RSA
+   aNonC         = parm("StringZ:aNonstandardC");
+   aNonB         = parm("StringZ:aNonstandardB");
+   aNonH         = parm("StringZ:aNonstandardH");
++  bNonD         = parm("StringZ:bNonstandardD"); // RSA
++  bNonU         = parm("StringZ:bNonstandardU"); // RSA
++  bNonS         = parm("StringZ:bNonstandardS"); // RSA
+   bNonC         = parm("StringZ:bNonstandardC");
+   bNonB         = parm("StringZ:bNonstandardB");
+   bNonH         = parm("StringZ:bNonstandardH");
+@@ -1631,17 +1650,37 @@
+ 
+ double StringZ::zFrag( int idOld, int idNew, double mT2) {
+ 
++  // Write the squared transverse mass to a file
++  ofstream file_mT2("pgun_data/mT2_i.txt", ios::in | ios::out | ios::app);
++  // Output the squared transverse mass to the file.
++  file_mT2 << setprecision(10) << mT2 << endl;
++  file_mT2.close();
++
++  // Write the old and new particle IDs to a file
++  ofstream file_id("pgun_data/id_i.txt", ios::in | ios::out | ios::app);
++  // Output the old and new particle IDs to the file.
++  file_id << idOld << " " << idNew << endl;
++  file_id.close();
++
+   // Find if old or new flavours correspond to diquarks.
+   int idOldAbs = abs(idOld);
+   int idNewAbs = abs(idNew);
++  bool isOldDQuark = (idOldAbs == 1); // RSA
++  bool isNewDQuark = (idNewAbs == 1); // RSA
++  bool isOldUQuark = (idOldAbs == 2); // RSA
++  bool isNewUQuark = (idNewAbs == 2); // RSA
+   bool isOldSQuark = (idOldAbs == 3);
+   bool isNewSQuark = (idNewAbs == 3);
+   bool isOldDiquark = (idOldAbs > 1000 && idOldAbs < 10000);
+   bool isNewDiquark = (idNewAbs > 1000 && idNewAbs < 10000);
++  bool isOldCQuark = (idOldAbs == 4); // RSA
++  bool isNewCQuark = (idNewAbs == 4); // RSA
++  bool isOldBQuark = (idOldAbs == 5); // RSA
++  bool isNewBQuark = (idNewAbs == 5); // RSA
+ 
+   // Find heaviest quark in fragmenting parton/diquark.
+-  int idFrag = idOldAbs;
+-  if (isOldDiquark) idFrag = max( idOldAbs / 1000, (idOldAbs / 100) % 10);
++  int idFrag = idNewAbs;
++  if (isNewDiquark) idFrag = max( idNewAbs / 1000, (idNewAbs / 100) % 10);
+ 
+   // Use Peterson where explicitly requested for heavy flavours.
+   if (idFrag == 4 && usePetersonC) return zPeterson( epsilonC);
+@@ -1654,7 +1693,17 @@
+   // Nonstandard a and b values implemented for heavy flavours.
+   double aNow = aLund;
+   double bNow = bLund;
+-  if (idFrag == 4 && useNonStandC) {
++  
++  if (idFrag == 1 && useNonStandD) {
++    aNow = aNonD; // RSA
++    bNow = bNonD; // RSA
++  } else if (idFrag == 2 && useNonStandU) {
++    aNow = aNonU; // RSA
++    bNow = bNonU; // RSA
++  } else if (idFrag == 3 && useNonStandS) {
++    aNow = aNonS; // RSA
++    bNow = bNonS; // RSA
++  } else if (idFrag == 4 && useNonStandC) {
+     aNow = aNonC;
+     bNow = bNonC;
+   } else if (idFrag == 5 && useNonStandB) {
+@@ -1667,17 +1716,38 @@
+ 
+   // Shape parameters of Lund symmetric fragmentation function.
+   double aShape = aNow;
+-  if (isOldSQuark)  aShape += aExtraSQuark;
+-  if (isOldDiquark) aShape += aExtraDiquark;
++  if (isNewDQuark)  aShape += aExtraDQuark; // RSA
++  if (isNewUQuark)  aShape += aExtraUQuark; // RSA
++  if (isNewSQuark)  aShape += aExtraSQuark;
++  if (isNewDiquark) aShape += aExtraDiquark;
++  if (isNewCQuark)  aShape += aExtraCQuark; // RSA
++  if (isNewBQuark)  aShape += aExtraBQuark; // RSA
+   double bShape = bNow * mT2;
+   double cShape = 1.;
++  if (isOldDQuark)  cShape -= aExtraDQuark; // RSA
++  if (isNewDQuark)  cShape += aExtraDQuark; // RSA
++  if (isOldUQuark)  cShape -= aExtraUQuark; // RSA
++  if (isNewUQuark)  cShape += aExtraUQuark; // RSA
+   if (isOldSQuark)  cShape -= aExtraSQuark;
+   if (isNewSQuark)  cShape += aExtraSQuark;
+   if (isOldDiquark) cShape -= aExtraDiquark;
+   if (isNewDiquark) cShape += aExtraDiquark;
+-  if (idFrag == 4) cShape += rFactC * bNow * mc2;
+-  if (idFrag == 5) cShape += rFactB * bNow * mb2;
+-  if (idFrag >  5) cShape += rFactH * bNow * mT2;
++  if (isOldCQuark)  cShape -= aExtraCQuark; // RSA
++  if (isNewCQuark)  cShape += aExtraCQuark; // RSA
++  if (isOldBQuark)  cShape -= aExtraBQuark; // RSA
++  if (isNewBQuark)  cShape += aExtraBQuark; // RSA
++  if (idFrag == 1)  cShape += rFactD * bNow * md2; // RSA
++  if (idFrag == 2)  cShape += rFactU * bNow * mu2; // RSA
++  if (idFrag == 3)  cShape += rFactS * bNow * ms2; // RSA
++  if (idFrag == 4)  cShape += rFactC * bNow * mc2;
++  if (idFrag == 5)  cShape += rFactB * bNow * mb2;
++  if (idFrag >  5)  cShape += rFactH * bNow * mT2;
++
++  // Print out the shape parameters.
++  cout << "idOld = " << idOld << ", idNew = " << idNew << endl
++       << "aShape = " << aShape << ", bNow = " << bNow
++       << ", cShape = " << cShape << endl;
++
+   if (!infoPtr->weightContainerPtr->weightsFragmentation.
+     weightParms[WeightsFragmentation::Z].empty())
+     return zLund(aShape, bShape, cShape, 10, bNow, idFrag, isOldSQuark,
+@@ -1718,7 +1788,7 @@
+ double StringZ::zLund( double a, double b, double c,
+   double head, double bNow, int idFrag, bool isOldSQuark, bool isNewSQuark,
+   bool isOldDiquark, bool isNewDiquark) {
+-
++ 
+   // Special cases for c = 1, a = 0 and a = c.
+   bool cIsUnity = (abs( c - 1.) < CFROMUNITY);
+   bool aIsZero = (a < AFROMZERO);
+@@ -1771,6 +1841,14 @@
+   double fPrel = 1.;
+   double fVal = 1.;
+   bool   accept = false;
++
++  // Convenient variables for tuning accept-reject.
++  deque<double> acceptRejectDeq;
++  deque<double> fPrelDeq;
++  int MAX_REJECT = 99;
++  // Override default value of the over-sampling factor (head).
++  head = 10;
++
+   do {
+     // Choice of z flat good enough for distribution peaked in the middle;
+     // if not this z can be reused as a random number in general.
+@@ -1856,9 +1934,41 @@
+         wgts.reweightValueByIndex(iWgt, accept ? wgt :
+           (1. - wgt*fPrb)/(1. - fPrb));
+       }
++
++      // Append rejected values to end of deque and the accepted value to the front.
++      if (!accept){
++        acceptRejectDeq.push_back(z);
++        fPrelDeq.push_back(fPrel);
++        // If the number of rejections exceeds the maximum, clear the last element of the deq.
++        if (acceptRejectDeq.size() > (unsigned)MAX_REJECT) {
++          acceptRejectDeq.pop_back();
++          fPrelDeq.pop_back();
++        }
++      } else {
++        acceptRejectDeq.push_front(z);
++        fPrelDeq.push_front(fPrel);
++      }
+     }
+   } while (!accept);
+ 
++  // Stream the accepted and rejected values to a file. 
++  ofstream file_ar("pgun_data/acceptReject_i.txt", ios::in | ios::out | ios::app);
++  // Output the accepted and rejected values to the file.
++  for (auto i = acceptRejectDeq.begin(); i != acceptRejectDeq.end(); ++i) {
++    file_ar << setprecision(10) << *i << ' ';
++  }
++  file_ar << endl;
++  file_ar.close();
++
++  // Stream the fPrel values to a file
++  ofstream file_fPrel("pgun_data/fPrel_i.txt", ios::in | ios::out | ios::app);
++  // Output the fPrel values to the file.
++  for (auto i = fPrelDeq.begin(); i != fPrelDeq.end(); ++i) {
++    file_fPrel << setprecision(10) << *i << ' ';
++  }
++  file_fPrel << endl;
++  file_fPrel.close();
++
+   // Done.
+   return z;
+ 
