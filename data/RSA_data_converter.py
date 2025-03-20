@@ -96,6 +96,7 @@ npad_event = 105
 print("Converting accepted-reject data...")
 for i in tqdm(range(len(lines_ar)), ncols = 100):
     # Events are separated at the new line delimiter
+    print(lines_ar[i])
     if lines_ar[i] != '\n':
         # Initialize the accept-reject array and make sure it is not the accept-reject delimiter
         if counter == 0 and lines_ar[i] != '&\n':

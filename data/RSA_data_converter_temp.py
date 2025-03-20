@@ -4,7 +4,7 @@ import subprocess
 aLund = 0.72  # Example value for aLund
 bLund = 0.88  # Example value for bLund
 sigma = 0.335  # Example value for sigma
-nEvent = 100000  # Example value for nEvent
+nEvent = 10000  # Example value for nEvent
 
 # Use formatted string literals (f-strings) to automatically generate the paths
 filename_base = f"/global/homes/l/ljpuslar/RSA/releases/examples/pgun_qqbar_finalTwo_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
@@ -32,7 +32,7 @@ write_fPrel_PATH = f"{filename_base}_fPrel.txt"
 
 # Define the arguments to be passed
 args = [
-    "python", "RSA_data_cconverter.py",  # Call the Python script you want to execute
+    "python", "RSA_data_converter.py",  # Call the Python script you want to execute
     "--data_path_accept_reject", acceptReject_PATH,
     "--data_path_fPrel", fPrel_PATH,
     "--data_path_mT2", mT2_PATH,
