@@ -1,15 +1,63 @@
 import subprocess
 
-# Define the parameters
-aLund = 0.72  # Example value for aLund
-bLund = 0.88  # Example value for bLund
-sigma = 0.335  # Example value for sigma
-nEvent = 10000  # Example value for nEvent
+# # Use formatted string literals (f-strings) to automatically generate the paths
+# # filename_base = f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
+# filename_base = f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_standarda_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
+# filename_base = f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_monashaD0_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS1_bC0.88_bB0.88_bH0.88_sigma_0.335_N_1.0e+03_pid"
 
-# Use formatted string literals (f-strings) to automatically generate the paths
-# filename_base = f"/global/homes/l/ljpuslar/RSA/releases/examples/pgun_qqbar_finalTwo_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
-filename_base = f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
+# Define the parameters
+# aLund = 0.68  # Example value for aLund
+# bLund = 0.88  # Example value for bLund
+sigma = 0.335  # Example value for sigma
+nEvent = 1000  # Example value for nEvent
+
+# Define parameters
+aExtraDQuark = 0.2
+aExtraUQuark = 0
+aExtraSQuark = 0
+aExtraCquark = 0
+aExtraBquark = 0
+aExtraDiquark = 0.97
+
+bNonstandardD = 0.88
+bNonstandardU = 0.88
+bNonstandardS = 1.0
+bNonstandardC = 0.88
+bNonstandardB = 0.88
+bNonstandardH = 0.88
+
+
+def format_double(value):
+    # if value == 0:
+    #     return f"{value}"
+    if value == int(value):
+        return f"{int(value)}"
+    else:
+        return f"{value}"
+
+
+# Construct the filename string with enforced double precision
+filename_base = (
+    f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
+    f"pgun_uubar_monash_"
+    f"aD{format_double(aExtraDQuark)}_"
+    f"aU{format_double(aExtraUQuark)}_"
+    f"aS{format_double(aExtraSQuark)}_"
+    f"aC{format_double(aExtraCquark)}_"
+    f"aB{format_double(aExtraBquark)}_"
+    f"aH{format_double(aExtraDiquark)}_"
+    f"bD{format_double(bNonstandardD)}_"
+    f"bU{format_double(bNonstandardU)}_"
+    f"bS{format_double(bNonstandardS)}_"
+    f"bC{format_double(bNonstandardC)}_"
+    f"bB{format_double(bNonstandardB)}_"
+    f"bH{format_double(bNonstandardH)}_"
+    f"sigma_{format_double(sigma)}_"  
+    f"N_{nEvent:.1e}"  # Keep nEvent in scientific notation
+)
+
 print(filename_base) 
+
 
 # Generate the paths based on the filename base
 hadron_PATH = f"{filename_base}_hadrons.txt"
@@ -26,7 +74,26 @@ print("fPrel Path: ", fPrel_PATH)
 print("id Path: ", id_PATH)
 
 # Use formatted string literals (f-strings) to automatically generate the paths
-filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
+# filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
+# filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_standard_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
+filename_base = (
+    f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
+    f"pgun_uubar_monash"
+    f"aD{aExtraDQuark}_"
+    f"aU{aExtraUQuark}_"
+    f"aS{aExtraSQuark}_"
+    f"aC{aExtraCquark}_"
+    f"aB{aExtraBquark}_"
+    f"aH{aExtraDiquark}_"
+    f"bD{bNonstandardD}_"
+    f"bU{bNonstandardU}_"
+    f"bS{bNonstandardS}_"
+    f"bC{bNonstandardC}_"
+    f"bB{bNonstandardB}_"
+    f"bH{bNonstandardH}_"
+    f"sigma_{sigma}_"
+    f"N_{nEvent:.1e}"  # Formats nEvent in scientific notation
+)
 
 # Generate the paths based on the filename base
 write_hadron_PATH = f"{filename_base}_hadrons.npy"
@@ -49,3 +116,7 @@ args = [
 
 # Call the script with the arguments
 subprocess.run(args)
+
+
+# '/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_monash_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS1.0_bC0.88_bB0.88_bH0.88_sigma_0.335_N_1.0e+03_accept_reject_z.txt'
+# /global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_monash_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS1_bC0.88_bB0.88_bH0.88_sigma_0.335_N_1.0e+03_accept_reject_z.txt
