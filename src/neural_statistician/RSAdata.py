@@ -41,13 +41,13 @@ def prepare_datasets(data_paths, test_size, random_state=42, shuffle= True):
 
         # NOTE: Could potentially include prescaling using combined mean and standard deviation
 
-        filenames = np.full(len(exp_obs), filename)
+        filenames = np.full(len(obs), filename)
         labels.extend(filenames)
 
-        exp_obs = torch.Tensor(exp_obs.copy())
+        obs = torch.Tensor(obs.copy())
 
-        data.append(exp_obs)
-
+        data.append(obs)
+    labels = np.array(labels)
     data = torch.cat(data, dim=0)
 
 
@@ -61,11 +61,11 @@ def prepare_datasets(data_paths, test_size, random_state=42, shuffle= True):
         
         X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=test_size, random_state=random_state)
         
-        return X_train, X_test, y_train, y_test
+        return X_train, X_test, y_train, y_test, data.shape
 
     else:
         X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=test_size, random_state=random_state)
-        return X_train, X_test, y_train, y_test
+        return X_train, X_test, y_train, y_test, data.shape
 
 
 class RSA_Dataset(data.Dataset):
@@ -80,17 +80,21 @@ class RSA_Dataset(data.Dataset):
 	"""
 
 
-    def __init__(self, data, labels, sample_size, n_features, random_state=42, shuffle= True):
+    def __init__(self, data, labels):
         shape = data.shape
         self.n_datasets = shape[0]      # Number of events
         self.sample_size = shape[1]     # Size of event
         self.n_features = shape[2]      # Number of low-level observables used
 
-        self.data = data
+        self.dataset = data
+        self.data = {
+            "datasets": data,
+            "labels": labels
+        }
         self.labels = labels
 
     def __getitem__(self, item):
-        return self.data[item]
+        return self.dataset[item]
 
     def __len__(self):
         return self.n_datasets

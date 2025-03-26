@@ -131,6 +131,23 @@ class StatisticNetwork(nn.Module):
         e = self.postpool(e)
         return e
 
+    # def pool(self, e):
+    #     e = e.view(self.batch_size, self.sample_size, self.hidden_dim)
+    #     nonzero_counts = (e != 0).sum(1, keepdim=False) 
+    #     e = e.sum(1)/ nonzero_counts
+    #     e = e.view(self.batch_size, self.hidden_dim)
+    #     return e
+
+    # def pool(self, e):
+    #     e = e.view(self.batch_size, self.sample_size, self.hidden_dim)
+    #     mask = (e != 0).float()  # Convert boolean mask to float (1 for nonzero, 0 for zero)
+    #     e_sum = (e * mask).sum(1)  # Only sum nonzero elements
+    #     count = mask.sum(1)  # Count only nonzero elements
+    #     count = torch.clamp(count, min=1)  # Prevent division by zero
+    #     e = e_sum / count  # Compute mean only on nonzero elements
+    #     e = e.view(self.batch_size, self.hidden_dim)
+    #     return e
+
     def pool(self, e):
         e = e.view(self.batch_size, self.sample_size, self.hidden_dim)
         e = e.mean(1).view(self.batch_size, self.hidden_dim)

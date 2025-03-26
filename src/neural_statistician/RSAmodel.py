@@ -185,7 +185,7 @@ class Statistician(nn.Module):
         optimizer.step()
 
         # output variational lower bound
-        return vlb.data[0]
+        return vlb.data
 
     def save(self, optimizer, path):
         torch.save({
@@ -193,8 +193,8 @@ class Statistician(nn.Module):
             'optimizer_state': optimizer.state_dict()
         }, path)
 
-    @staticmethod
-    def reparameterize_gaussian(mean, logvar):
+    # @staticmethod
+    def reparameterize_gaussian(self, mean, logvar):
         std = torch.exp(0.5 * logvar)
         eps = Variable(torch.randn(std.size()).to(self.device))
         return mean + std * eps
@@ -202,7 +202,7 @@ class Statistician(nn.Module):
     @staticmethod
     def weights_init(m):
         if isinstance(m, nn.Linear):
-            init.xavier_normal(m.weight.data, gain=init.calculate_gain('relu'))
-            init.constant(m.bias.data, 0)
+            init.xavier_normal_(m.weight.data, gain=init.calculate_gain('relu'))
+            init.constant_(m.bias.data, 0)
         elif isinstance(m, nn.BatchNorm1d):
             pass

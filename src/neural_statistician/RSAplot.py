@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def scatter_contexts(contexts, labels, distributions, savepath=None):
+def scatter_contexts(contexts, labels, savepath=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
@@ -12,8 +12,9 @@ def scatter_contexts(contexts, labels, distributions, savepath=None):
 
     n = len(contexts)
     labels = labels[:n]
+    unique_labels = np.unique(labels)
     ix = [np.where(labels == label)
-          for i, label in enumerate(distributions)]
+          for i, label in enumerate(unique_labels)]
     colors = [
         'indianred',
         'forestgreen',
@@ -24,7 +25,7 @@ def scatter_contexts(contexts, labels, distributions, savepath=None):
 
     for label, i in enumerate(ix):
         ax.scatter(contexts[i][:, 0], contexts[i][:, 1], contexts[i][:, 2],
-                   label=distributions[label].title(),
+                   label=unique_labels[label].title(),
                    color=colors[label])
     plt.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off',
                     right='off', left='off', labelleft='off')
@@ -33,6 +34,7 @@ def scatter_contexts(contexts, labels, distributions, savepath=None):
 
     if savepath is not None:
         plt.savefig(savepath)
+    plt.close()
 
 
 def contexts_by_moment(contexts, moments, savepath=None):
@@ -50,3 +52,4 @@ def contexts_by_moment(contexts, moments, savepath=None):
 
     if savepath is not None:
         plt.savefig(savepath)
+    plt.close()

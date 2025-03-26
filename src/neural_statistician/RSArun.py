@@ -12,6 +12,7 @@ from torch.utils import data
 from tqdm import tqdm
 
 import torch
+import json
 
 if torch.backends.mps.is_available():
     device = torch.device("mps")
@@ -78,20 +79,21 @@ print('Using device: ', device)
 #                          '(default: True)')
 # args = parser.parse_args()
 
-output_dir = '/global/homes/l/ljpuslar/RSA/RSA/src/neural_statistician/output'
-epochs = 50
-viz_interval = -1
+output_dir = 'output'
+epochs = 200
+viz_interval = 1
 save_interval = -1
 clip_gradients = True
 batch_size = 100
+learning_rate = 1e-3
 
-sample_size = 200
+# sample_size = 200
 n_features = 3
 c_dim = 3
 n_hidden_statistic = 3
 hidden_dim_statistic = 128
 n_stochastic = 1
-z_dim = 32
+z_dim = 100
 n_hidden = 3
 hidden_dim = 128
 print_vars = False
@@ -103,14 +105,20 @@ os.makedirs(os.path.join(output_dir, 'figures'), exist_ok=True)
 # experiment start time
 time_stamp = time.strftime("%d-%m-%Y-%H:%M:%S")
 
+viz_interval = epochs if viz_interval == -1 else viz_interval
+save_interval = epochs if save_interval == -1 else save_interval
 
-def run(model, optimizer, loaders, datasets):
+# New figure directory path
+directory_path = os.path.join(output_dir, 'figures', time_stamp)
+
+# Ensure the directory exists
+os.makedirs(directory_path, exist_ok=True)
+
+def run(model, optimizer, loaders, datasets, model_kwargs_str):
 
     train_loader, test_loader = loaders
     train_dataset, test_dataset = datasets
 
-    viz_interval = epochs if viz_interval == -1 else viz_interval
-    save_interval = epochs if save_interval == -1 else save_interval
 
     alpha = 1
     tbar = tqdm(range(epochs))
@@ -132,7 +140,7 @@ def run(model, optimizer, loaders, datasets):
         alpha *= 0.5
 
         # show test set in context space at intervals
-        if (epoch + 1) % 1 == 0:
+        if (epoch + 1) % viz_interval == 0:
             model.eval()
             contexts = []
             for batch in test_loader:
@@ -142,21 +150,24 @@ def run(model, optimizer, loaders, datasets):
                 contexts.append(context_means.data.cpu().numpy())
 
             # show coloured by distribution
-            path = output_dir + '/figures/' + time_stamp + '-{}.pdf'.format(epoch + 1)
-            scatter_contexts(contexts, test_dataset.data['labels'],
-                             test_dataset.data['distributions'], savepath=path)
+            path = directory_path + '/{}.png'.format(epoch + 1)
+            scatter_contexts(contexts, test_dataset.data['labels'], savepath=path)
 
-            # show coloured by mean
-            path = output_dir + '/figures/' + time_stamp \
-                   + '-{}-mean.pdf'.format(epoch + 1)
-            contexts_by_moment(contexts, moments=test_dataset.data['means'],
-                               savepath=path)
+            path_kwargs = directory_path + '/model_kwargs.json'
+            with open(path_kwargs, 'w') as f:
+                f.write(model_kwargs_str)
 
-            # show coloured by variance
-            path = output_dir + '/figures/' + time_stamp \
-                   + '-{}-variance.pdf'.format(epoch + 1)
-            contexts_by_moment(contexts, moments=test_dataset.data['variances'],
-                               savepath=path)
+            # # show coloured by mean
+            # path = output_dir + '/figures/' + time_stamp \
+            #        + '-{}-mean.pdf'.format(epoch + 1)
+            # contexts_by_moment(contexts, moments=test_dataset.data['means'],
+            #                    savepath=path)
+
+            # # show coloured by variance
+            # path = output_dir + '/figures/' + time_stamp \
+            #        + '-{}-variance.pdf'.format(epoch + 1)
+            # contexts_by_moment(contexts, moments=test_dataset.data['variances'],
+            #                    savepath=path)
 
         # checkpoint model at intervals
         if (epoch + 1) % save_interval == 0:
@@ -167,9 +178,16 @@ def run(model, optimizer, loaders, datasets):
 
 def main():
 
-    data_paths = ['']
+    data_paths = ['../../data/structured_data/pgun_qqbar_hadrons_a_0.68_b_0.98_sigma_0.335_N_1e4.npy', 
+    '../../data/structured_data/pgun_qqbar_hadrons_a_0.72_b_0.88_sigma_0.335_N_1e4.npy']
+    # data_paths = ['/Users/lukapuslar/Desktop/other/ASEF/Project/Code/RSA/RSA/data/structured_data/pgun_qqbar_hadrons_a_0.68_b_0.98_sigma_0.335_N_1e4.npy', 
+    # '/Users/lukapuslar/Desktop/other/ASEF/Project/Code/RSA/RSA/data/structured_data/pgun_qqbar_hadrons_a_0.72_b_0.88_sigma_0.335_N_1e4.npy']
 
-    X_train, X_test, y_train, y_test = prepare_datasets(data_paths, test_size= 0.2)
+    X_train, X_test, y_train, y_test, shape = prepare_datasets(data_paths, test_size= 0.2)
+
+    data_size = shape[0]
+    sample_size = shape[1]
+    n_features = shape[2]
 
     train_dataset = RSA_Dataset(X_train, y_train)
     test_dataset = RSA_Dataset(X_test, y_test)
@@ -201,12 +219,18 @@ def main():
         'device': device
     }
 
+    model_kwargs_str = model_kwargs.copy()
+    model_kwargs_str['nonlinearity'] = 'F.relu'
+    model_kwargs_str['device'] = str(device)
+    model_kwargs_str = json.dumps(model_kwargs_str, indent=4)
+
+
     model = Statistician(**model_kwargs)
     model.to(device)
 
-    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    run(model, optimizer, loaders, datasets)
+    run(model, optimizer, loaders, datasets, model_kwargs_str)
 
 
 if __name__ == '__main__':
