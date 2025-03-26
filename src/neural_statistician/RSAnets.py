@@ -144,7 +144,7 @@ class InferenceNetwork(nn.Module):
     """
 
     def __init__(self, batch_size, sample_size, n_features,
-                 n_hidden, hidden_dim, c_dim, z_dim, nonlinearity):
+                 n_hidden, hidden_dim, c_dim, z_dim, nonlinearity, device):
         super(InferenceNetwork, self).__init__()
         self.batch_size = batch_size
         self.sample_size = sample_size
@@ -157,6 +157,7 @@ class InferenceNetwork(nn.Module):
         self.z_dim = z_dim
 
         self.nonlinearity = nonlinearity
+        self.device = device
 
         # modules
         self.fc_x = nn.Linear(self.n_features, self.hidden_dim)
@@ -184,7 +185,7 @@ class InferenceNetwork(nn.Module):
             ez = self.fc_z(ez)
             ez = ez.view(self.batch_size, self.sample_size, self.hidden_dim)
         else:
-            ez = Variable(torch.zeros(ex.size()).cuda())
+            ez = Variable(torch.zeros(ex.size()).to(self.device))
 
         # embed c and expand for broadcast addition
         ec = self.fc_c(c)
@@ -219,7 +220,7 @@ class LatentDecoder(nn.Module):
     """
 
     def __init__(self, batch_size, sample_size, n_features,
-                 n_hidden, hidden_dim, c_dim, z_dim, nonlinearity):
+                 n_hidden, hidden_dim, c_dim, z_dim, nonlinearity, device):
         super(LatentDecoder, self).__init__()
         self.batch_size = batch_size
         self.sample_size = sample_size
@@ -232,6 +233,7 @@ class LatentDecoder(nn.Module):
         self.z_dim = z_dim
 
         self.nonlinearity = nonlinearity
+        self.device = device
 
         # modules
         self.fc_c = nn.Linear(self.c_dim, self.hidden_dim)
@@ -253,7 +255,7 @@ class LatentDecoder(nn.Module):
             ez = self.fc_z(ez)
             ez = ez.view(self.batch_size, self.sample_size, self.hidden_dim)
         else:
-            ez = Variable(torch.zeros(self.batch_size, 1, self.hidden_dim).cuda())
+            ez = Variable(torch.zeros(self.batch_size, 1, self.hidden_dim).to(self.device))
 
         # embed c and expand for broadcast addition
         ec = self.fc_c(c)

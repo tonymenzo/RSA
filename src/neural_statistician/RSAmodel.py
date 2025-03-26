@@ -22,7 +22,7 @@ class Statistician(nn.Module):
     def __init__(self, batch_size=16, sample_size=200, n_features=1,
                  c_dim=3, n_hidden_statistic=128, hidden_dim_statistic=3,
                  n_stochastic=1, z_dim=16, n_hidden=3, hidden_dim=128,
-                 nonlinearity=F.relu, print_vars=False):
+                 nonlinearity=F.relu, print_vars=False, device='cuda'):
         """
         
         :param batch_size: 
@@ -56,6 +56,7 @@ class Statistician(nn.Module):
         self.hidden_dim = hidden_dim
 
         self.nonlinearity = nonlinearity
+        self.device = device
 
         # modules
         # statistic network
@@ -66,7 +67,7 @@ class Statistician(nn.Module):
 
         z_args = (self.batch_size, self.sample_size, self.n_features,
                   self.n_hidden, self.hidden_dim, self.c_dim, self.z_dim,
-                  self.nonlinearity)
+                  self.nonlinearity, self.device)
         # inference networks
         # one for each stochastic layer
         self.inference_networks = nn.ModuleList([InferenceNetwork(*z_args)
@@ -170,7 +171,7 @@ class Statistician(nn.Module):
     def step(self, batch, alpha, optimizer, clip_gradients=True):
         assert self.training is True
 
-        inputs = Variable(batch.cuda())
+        inputs = Variable(batch.to(self.device))
         outputs = self.forward(inputs)
         loss, vlb = self.loss(outputs, weight=(alpha + 1))
 
@@ -195,7 +196,7 @@ class Statistician(nn.Module):
     @staticmethod
     def reparameterize_gaussian(mean, logvar):
         std = torch.exp(0.5 * logvar)
-        eps = Variable(torch.randn(std.size()).cuda())
+        eps = Variable(torch.randn(std.size()).to(self.device))
         return mean + std * eps
 
     @staticmethod

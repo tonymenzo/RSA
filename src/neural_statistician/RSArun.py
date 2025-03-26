@@ -11,6 +11,16 @@ from torch.nn import functional as F
 from torch.utils import data
 from tqdm import tqdm
 
+import torch
+
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
+print('Using device: ', device)
+
 # command line args
 # parser = argparse.ArgumentParser(description='Neural Statistician Synthetic Experiment')
 
@@ -126,7 +136,8 @@ def run(model, optimizer, loaders, datasets):
             model.eval()
             contexts = []
             for batch in test_loader:
-                inputs = Variable(batch.cuda(), volatile=True)
+                with torch.no_grad():
+                    inputs = batch.to(device)
                 context_means, _ = model.statistic_network(inputs)
                 contexts.append(context_means.data.cpu().numpy())
 
@@ -186,11 +197,13 @@ def main():
         'n_hidden': n_hidden,
         'hidden_dim': hidden_dim,
         'nonlinearity': F.relu,
-        'print_vars': print_vars
+        'print_vars': print_vars,
+        'device': device
     }
 
     model = Statistician(**model_kwargs)
-    model.cuda()
+    model.to(device)
+
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 
     run(model, optimizer, loaders, datasets)
