@@ -2,12 +2,20 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.decomposition import PCA
 
 
 def scatter_contexts(contexts, labels, savepath=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
+    contexts = np.array(contexts)
+    if np.shape(contexts)[1] != 3:
+        pca = PCA(n_components=3)
+        shape = np.shape(contexts)
+        contexts = contexts.reshape(shape[0] * shape[1], shape[2])
+        # print(np.shape(contexts))
+        contexts = pca.fit_transform(contexts)
     contexts = np.array(contexts).reshape(-1, 3)
 
     n = len(contexts)

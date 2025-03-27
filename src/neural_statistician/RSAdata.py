@@ -50,6 +50,16 @@ def prepare_datasets(data_paths, test_size, random_state=42, shuffle= True):
     labels = np.array(labels)
     data = torch.cat(data, dim=0)
 
+    # mask = data != 0  # Boolean mask for nonzero values
+
+    # # Compute mean and std only for nonzero values
+    # mean = data[mask].mean() if mask.any() else torch.tensor(0.0, device=data.device)
+    # std = data[mask].std(unbiased=False) if mask.any() else torch.tensor(1.0, device=data.device)  # Avoid division by zero
+
+    # Normalize only nonzero elements
+    # data = torch.where(mask, (data - mean) / (std + 1e-8), data)  # Add epsilon to prevent NaNs
+
+
 
     if shuffle == True:
         # Generate a random permutation of indices

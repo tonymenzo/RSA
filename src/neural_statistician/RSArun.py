@@ -81,21 +81,21 @@ print('Using device: ', device)
 
 output_dir = 'output'
 epochs = 200
-viz_interval = 1
+viz_interval = 5
 save_interval = -1
 clip_gradients = True
-batch_size = 100
+batch_size = 32
 learning_rate = 1e-3
 
 # sample_size = 200
 n_features = 3
-c_dim = 3
+c_dim = 32
 n_hidden_statistic = 3
-hidden_dim_statistic = 128
+hidden_dim_statistic = 256
 n_stochastic = 1
-z_dim = 100
+z_dim = 32
 n_hidden = 3
-hidden_dim = 128
+hidden_dim = 256
 print_vars = False
 
 assert output_dir is not None
