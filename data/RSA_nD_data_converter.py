@@ -98,7 +98,7 @@ event_counter = 0
 
 # Initialize padding parameters
 npad_accept_reject = 100
-npad_event = 105
+npad_event = 200
 
 print("Converting accepted-reject data...")
 for i in tqdm(range(len(lines_ar)), ncols = 100):
@@ -151,10 +151,6 @@ with open(args.data_path_fPrel, 'r') as f:
 counter = 0
 event_counter = 0
 
-# Initialize padding parameters
-npad_accept_reject = 100
-npad_event = 105
-
 for i in tqdm(range(len(lines_fPrel)), ncols = 100):
     # Events are separated at the new line delimiter
     if lines_fPrel[i] != '\n':
@@ -197,7 +193,7 @@ counter = 0
 event_counter = 0
 
 # Initialize padding parameters
-npad_event = 75
+npad_event_hadron = 75
 
 # Desired number of events
 #n_events = 1e5
@@ -215,7 +211,7 @@ with tqdm(total = len(lines), ncols = 100) as pbar:
                 arz_i = np.append(arz_i, np.array([np.array(line.split(), dtype = float)]), axis = 0)
         else:
             # Zero-pad on the event dimension and create event array
-            arz_i = np.pad(arz_i, ((0, npad_event - len(arz_i)),(0,0)))
+            arz_i = np.pad(arz_i, ((0, npad_event_hadron - len(arz_i)),(0,0)))
             with NpyAppendArray(args.write_path_hadrons) as datafile:
                 datafile.append(np.array([arz_i]))
             counter = 0
