@@ -3,6 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
 
 
 def scatter_contexts(contexts, labels, savepath=None):
@@ -15,8 +17,15 @@ def scatter_contexts(contexts, labels, savepath=None):
         shape = np.shape(contexts)
         contexts = contexts.reshape(shape[0] * shape[1], shape[2])
         # print(np.shape(contexts))
-        contexts = pca.fit_transform(contexts)
-    contexts = np.array(contexts).reshape(-1, 3)
+        # contexts = pca.fit_transform(contexts)
+    
+        # Optional: Scale the data to have zero mean and unit variance
+        scaler = StandardScaler()
+        data_scaled = scaler.fit_transform(contexts)
+
+        # Apply t-SNE for 2D or 3D visualization
+        tsne = TSNE(n_components=3)  # Use 3 for 3D visualization
+        contexts = tsne.fit_transform(data_scaled)
 
     n = len(contexts)
     labels = labels[:n]

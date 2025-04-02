@@ -89,11 +89,11 @@ learning_rate = 1e-3
 
 # sample_size = 200
 n_features = 3
-c_dim = 32
+c_dim = 128
 n_hidden_statistic = 3
 hidden_dim_statistic = 256
-n_stochastic = 1
-z_dim = 32
+n_stochastic = 3
+z_dim = 128
 n_hidden = 3
 hidden_dim = 256
 print_vars = False

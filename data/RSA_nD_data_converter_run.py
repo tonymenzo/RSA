@@ -6,25 +6,26 @@ import subprocess
 # filename_base = f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_monashaD0_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS1_bC0.88_bB0.88_bH0.88_sigma_0.335_N_1.0e+03_pid"
 
 # Define the parameters
-# aLund = 0.68  # Example value for aLund
-# bLund = 0.88  # Example value for bLund
+aLund = 0.68 # Example value for aLund
+bLund = 0.98  # Example value for bLund
 sigma = 0.335  # Example value for sigma
-nEvent = 1000  # Example value for nEvent
+nEvent = 100000  # Example value for nEvent
 
 # Define parameters
-aExtraDQuark = 0.2
+aExtraDQuark = 0.15
 aExtraUQuark = 0
 aExtraSQuark = 0
 aExtraCquark = 0
 aExtraBquark = 0
 aExtraDiquark = 0.97
 
-bNonstandardD = 0.88
-bNonstandardU = 0.88
-bNonstandardS = 1.0
-bNonstandardC = 0.88
-bNonstandardB = 0.88
-bNonstandardH = 0.88
+
+bNonstandardD = 0.98 - 0.3
+bNonstandardU = 0.98
+bNonstandardS = 0.98
+bNonstandardC = 0.98
+bNonstandardB = 0.98
+bNonstandardH = 0.98
 
 
 def format_double(value):
@@ -38,8 +39,11 @@ def format_double(value):
 
 # Construct the filename string with enforced double precision
 filename_base = (
-    f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
-    f"pgun_uubar_monash_"
+    # f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
+    f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
+    f"pgun_uubar__"
+    f"a{format_double(aLund)}_"    
+    f"b{format_double(bLund)}_"    
     f"aD{format_double(aExtraDQuark)}_"
     f"aU{format_double(aExtraUQuark)}_"
     f"aS{format_double(aExtraSQuark)}_"
@@ -77,8 +81,11 @@ print("id Path: ", id_PATH)
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_standard_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 filename_base = (
-    f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
-    f"pgun_uubar_monash"
+    f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
+    # f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
+    f"pgun_uubar__"
+    f"a{aLund}_"
+    f"b{bLund}_"
     f"aD{aExtraDQuark}_"
     f"aU{aExtraUQuark}_"
     f"aS{aExtraSQuark}_"
