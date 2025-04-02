@@ -1,2 +1,5 @@
 data/structured_data/
 data/raw_data/
+src/neural_statistician/output
+data/weights
+data/data_for_git
