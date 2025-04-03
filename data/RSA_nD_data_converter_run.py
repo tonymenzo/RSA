@@ -12,15 +12,15 @@ sigma = 0.335  # Example value for sigma
 nEvent = 100000  # Example value for nEvent
 
 # Define parameters
-aExtraDQuark = 0.15
-aExtraUQuark = 0
+aExtraDQuark = 0.04
+aExtraUQuark = 0.04
 aExtraSQuark = 0
 aExtraCquark = 0
 aExtraBquark = 0
 aExtraDiquark = 0.97
 
 
-bNonstandardD = 0.98 - 0.3
+bNonstandardD = 0.88
 bNonstandardU = 0.98
 bNonstandardS = 0.98
 bNonstandardC = 0.98
@@ -32,6 +32,7 @@ def format_double(value):
     # if value == 0:
     #     return f"{value}"
     if value == int(value):
+        print(value)
         return f"{int(value)}"
     else:
         return f"{value}"
@@ -41,7 +42,7 @@ def format_double(value):
 filename_base = (
     # f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
     f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
-    f"pgun_uubar__"
+    f"pgun_uubar_allhad_"
     f"a{format_double(aLund)}_"    
     f"b{format_double(bLund)}_"    
     f"aD{format_double(aExtraDQuark)}_"
@@ -83,7 +84,7 @@ print("id Path: ", id_PATH)
 filename_base = (
     f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
     # f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
-    f"pgun_uubar__"
+    f"pgun_uubar_allhad_"
     f"a{aLund}_"
     f"b{bLund}_"
     f"aD{aExtraDQuark}_"

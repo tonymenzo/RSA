@@ -100,7 +100,7 @@ event_counter = 0
 
 # Initialize padding parameters
 npad_accept_reject = 100
-npad_event = 200
+npad_event = 250
 
 print("Converting accepted-reject data...")
 for i in tqdm(range(len(lines_ar)), ncols = 100):

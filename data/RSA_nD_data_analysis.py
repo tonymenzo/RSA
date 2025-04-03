@@ -1,0 +1,162 @@
+"""
+Analysis of finalTwo efficiency
+"""
+
+import numpy as np
+from npy_append_array import NpyAppendArray
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+import argparse
+import sys
+import os
+
+
+
+data_path_accept_reject = "/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_allhad_a0.68_b0.98_aD0.04_aU0.04_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+05_accept_reject_z.txt"
+
+# Read in the lines of from mT2 and accept-reject data
+with open (data_path_accept_reject, 'r') as f:
+    lines_ar = f.readlines()
+
+# with open(args.data_path_mT2, 'r') as f:
+#     lines_mT2 = f.readlines()
+
+# with open(args.data_path_id, 'r') as f:
+#     lines_id = f.readlines()
+
+######################################################
+#------------- Convert accept-reject ----------------#
+######################################################
+
+# Initialize dummy counters
+counter = 0
+event_counter = 0
+
+# Initialize padding parameters
+npad_accept_reject = 100
+npad_event = 250
+
+print("Converting accepted-reject data...")
+for i in tqdm(range(len(lines_ar)), ncols = 100):
+    # Events are separated at the new line delimiter
+    if lines_ar[i] != '\n':
+        # Initialize the accept-reject array and make sure it is not the accept-reject delimiter
+        if counter == 0 and lines_ar[i] != '&\n':
+            # Zero-pad the accept-reject array and create array
+            arz_i = np.array([np.pad(np.array(lines_ar[i].split(), dtype = float), (0, npad_accept_reject - len(lines_ar[i].split())))])
+            # Prepend the squared transverse mass
+            # arz_i = np.insert(arz_i, 0, lines_mT2[i], axis = 1)
+            # # Prepend the id (new first, then old)
+            # arz_i = np.insert(arz_i, 0, int(lines_id[i].split()[1]), axis = 1)
+            # arz_i = np.insert(arz_i, 0, int(lines_id[i].split()[0]), axis = 1)
+            # Iterate the counter
+            counter += 1
+        elif lines_ar[i] != '&\n':
+            # Zero-pad the accept-reject array and append
+            arz_I = np.array([np.pad(np.array(lines_ar[i].split(), dtype = float), (0, npad_accept_reject - len(lines_ar[i].split())))])
+            # Prepend the squared transverse mass
+            # arz_I = np.insert(arz_I, 0, lines_mT2[i], axis = 1)
+            # # Prepend the id (new first, then old)
+            # arz_I = np.insert(arz_I, 0, int(lines_id[i].split()[1]), axis = 1)
+            # arz_I = np.insert(arz_I, 0, int(lines_id[i].split()[0]), axis = 1)
+            # Append to the accept-reject array
+            arz_i = np.append(arz_i, arz_I, axis = 0)
+        else:
+            continue
+    else:
+        # Zero-pad on the event dimension and create event array
+        if npad_event - len(arz_i) < 0:
+            print('\nToo many hadrons in event, change padding size to: ', len(arz_i))
+        arz_i = np.pad(arz_i, ((0, npad_event - len(arz_i)),(0,0)))
+        # print(np.shape(arz_i))
+        # Write to .npy file located at write_path
+        counter = 0
+        event_counter += 1
+    if i == 3:
+        break
+print('arz_i: ', arz_i)
+
+# Print the dataset size
+# pgun_accept_reject = np.load(args.write_path_id_mT2_accept_reject, mmap_mode = 'r')
+# print("The accept-reject dataset shape is:", pgun_accept_reject.shape)
+
+# ######################################################
+# #-------------- Convert fPrel data ------------------#
+# ######################################################
+# with open(args.data_path_fPrel, 'r') as f:
+#     lines_fPrel = f.readlines()
+
+# # Initialize dummy counters
+# counter = 0
+# event_counter = 0
+
+# for i in tqdm(range(len(lines_fPrel)), ncols = 100):
+#     # Events are separated at the new line delimiter
+#     if lines_fPrel[i] != '\n':
+#         # Initialize the accept-reject array and make sure it is not the accept-reject delimiter
+#         if counter == 0 and lines_ar[i] != '&\n':
+#             # Zero-pad the accept-reject array and create array
+#             arz_i = np.array([np.pad(np.array(lines_fPrel[i].split(), dtype = float), (0, npad_accept_reject - len(lines_fPrel[i].split())))])
+#             counter += 1
+#         elif lines_fPrel[i] != '&\n':
+#             # Zero-pad the accept-reject array and append
+#             arz_I = np.array([np.pad(np.array(lines_fPrel[i].split(), dtype = float), (0, npad_accept_reject - len(lines_fPrel[i].split())))])
+#             arz_i = np.append(arz_i, arz_I, axis = 0)
+#         else:
+#             continue
+            
+#     else:
+#         # Zero-pad on the event dimension and create event array
+#         arz_i = np.pad(arz_i, ((0, npad_event - len(arz_i)),(0,0)))
+#         # Write to .npy file located at write_path
+#         with NpyAppendArray(args.write_path_fPrel) as datafile:
+#             datafile.append(np.array([arz_i]))
+#         counter = 0
+#         event_counter += 1
+#         #if event_counter == n_events: break
+
+# pgun_fPrel_monash_prime = np.load(args.write_path_fPrel, mmap_mode = "r")
+# print("The fPrel dataset shape is:", pgun_fPrel_monash_prime.shape)
+
+# ######################################################
+# #-------------- Convert hadron data -----------------#
+# ######################################################
+
+# print("Converting hadron data...")
+
+# with open (args.data_path_hadrons, 'r') as f:
+#     lines = f.readlines()
+
+# # Initialize dummy counters
+# counter = 0
+# event_counter = 0
+
+# # Initialize padding parameters
+# npad_event_hadron = 75
+
+# # Desired number of events
+# #n_events = 1e5
+
+# with tqdm(total = len(lines), ncols = 100) as pbar:
+#     for line in lines:
+#         # Events are separated at the new line delimiter
+#         if line != '\n':
+#             if counter == 0:
+#                 # Zero-pad the accept-reject array and create array
+#                 arz_i = np.array([np.array(line.split(), dtype = float)])
+#                 counter += 1
+#             else:
+#                 # Zero-pad the accept-reject array and append
+#                 arz_i = np.append(arz_i, np.array([np.array(line.split(), dtype = float)]), axis = 0)
+#         else:
+#             # Zero-pad on the event dimension and create event array
+#             arz_i = np.pad(arz_i, ((0, npad_event_hadron - len(arz_i)),(0,0)))
+#             with NpyAppendArray(args.write_path_hadrons) as datafile:
+#                 datafile.append(np.array([arz_i]))
+#             counter = 0
+#         pbar.update(1)
+
+# # Print the dataset size
+# pgun_hadrons = np.load(args.write_path_hadrons, mmap_mode = 'r')
+# print("The hadron dataset shape is:", pgun_hadrons.shape)
+# print('Finished!')
