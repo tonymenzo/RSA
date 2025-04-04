@@ -12,8 +12,8 @@ sigma = 0.335  # Example value for sigma
 nEvent = 100000  # Example value for nEvent
 
 # Define parameters
-aExtraDQuark = 0.04
-aExtraUQuark = 0.04
+aExtraDQuark = 0.1
+aExtraUQuark = -0.1
 aExtraSQuark = 0
 aExtraCquark = 0
 aExtraBquark = 0
@@ -21,7 +21,7 @@ aExtraDiquark = 0.97
 
 
 bNonstandardD = 0.88
-bNonstandardU = 0.98
+bNonstandardU = 1.08
 bNonstandardS = 0.98
 bNonstandardC = 0.98
 bNonstandardB = 0.98
