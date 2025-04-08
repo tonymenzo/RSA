@@ -206,7 +206,6 @@ class RSA_tuner():
                 
                 
                 # Compute Performance Metrics
-                print(weights.shape)
                 mu = torch.mean(weights)
                 mu_sig = torch.std(1-weights)
                 N_eff = torch.sum(weights) ** 2 / torch.sum(weights ** 2) / len(weights)

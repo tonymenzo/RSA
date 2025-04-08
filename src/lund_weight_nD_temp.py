@@ -7,7 +7,7 @@
 
 import torch
 from torch import nn
-
+import numpy as np
 
 class LundWeight(nn.Module):
     def __init__(self, params_base, params, over_sample_factor):
@@ -59,6 +59,7 @@ class LundWeight(nn.Module):
         aIsC = (torch.abs(a - c) < self.AFROMC)
         
         # Initialize zMax tensor with the same shape as inputs
+        # zMax = torch.zeros_like(a, dtype = torch.float64)
         zMax = torch.zeros_like(a, dtype = a.dtype)
         
         # Handle special case where a is zero
@@ -187,13 +188,7 @@ class LundWeight(nn.Module):
             fVal = torch.exp(torch.clamp(fExp, min=-self.EXPMAX, max=self.EXPMAX))
             
             # Assign computed values back to the likelihood tensor
-            # print(type(fVal), type(likelihood))
             likelihood[combined_mask] = fVal
-            # print(combined_mask.shape)
-            # print(combined_mask)
-            # print('ISZERO: ', (likelihood == 0).any())
-            # print(likelihood.shape)
-            # print(likelihood[0])
 
         return likelihood
 
@@ -211,31 +206,27 @@ class LundWeight(nn.Module):
         """
         batch_size = z_mT2_pid.shape[0]
         weights = torch.ones(batch_size)
-        # print("weights: ", weights)
+
         # Extract the (absolute value) pid values
         pid_old = torch.abs(z_mT2_pid[:, :, 0])
         pid_new = torch.abs(z_mT2_pid[:, :, 1])
 
         # Compute and create a, b, and c tensors for base and alternative parameters (This is a bottleneck, there isn't a good way to vectorize)
-        a_old_base = torch.stack([torch.stack([self.params_base[f'a{int(pid_old[i,j].item())}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        a_base = torch.stack([torch.stack([self.params_base[f'a{int(pid_new[i,j].item())}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        b_base = torch.stack([torch.stack([self.params_base[f'b{int(pid_new[i,j].item())}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_old_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        b_base = torch.stack([torch.stack([self.params_base[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
         c_base = 1 + a_base - a_old_base
+        temp = np.array([([f'a{int(pid_new[i,j].item())}' for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)])
 
-        a_old_alt = torch.stack([torch.stack([self.params[f'a{int(pid_old[i,j].item())}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        a_alt = torch.stack([torch.stack([self.params[f'a{int(pid_new[i,j].item())}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        b_alt = torch.stack([torch.stack([self.params[f'b{int(pid_new[i,j].item())}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_old_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        b_alt = torch.stack([torch.stack([self.params[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
         c_alt = 1 + a_alt - a_old_alt
-        
-        # print('a_old')
-        # print(a_old_base[0])
-        # print(a_old_base.shape)
-        # print(a_old_alt)
 
         # Create masks for base and alternate parameters (masks should be the same)
         a_mask = a_base != 0.
         b_mask = b_base != 0.
-        c_mask = c_base != 0.
+        c_mask = a_base != 0.
 
         # Extract the mT2 values 
         mT2 = z_mT2_pid[:, :, 2]
@@ -262,27 +253,19 @@ class LundWeight(nn.Module):
         fPrel_reject = fPrel[:, :, 1:]
         fPrel_reject = fPrel_reject.view(fPrel_reject.shape[0], fPrel_reject.shape[1], fPrel_reject.shape[2])
         fPrel_reject_mask = fPrel_reject != 0.
-        # print(torch.isnan(fPrel_reject).any())
-        # print(torch.isnan(z_reject).any())
-        # print(torch.isnan(z_accept).any())
-        # print(torch.isnan(mT2_mask).any())
-        # print(torch.isnan(a_alt).any())
-        # print(torch.isnan(b_alt).any())
+
         # Compute the accept and reject weights
         accept_weights = self.likelihood(z_accept, mT2, a_alt, b_alt, c_alt, z_mask = z_accept_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask) \
                          / self.likelihood(z_accept, mT2, a_base, b_base, c_base, z_mask = z_accept_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask)    
         reject_weights = ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_alt, b_alt, c_alt, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask)) \
                          / ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_base, b_base, c_base, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask))
 
-        # print('here: ', self.likelihood(z_accept, mT2, a_base, b_base, c_base, z_mask = z_accept_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask))
-        # print('here 0: ', (self.likelihood(z_accept, mT2, a_base, b_base, c_base, z_mask = z_accept_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask) == 0).any())
-        # print('here 0: ', (self.likelihood(z_accept, mT2, a_base, b_base, c_base, z_mask = z_accept_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask) == 0).shape)
         # Flatten the weights
+
         accept_weights = (accept_weights * z_accept_mask).masked_fill(z_accept_mask == 0, 1).prod(dim=2).prod(dim=1)
         reject_weights = (reject_weights * z_reject_mask).masked_fill(z_reject_mask == 0, 1).prod(dim=2).prod(dim=1)
             
         # The final event weight is the product of accepted and rejected weights
         weights = accept_weights * reject_weights
-        # print("weights: ", weights)
 
         return weights

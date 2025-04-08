@@ -192,26 +192,26 @@ from wasserstein_loss import WassersteinLoss
 #         # Return the final tuned parameters as well as the full search space path     
 #         return np.array(np.array([self.weight_nexus.params[k].clone().detach().numpy() for k,v in self.weight_nexus.params.items()])), params_array
     
-#     def RSA_flow(self, optimizer, a_b_c_init_grid):
+#     def RSA_flow(self, optimizer, a_b_init_grid):
 #         """
 #         Generate RSA gradient flow and loss landscape data
 
 #         optimizer: Specified network optimizer
-#         a_b_c_init_grid: Initial parameter grid for the loss landscape (parameter plane with loss magnitudes and gradients)
+#         a_b_init_grid: Initial parameter grid for the loss landscape (parameter plane with loss magnitudes and gradients)
 #         """
 #         # Initialize gradient tensor
-#         a_b_c_gradient = torch.zeros(len(a_b_c_init_grid), 2)
-#         loss_grid = torch.zeros(len(a_b_c_init_grid))
-#         mu_metric = torch.zeros(len(a_b_c_init_grid),2)
-#         N_eff_metric = torch.zeros(len(a_b_c_init_grid))
+#         a_b_gradient = torch.zeros(len(a_b_init_grid), 2)
+#         loss_grid = torch.zeros(len(a_b_init_grid))
+#         mu_metric = torch.zeros(len(a_b_init_grid),2)
+#         N_eff_metric = torch.zeros(len(a_b_init_grid))
 
 #         device = 'cpu'
 #         init_counter = 0
-#         for a_b_c_init in tqdm(a_b_c_init_grid, ncols=100):
+#         for a_b_init in tqdm(a_b_init_grid, ncols=100):
 #             # Create an intermediate gradient tensor
-#             a_b_c_gradient_i = torch.zeros(2)
+#             a_b_gradient_i = torch.zeros(2)
 #             # Initialize new weight module with different initial parameters
-#             self.weight_nexus = LundWeight(self.params_base, a_b_c_init, over_sample_factor = self.over_sample_factor)
+#             self.weight_nexus = LundWeight(self.params_base, a_b_init, over_sample_factor = self.over_sample_factor)
 #             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
 #                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
 #                 # Reset the gradients
@@ -242,14 +242,14 @@ from wasserstein_loss import WassersteinLoss
 #                         switch += 1
 #                         print('a:', param.clone().detach().numpy())
 #                         print('Gradient of a:', param.grad.clone().detach().numpy())
-#                         a_b_c_gradient_i[0] = param.grad.clone().detach()
+#                         a_b_gradient_i[0] = param.grad.clone().detach()
 #                     else:
 #                         print('b:', param.clone().detach().numpy())
 #                         print('Gradient of b:', param.grad.clone().detach().numpy())
-#                         a_b_c_gradient_i[1] = param.grad.clone().detach()
+#                         a_b_gradient_i[1] = param.grad.clone().detach()
 #                 print('----------------------------------------------')
 #             # Write to the master gradient tensor
-#             a_b_c_gradient[init_counter] = a_b_c_gradient_i.clone()
+#             a_b_gradient[init_counter] = a_b_gradient_i.clone()
 #             # Write to the master loss tensor
 #             loss_grid[init_counter] = loss.clone().detach()
 #             # Metrics:
@@ -259,10 +259,10 @@ from wasserstein_loss import WassersteinLoss
 #             init_counter += 1
 
 #         # Convert the gradient and loss tensors to numpy arrays
-#         a_b_c_gradient = a_b_c_gradient.numpy()
+#         a_b_gradient = a_b_gradient.numpy()
 #         loss_grid = loss_grid.numpy()
 #         # Return the gradients and losses
-#         return a_b_c_gradient, loss_grid, [mu_metric, N_eff_metric]
+#         return a_b_gradient, loss_grid, [mu_metric, N_eff_metric]
 
 class RSA_nD_tuner():
     def __init__(self, epochs, dim_multiplicity, dim_accept_reject, over_sample_factor, params_base,
@@ -295,6 +295,7 @@ class RSA_nD_tuner():
             self.params_init = self.params_base
         else:
             self.params_init = params_init
+
         # Training data
         self.exp_observable = exp_observable_dataloader
         self.sim_observable_base = sim_observable_dataloader
@@ -330,7 +331,6 @@ class RSA_nD_tuner():
         batch_counter = 0
         # Start the tuning (training) loop
         for i in tqdm(range(self.epochs), ncols = 100):
-            epoch_loss = 0
             device = "cpu"
             batch_counter = 0
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
@@ -347,7 +347,6 @@ class RSA_nD_tuner():
                 print('Loss:', loss.clone().detach().numpy())
                 # Compute gradients via backprop
                 # torch.autograd.set_detect_anomaly(True)
-                epoch_loss += loss.clone().detach().numpy()
                 loss.backward()
                 
                 if self.print_details:
@@ -378,74 +377,69 @@ class RSA_nD_tuner():
                 # Record the tuned parameters
                 params_array = np.append(params_array, array_temp)
                 
-                # if self.print_details:
-                #     import matplotlib.pyplot as plt
-                #     # Check the histograms
-                #     _, bins_exp = np.histogram(w[:].detach().numpy())
-                #     _, bins_sim = np.histogram(z[:].detach().numpy())
-                #     _, bins_fine_tuned = np.histogram(z[:].detach().numpy(), weights = weights.detach().numpy())
+                if self.print_details:
+                    import matplotlib.pyplot as plt
+                    # Check the histograms
+                    _, bins_exp = np.histogram(w[:].detach().numpy())
+                    _, bins_sim = np.histogram(z[:].detach().numpy())
+                    _, bins_fine_tuned = np.histogram(z[:].detach().numpy(), weights = weights.detach().numpy())
     
-                #     min_exp, max_exp = bins_exp[0], bins_exp[-1]
-                #     min_sim, max_sim = bins_sim[0], bins_sim[-1]
-                #     min_fine_tuned, max_fine_tuned = bins_fine_tuned[0], bins_fine_tuned[-1]
+                    min_exp, max_exp = bins_exp[0], bins_exp[-1]
+                    min_sim, max_sim = bins_sim[0], bins_sim[-1]
+                    min_fine_tuned, max_fine_tuned = bins_fine_tuned[0], bins_fine_tuned[-1]
                     
-                #     # Plot multiplicity
-                #     fig_1, ax_1 = plt.subplots(1,1,figsize=(6,5))
-                #     ax_1.hist(z[:].detach().numpy(), int(max_sim - min_sim), alpha = 0.5, density = True, edgecolor = 'black', label = 'Base')#label = r'$\mathrm{Base}$')
-                #     ax_1.hist(w[:].detach().numpy(), int(max_exp - min_exp), alpha = 0.5, density = True, edgecolor = 'black', label = 'Exp.')#label = r'$\mathrm{Exp.}$')
-                #     ax_1.hist(z[:].detach().numpy(), int(max_fine_tuned - min_fine_tuned), weights = weights.detach().numpy(), alpha = 0.5, density = True, edgecolor = 'black', label = 'Tuned')#label = r'$\mathrm{Tuned}$')
-                #     ax_1.set_xlabel(r'$N_h$')
-                #     ax_1.set_ylabel(r'$\mathrm{Count}$')
-                #     ax_1.legend(frameon=False)
-                #     fig_1.tight_layout()
-                #     fig_1.savefig(self.results_dir + r'/ARRG_multiplicity_base_vs_exp_vs_tuned.pdf', dpi=300, pad_inches = .1, bbox_inches = 'tight')
+                    # Plot multiplicity
+                    fig_1, ax_1 = plt.subplots(1,1,figsize=(6,5))
+                    ax_1.hist(z[:].detach().numpy(), int(max_sim - min_sim), alpha = 0.5, density = True, edgecolor = 'black', label = 'Base')#label = r'$\mathrm{Base}$')
+                    ax_1.hist(w[:].detach().numpy(), int(max_exp - min_exp), alpha = 0.5, density = True, edgecolor = 'black', label = 'Exp.')#label = r'$\mathrm{Exp.}$')
+                    ax_1.hist(z[:].detach().numpy(), int(max_fine_tuned - min_fine_tuned), weights = weights.detach().numpy(), alpha = 0.5, density = True, edgecolor = 'black', label = 'Tuned')#label = r'$\mathrm{Tuned}$')
+                    ax_1.set_xlabel(r'$N_h$')
+                    ax_1.set_ylabel(r'$\mathrm{Count}$')
+                    ax_1.legend(frameon=False)
+                    fig_1.tight_layout()
+                    fig_1.savefig(self.results_dir + r'/ARRG_multiplicity_base_vs_exp_vs_tuned.pdf', dpi=300, pad_inches = .1, bbox_inches = 'tight')
     
-                #     # Plot the search space
-                #     a_b_target = np.array([0.68, 0.98]) # Monash
-                #     fig_2, ax_2 = plt.subplots(1,1,figsize=(6,5))
-                #     ax_2.plot(np.array(a_b)[:,0], np.array(a_b)[:,1], 'o-', ms = 1.5, alpha = 1.0, color = 'blue')
-                #     ax_2.plot(a_b_target[0], a_b_target[1], 'x', color='green', label = 'Target')#label = r'$\mathrm{Target}$')
-                #     ax_2.plot(self.params_init[0].clone().detach().numpy(), self.params_init[1].clone().detach().numpy(), 'x', color = 'red', label = 'Initial')#label = r'$\mathrm{Initial}$')
-                #     # Set relevant axis limits
-                #     ax_2.set_xlim(a_b_target[0]-0.1, self.params_base[0].clone().detach().numpy()+0.1)
-                #     ax_2.set_ylim(self.params_base[0].clone().detach().numpy()-0.1, a_b_target[1]+0.1)
-                #     ax_2.set_xlabel(r'$a$')
-                #     ax_2.set_ylabel(r'$b$')
-                #     ax_2.legend(frameon = False, loc = 'upper right')
-                #     fig_2.tight_layout()
-                #     fig_2.savefig(self.results_dir + r'/ARRG_search_space.pdf', dpi=300, pad_inches = .1, bbox_inches = 'tight')
+                    # Plot the search space
+                    a_b_target = np.array([0.68, 0.98]) # Monash
+                    fig_2, ax_2 = plt.subplots(1,1,figsize=(6,5))
+                    ax_2.plot(np.array(a_b)[:,0], np.array(a_b)[:,1], 'o-', ms = 1.5, alpha = 1.0, color = 'blue')
+                    ax_2.plot(a_b_target[0], a_b_target[1], 'x', color='green', label = 'Target')#label = r'$\mathrm{Target}$')
+                    ax_2.plot(self.params_init[0].clone().detach().numpy(), self.params_init[1].clone().detach().numpy(), 'x', color = 'red', label = 'Initial')#label = r'$\mathrm{Initial}$')
+                    # Set relevant axis limits
+                    ax_2.set_xlim(a_b_target[0]-0.1, self.params_base[0].clone().detach().numpy()+0.1)
+                    ax_2.set_ylim(self.params_base[0].clone().detach().numpy()-0.1, a_b_target[1]+0.1)
+                    ax_2.set_xlabel(r'$a$')
+                    ax_2.set_ylabel(r'$b$')
+                    ax_2.legend(frameon = False, loc = 'upper right')
+                    fig_2.tight_layout()
+                    fig_2.savefig(self.results_dir + r'/ARRG_search_space.pdf', dpi=300, pad_inches = .1, bbox_inches = 'tight')
                     
-                #     # Close figures so RAM isn't soaked up
-                #     plt.close(fig_1)
-                #     plt.close(fig_2)
+                    # Close figures so RAM isn't soaked up
+                    plt.close(fig_1)
+                    plt.close(fig_2)
         # Return the final tuned parameters as well as the full search space path     
         return np.array([v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]), params_array
     
-    def RSA_flow(self, optimizer, a_b_c_init_grid):
+    def RSA_flow(self, optimizer, a_b_init_grid):
         """
         Generate RSA gradient flow and loss landscape data
 
         optimizer: Specified network optimizer
-        a_b_c_init_grid: Initial parameter grid for the loss landscape (parameter plane with loss magnitudes and gradients)
+        a_b_init_grid: Initial parameter grid for the loss landscape (parameter plane with loss magnitudes and gradients)
         """
         # Initialize gradient tensor
-        a_b_c_gradient = torch.zeros(len(a_b_c_init_grid), 3)
-        loss_grid = torch.zeros(len(a_b_c_init_grid))
-        mu_metric = torch.zeros(len(a_b_c_init_grid),2)
-        N_eff_metric = torch.zeros(len(a_b_c_init_grid))
-
+        a_b_gradient = torch.zeros(len(a_b_init_grid), 2)
+        loss_grid = torch.zeros(len(a_b_init_grid))
+        mu_metric = torch.zeros(len(a_b_init_grid),2)
+        N_eff_metric = torch.zeros(len(a_b_init_grid))
 
         device = 'cpu'
         init_counter = 0
-        for a_b_c_init in tqdm(a_b_c_init_grid, ncols=100):
-            a_b_c_init_dict = self.params_init.copy()
-            for i,(k,v) in enumerate(a_b_c_init_dict.items()):
-                a_b_c_init_dict[k] = a_b_c_init[i]
-
+        for a_b_init in tqdm(a_b_init_grid, ncols=100):
             # Create an intermediate gradient tensor
-            a_b_c_gradient_i = torch.zeros(3)
+            a_b_gradient_i = torch.zeros(2)
             # Initialize new weight module with different initial parameters
-            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor)
+            self.weight_nexus = LundWeight(self.params_base, a_b_init, over_sample_factor = self.over_sample_factor)
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
                 # Reset the gradients
@@ -458,6 +452,7 @@ class RSA_nD_tuner():
                 
                 
                 # Compute Performance Metrics
+                print(weights.shape)
                 mu = torch.mean(weights)
                 mu_sig = torch.std(1-weights)
                 N_eff = torch.sum(weights) ** 2 / torch.sum(weights ** 2) / len(weights)
@@ -470,21 +465,19 @@ class RSA_nD_tuner():
                 #print('a:', self.weight_nexus.parameters()[0], 'b:', self.weight_nexus.parameters()[1])
                 print('Loss:', loss.clone().detach().numpy())
                 switch = 0
-                for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
-                    print(param.clone().detach().numpy())
-                    a_b_c_gradient_i[ip] = param.clone().detach()
-                    # if switch == 0:
-                    #     switch += 1
-                    #     print('a:', param.clone().detach().numpy())
-                    #     print('Gradient of a:', param.grad.clone().detach().numpy())
-                    #     a_b_c_gradient_i[0] = param.grad.clone().detach()
-                    # else:
-                    #     print('b:', param.clone().detach().numpy())
-                    #     print('Gradient of b:', param.grad.clone().detach().numpy())
-                    #     a_b_c_gradient_i[1] = param.grad.clone().detach()
+                for param in self.weight_nexus.parameters():
+                    if switch == 0:
+                        switch += 1
+                        print('a:', param.clone().detach().numpy())
+                        print('Gradient of a:', param.grad.clone().detach().numpy())
+                        a_b_gradient_i[0] = param.grad.clone().detach()
+                    else:
+                        print('b:', param.clone().detach().numpy())
+                        print('Gradient of b:', param.grad.clone().detach().numpy())
+                        a_b_gradient_i[1] = param.grad.clone().detach()
                 print('----------------------------------------------')
             # Write to the master gradient tensor
-            a_b_c_gradient[init_counter] = a_b_c_gradient_i.clone()
+            a_b_gradient[init_counter] = a_b_gradient_i.clone()
             # Write to the master loss tensor
             loss_grid[init_counter] = loss.clone().detach()
             # Metrics:
@@ -494,7 +487,7 @@ class RSA_nD_tuner():
             init_counter += 1
 
         # Convert the gradient and loss tensors to numpy arrays
-        a_b_c_gradient = a_b_c_gradient.numpy()
+        a_b_gradient = a_b_gradient.numpy()
         loss_grid = loss_grid.numpy()
         # Return the gradients and losses
-        return a_b_c_gradient, loss_grid, [mu_metric, N_eff_metric]
+        return a_b_gradient, loss_grid, [mu_metric, N_eff_metric]
