@@ -55,10 +55,12 @@ class RSA_nD_tuner():
         self.dim_accept_reject = dim_accept_reject
         self.over_sample_factor = over_sample_factor
         self.params_base = params_base
+        # Use initial guess of parameters to check which parameters to tune
         if params_init == None:
             self.params_init = self.params_base
         else:
-            self.params_init = params_init
+            self.params_init = params_init 
+
         # Training data
         self.exp_observable = exp_observable_dataloader
         self.sim_observable_base = sim_observable_dataloader

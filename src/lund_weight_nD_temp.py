@@ -195,7 +195,7 @@ class LundWeight(nn.Module):
     def sigma_weights(self, px, py):
         sigma_base = self.params_base['sigma']
         sigma_target = self.params['sigma']
-        kappa = - (torch.pow(px,2) + torch.pow(py,2))/2
+        kappa = - (torch.pow(px,2) + torch.pow(py,2))/(2 * torch.pow(sigma_base, 2))
         ratio = torch.pow(sigma_base,2)/torch.pow(sigma_target,2)
         weights = ratio * torch.e(-kappa * (ratio-1))
         return weights
@@ -208,7 +208,6 @@ class LundWeight(nn.Module):
         Args:
             z_mT2 (torch.Tensor): Tensor containing mT2 and z accept-reject data 
             fPrel (torch.Tensor): Tensor containing fPrel values
-
         Returns:
             weights (torch.Tensor): Computed event weights
         """
@@ -274,8 +273,9 @@ class LundWeight(nn.Module):
         accept_weights = (accept_weights * z_accept_mask).masked_fill(z_accept_mask == 0, 1).prod(dim=2).prod(dim=1)
         reject_weights = (reject_weights * z_reject_mask).masked_fill(z_reject_mask == 0, 1).prod(dim=2).prod(dim=1)
         
-        px,py = ... #add px,py
+        # Add weights for reweighting sigma_pT
         weights_sigma = self.sigma_weights(px,py)
+
         # The final event weight is the product of accepted and rejected weights
         weights = accept_weights * reject_weights * weights_sigma
 
