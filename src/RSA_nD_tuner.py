@@ -216,8 +216,8 @@ class RSA_nD_tuner():
                 # Compute the weights
                 weights = self.weight_nexus(x, y)
                 # Compute the loss
-                loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
-                # loss = self.wasserstein_loss(z, w, weights)
+                # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
+                loss = self.wasserstein_loss(z, w, weights)
                 
                 
                 # Compute Performance Metrics
@@ -233,7 +233,7 @@ class RSA_nD_tuner():
                 print('Loss:', loss.clone().detach().numpy())
                 for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
                     print(param.clone().detach().numpy())
-                    a_b_c_gradient_i[ip] = param.clone().detach()
+                    a_b_c_gradient_i[ip] = param.grad.clone().detach()
                     # if switch == 0:
                     #     switch += 1
                     #     print('a:', param.clone().detach().numpy())
