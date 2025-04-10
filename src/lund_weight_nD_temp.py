@@ -192,6 +192,14 @@ class LundWeight(nn.Module):
 
         return likelihood
 
+    def sigma_weights(self, px, py):
+        sigma_base = self.params_base['sigma']
+        sigma_target = self.params['sigma']
+        kappa = - (torch.pow(px,2) + torch.pow(py,2))/2
+        ratio = torch.pow(sigma_base,2)/torch.pow(sigma_target,2)
+        weights = ratio * torch.e(-kappa * (ratio-1))
+        return weights
+
     def forward(self, z_mT2_pid, fPrel):
         """
         Forward pass of the weight module -- consists of computing the event weights for a given batch
@@ -260,12 +268,15 @@ class LundWeight(nn.Module):
         reject_weights = ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_alt, b_alt, c_alt, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask)) \
                          / ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_base, b_base, c_base, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask))
 
-        # Flatten the weights
 
+
+        # Flatten the weights
         accept_weights = (accept_weights * z_accept_mask).masked_fill(z_accept_mask == 0, 1).prod(dim=2).prod(dim=1)
         reject_weights = (reject_weights * z_reject_mask).masked_fill(z_reject_mask == 0, 1).prod(dim=2).prod(dim=1)
-            
+        
+        px,py = ... #add px,py
+        weights_sigma = self.sigma_weights(px,py)
         # The final event weight is the product of accepted and rejected weights
-        weights = accept_weights * reject_weights
+        weights = accept_weights * reject_weights * weights_sigma
 
         return weights
