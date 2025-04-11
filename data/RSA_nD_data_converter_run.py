@@ -125,6 +125,3 @@ args = [
 # Call the script with the arguments
 subprocess.run(args)
 
-
-# '/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_monash_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS1.0_bC0.88_bB0.88_bH0.88_sigma_0.335_N_1.0e+03_accept_reject_z.txt'
-# /global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/pgun_uubar_monash_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.88_bS1_bC0.88_bB0.88_bH0.88_sigma_0.335_N_1.0e+03_accept_reject_z.txt

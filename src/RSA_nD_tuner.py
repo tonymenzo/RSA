@@ -15,15 +15,15 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 import importlib
-import lund_weight_nD_temp
+import lund_weight_nD as lund_weight_nD
 import pseudo_chi2_loss
 import wasserstein_loss
 
-importlib.reload(lund_weight_nD_temp)
+importlib.reload(lund_weight_nD)
 importlib.reload(pseudo_chi2_loss)
 importlib.reload(wasserstein_loss)
 
-from lund_weight_nD_temp import LundWeight
+from lund_weight_nD import LundWeight
 from pseudo_chi2_loss import PseudoChiSquareLoss
 from wasserstein_loss import WassersteinLoss
 
@@ -45,6 +45,7 @@ class RSA_nD_tuner():
             sim_z_dataloader (string): ---------- Path to sim model kinematics generating the global observable
             exp_observable_dataloader (string): - Path to desired (experimental) global distribution (training data)
             params_init (torch tensor): --------- Initial parameters for the Lund weight module (if None, the base parameters are used)
+            !NOTE! params_init define the parameters to be reweighted
             print_details (bool): --------------- Option to output intermediate results during training
             results_dir (string): --------------- Option for path to store results (if the directory doesn't exist, it will be created)
         """
@@ -59,6 +60,7 @@ class RSA_nD_tuner():
             self.params_init = self.params_base
         else:
             self.params_init = params_init
+
         # Training data
         self.exp_observable = exp_observable_dataloader
         self.sim_observable_base = sim_observable_dataloader
@@ -89,9 +91,9 @@ class RSA_nD_tuner():
         scheduler: Specified learning rate scheduler
         """
         # Initialize a,b array
-        # a_b = [np.array([self.weight_nexus.params_a.clone().detach().numpy(), self.weight_nexus.params_b.clone().detach().numpy()])]
         params_array = np.array([v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True])
         batch_counter = 0
+
         # Start the tuning (training) loop
         for i in tqdm(range(self.epochs), ncols = 100):
             epoch_loss = 0
@@ -105,8 +107,8 @@ class RSA_nD_tuner():
                 # Compute the weights
                 weights = self.weight_nexus(x, y)
                 # Compute the loss
-                loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
-                #loss = self.wasserstein_loss(z, w, weights)
+                # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
+                loss = self.wasserstein_loss(z, w, weights)
                 print('----------------------------------------------')
                 print('Loss:', loss.clone().detach().numpy())
                 # Compute gradients via backprop
@@ -115,14 +117,10 @@ class RSA_nD_tuner():
                 loss.backward()
                 
                 if self.print_details:
-                    # Output the gradients of a and b
-                    switch = 0
-                    for param in self.weight_nexus.parameters():
-                        if switch == 0:
-                            switch += 1
-                            print('Gradient of a:', param.grad.clone().detach().numpy())
-                        else:
-                            print('Gradient of b:', param.grad.clone().detach().numpy())
+                        # Output the gradients of parameters
+                        for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
+                            print(param.grad.clone().detach().numpy())
+
 
                 # Update the network weights
                 optimizer.step()
@@ -185,25 +183,26 @@ class RSA_nD_tuner():
         return np.array([v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]), params_array
     
     def RSA_flow(self, optimizer, a_b_c_init_grid):
+
         """
-        Generate RSA gradient flow and loss landscape data
+        Generate RSA gradient flow and loss landscape data for 3D parameter space
 
         optimizer: Specified network optimizer
         a_b_c_init_grid: Initial parameter grid for the loss landscape (parameter plane with loss magnitudes and gradients)
         """
+
         # Initialize gradient tensor
         a_b_c_gradient = torch.zeros(len(a_b_c_init_grid), 3)
         loss_grid = torch.zeros(len(a_b_c_init_grid))
         mu_metric = torch.zeros(len(a_b_c_init_grid),2)
         N_eff_metric = torch.zeros(len(a_b_c_init_grid))
 
-
         device = 'cpu'
         init_counter = 0
         for a_b_c_init in tqdm(a_b_c_init_grid, ncols=100):
             a_b_c_init_dict = self.params_init.copy()
             for i,(k,v) in enumerate(a_b_c_init_dict.items()):
-                a_b_c_init_dict[k] = a_b_c_init[i]
+                a_b_c_init_dict[k] = a_b_c_init[i]  #a_b_c_init_grid needs to have the same order of parameters as params_init
 
             # Create an intermediate gradient tensor
             a_b_c_gradient_i = torch.zeros(3)
@@ -234,15 +233,6 @@ class RSA_nD_tuner():
                 for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
                     print(param.clone().detach().numpy())
                     a_b_c_gradient_i[ip] = param.grad.clone().detach()
-                    # if switch == 0:
-                    #     switch += 1
-                    #     print('a:', param.clone().detach().numpy())
-                    #     print('Gradient of a:', param.grad.clone().detach().numpy())
-                    #     a_b_c_gradient_i[0] = param.grad.clone().detach()
-                    # else:
-                    #     print('b:', param.clone().detach().numpy())
-                    #     print('Gradient of b:', param.grad.clone().detach().numpy())
-                    #     a_b_c_gradient_i[1] = param.grad.clone().detach()
                 print('----------------------------------------------')
             # Write to the master gradient tensor
             a_b_c_gradient[init_counter] = a_b_c_gradient_i.clone()
@@ -257,5 +247,6 @@ class RSA_nD_tuner():
         # Convert the gradient and loss tensors to numpy arrays
         a_b_c_gradient = a_b_c_gradient.numpy()
         loss_grid = loss_grid.numpy()
+
         # Return the gradients and losses
         return a_b_c_gradient, loss_grid, [mu_metric, N_eff_metric]
