@@ -1,0 +1,17 @@
+-> data_3: pseudo_chi
+base: a=0.68,b=0.98
+target: ad = 0.78, au=0.58, bd = 0.88
+
+-> data_4: wasserstein distance
+base: a=0.68,b=0.98
+target: ad = 0.78, au=0.58, bd = 0.88
+
+-> data_5: wasserstein distance
+base: a=0.68,b=0.98
+target: ad = 0.78, au=0.58, bd = 0.88
+N=100
+
+-> data_6: wasserstein distance
+base: a=0.68,b=0.98
+target: ad = 0.78, au=0.58, bd = 0.88
+N=1000
