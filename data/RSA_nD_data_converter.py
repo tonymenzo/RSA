@@ -29,6 +29,8 @@ The program takes in the following arguments:
     --data_path_fPrel: Path to the fPrel .txt file
     --data_path_mT2: Path to the mT2 .txt file
     --data_path_hadrons: Path to the hadron .txt file
+    --data_path_id: Path to the id .txt file
+    --data_path_pT: Path to the pT .txt file
     --write_path_id_mT2_accept_reject: Write path for the accept-reject data
     --write_path_fPrel: Write path for the fPrel data
     --write_path_hadrons: Write path for the hadron data
@@ -60,6 +62,8 @@ parser.add_argument("--data_path_mT2", help = "Path to data file containing mT2 
 parser.add_argument("--data_path_hadrons", help = "Path to data file containing hadron info.")
 # Add data_path_id argument for id data .txt file
 parser.add_argument("--data_path_id", help = "Path to data file containing pid info.")
+# Add data_path_id argument for pT data .txt file
+parser.add_argument("--data_path_pT", help = "Path to data file containing pT info.")
 # Add write_path argument for accept-reject data
 parser.add_argument("--write_path_id_mT2_accept_reject", help = "Write path for converted accept-reject sampling data.")
 # Add write_path argument for fPrel data
@@ -76,6 +80,7 @@ if bool(args.print_details) == True:
     print("Input fPrel .txt file path:", args.data_path_fPrel)
     print("Input hadron .txt file path:", args.data_path_hadrons)
     print("Input id .txt file path:", args.data_path_id)
+    print("Input pT .txt file path:", args.data_path_pT)
     print("Writing accept-reject sampling data to:", args.write_path_id_mT2_accept_reject)
     print("Writing fPrel data to:", args.write_path_fPrel)
     print("Writing hadron data to:", args.write_path_hadrons)
@@ -89,6 +94,9 @@ with open(args.data_path_mT2, 'r') as f:
 
 with open(args.data_path_id, 'r') as f:
     lines_id = f.readlines()
+
+with open(args.data_path_pT, 'r') as f:
+    lines_pT = f.readlines()
 
 ######################################################
 #------------- Convert accept-reject ----------------#
@@ -111,6 +119,8 @@ for i in tqdm(range(len(lines_ar)), ncols = 100):
             # Zero-pad the accept-reject array and create array
             arz_i = np.array([np.pad(np.array(lines_ar[i].split(), dtype = float), (0, npad_accept_reject - len(lines_ar[i].split())))])
             # Prepend the squared transverse mass
+            arz_i = np.insert(arz_i, 0, lines_pT[i].split()[1], axis = 1)
+            arz_i = np.insert(arz_i, 0, lines_pT[i].split()[0], axis = 1)
             arz_i = np.insert(arz_i, 0, lines_mT2[i], axis = 1)
             # Prepend the id (new first, then old)
             arz_i = np.insert(arz_i, 0, int(lines_id[i].split()[1]), axis = 1)
@@ -121,6 +131,8 @@ for i in tqdm(range(len(lines_ar)), ncols = 100):
             # Zero-pad the accept-reject array and append
             arz_I = np.array([np.pad(np.array(lines_ar[i].split(), dtype = float), (0, npad_accept_reject - len(lines_ar[i].split())))])
             # Prepend the squared transverse mass
+            arz_I = np.insert(arz_I, 0, lines_pT[i].split()[1], axis = 1)
+            arz_I = np.insert(arz_I, 0, lines_pT[i].split()[0], axis = 1)
             arz_I = np.insert(arz_I, 0, lines_mT2[i], axis = 1)
             # Prepend the id (new first, then old)
             arz_I = np.insert(arz_I, 0, int(lines_id[i].split()[1]), axis = 1)

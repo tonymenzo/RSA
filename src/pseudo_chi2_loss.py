@@ -104,7 +104,7 @@ class PseudoChiSquareLoss(torch.nn.Module):
 
             # Perform the binning of the macroscopic observables
             if int(maximum - minimum) <= 1:
-                print(int((maximum-minimum) * 100))
+                # print(int((maximum-minimum) * 100))
                 histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(sim_observable[:].unsqueeze(0), weights = weights, bins = int((maximum-minimum) * 100), min = minimum, max = maximum)
                 histo_exp, bins_exp, _ = self.histogram(exp_observable[:].unsqueeze(0), bins = int((maximum-minimum) * 100), min = minimum, max = maximum)
             else:
