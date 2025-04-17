@@ -41,7 +41,8 @@ def format_double(value):
 # Construct the filename string with enforced double precision
 filename_base = (
     # f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
-    f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
+    # f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
+    f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/Pythia/pythia_git/pythia_fork/examples/pgun_data/model/"
     f"pgun_uubar_allhadsig_"   
     f"a{format_double(aLund)}_"    
     f"b{format_double(bLund)}_"    
@@ -84,7 +85,8 @@ print("pT Path: ", pT_PATH)
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_standard_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 filename_base = (
-    f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
+    # f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
+    f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/RSA/RSA/data/structured_data/"
     # f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
     f"pgun_uubar_allhadsig_"   
     f"a{aLund}_"
