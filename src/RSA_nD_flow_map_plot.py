@@ -7,12 +7,13 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 # print(a_b_c)
 
-magnitudes = np.load('temp_results/Flow_map_nD/magnitudes_4.npy')
-a_b_gradients = np.load('temp_results/Flow_map_nD/gradients_4.npy')
-a_b_c = np.load('temp_results/Flow_map_nD/ad_bd_au_4.npy')
-loss_grid = np.load('temp_results/Flow_map_nD/loss_grid_4.npy')
-mu_sigmamu = np.load('temp_results/Flow_map_nD/mu_4.npy')
-Neff = np.load('temp_results/Flow_map_nD/Neff_4.npy')
+plot_nm = '4'
+magnitudes = np.load(f'temp_results/Flow_map_nD/magnitudes_{plot_nm}.npy')
+a_b_gradients = np.load(f'temp_results/Flow_map_nD/gradients_{plot_nm}.npy')
+a_b_c = np.load(f'temp_results/Flow_map_nD/ad_bd_au_{plot_nm}.npy')
+loss_grid = np.load(f'temp_results/Flow_map_nD/loss_grid_{plot_nm}.npy')
+mu_sigmamu = np.load(f'temp_results/Flow_map_nD/mu_{plot_nm}.npy')
+Neff = np.load(f'temp_results/Flow_map_nD/Neff_{plot_nm}.npy')
 mu = mu_sigmamu[:,0]
 sigmamu = mu_sigmamu[:,1]
 
@@ -49,12 +50,16 @@ scale = 5e1
 ax.quiver(ad,bd,au,g1/scale,g2/scale,g3/scale)
 # sc = ax.scatter(ad, bd, au, c=magnitudes, cmap='plasma', s=20)  # 's' is size, 'c' is color
 sc = ax.scatter(ad, bd, au, c=np.log10((loss_grid)), cmap='plasma', s=50)  # 's' is size, 'c' is color
-cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1)
+cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1, label=r'log_{10}(loss)')
 
 ax.scatter(0.68,0.98,0.68, label = 'base', c= 'black', s=50)
 ax.scatter(0.78,0.88,0.58, label = 'target', c='red', s=50)
 plt.legend()
 plt.title('Loss')
+ax.set_xlabel('a_d')
+ax.set_ylabel('b_d')
+ax.set_zlabel('a_u')
+
 plt.show()
 
 fig = plt.figure(figsize=(10, 8))
@@ -70,13 +75,16 @@ scale = 5e1
 ax.quiver(ad,bd,au,g1/scale,g2/scale,g3/scale)
 # sc = ax.scatter(ad, bd, au, c=magnitudes, cmap='plasma', s=20)  # 's' is size, 'c' is color
 sc = ax.scatter(ad, bd, au, c=Neff, cmap='plasma', s=50)  # 's' is size, 'c' is color
-cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1)
+cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1, label='Neff')
 
 
 ax.scatter(0.68,0.98,0.68, label = 'base', c= 'black', s=50)
 ax.scatter(0.78,0.88,0.58, label = 'target', c='red', s=50)
 plt.legend()
 plt.title('N_eff')
+ax.set_xlabel('a_d')
+ax.set_ylabel('b_d')
+ax.set_zlabel('a_u')
 plt.show()
 
 
@@ -94,11 +102,16 @@ scale = 5e1
 ax.quiver(ad,bd,au,g1/scale,g2/scale,g3/scale)
 # sc = ax.scatter(ad, bd, au, c=magnitudes, cmap='plasma', s=20)  # 's' is size, 'c' is color
 sc = ax.scatter(ad, bd, au, c=mu, cmap='plasma', s=50)  # 's' is size, 'c' is color
-cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1)
+sig_label = r"$\ln \left( \left| \frac{1 - \mu}{\sigma_{1 - \mu}} \right| \right)$"
+cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1, label=sig_label)
 
 
 ax.scatter(0.68,0.98,0.68, label = 'base', c= 'black', s=50)
 ax.scatter(0.78,0.88,0.58, label = 'target', c='red', s=50)
 plt.legend()
-plt.title('Mu')
+
+plt.title(sig_label)
+ax.set_xlabel('a_d')
+ax.set_ylabel('b_d')
+ax.set_zlabel('a_u')
 plt.show()
