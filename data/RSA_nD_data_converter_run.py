@@ -8,7 +8,7 @@ import subprocess
 # Define the parameters
 aLund = 0.68 # Example value for aLund
 bLund = 0.98  # Example value for bLund
-sigma = 0.32  # Example value for sigma
+sigma = 0.3  # Example value for sigma
 nEvent = 100000  # Example value for nEvent
 
 # Define parameters
@@ -41,9 +41,9 @@ def format_double(value):
 # Construct the filename string with enforced double precision
 filename_base = (
     # f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
-    # f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
-    f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/Pythia/pythia_git/pythia_fork/examples/pgun_data/model/"
-    f"pgun_uubar_allhadsig_"   
+    f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
+    # f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/Pythia/pythia_git/pythia_fork/examples/pgun_data/model/"
+    f"pgun_uubar_allhadsigma_"   
     f"a{format_double(aLund)}_"    
     f"b{format_double(bLund)}_"    
     f"aD{format_double(aExtraDQuark)}_"
@@ -85,10 +85,10 @@ print("pT Path: ", pT_PATH)
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_standard_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 filename_base = (
-    # f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
-    f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/RSA/RSA/data/structured_data/"
     # f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
-    f"pgun_uubar_allhadsig_"   
+    f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
+    # f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/RSA/RSA/data/structured_data/"
+    f"pgun_uubar_allhadsigma_"   
     f"a{aLund}_"
     f"b{bLund}_"
     f"aD{aExtraDQuark}_"

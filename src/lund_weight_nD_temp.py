@@ -17,9 +17,10 @@ class LundWeight(nn.Module):
 
         Args:
             params_base (torch.Tensor): ------ Base parameters for the Lund fragmentation function
-            params (torch.Tensor): ----------- Parameters for the Lund fragmentation function
+            params (torch.Tensor): ----------- Parameters to be reweighted for the Lund fragmentation function
             over_sample_factor (int): -------- Over-sampling factor for the rejected events
         """
+
         # Intialize the module parameters
         self.params_base = params_base
         # Initialize the params dictionary
@@ -31,7 +32,6 @@ class LundWeight(nn.Module):
                 self.params[key] = torch.nn.Parameter(params[key], requires_grad = True)
             else:
                 self.params[key] = torch.nn.Parameter(params_base[key].clone().detach(), requires_grad = False)
-        # print('params: ', self.param_a)
 
         # Initialize the over-sampling factor
         self.over_sample_factor = over_sample_factor
@@ -59,7 +59,6 @@ class LundWeight(nn.Module):
         aIsC = (torch.abs(a - c) < self.AFROMC)
         
         # Initialize zMax tensor with the same shape as inputs
-        # zMax = torch.zeros_like(a, dtype = torch.float64)
         zMax = torch.zeros_like(a, dtype = a.dtype)
         
         # Handle special case where a is zero
@@ -113,7 +112,6 @@ class LundWeight(nn.Module):
         """
         # Determine the shape after broadcasting
         broadcast_shape = torch.broadcast_shapes(z.shape, mT.shape, a.shape, b.shape, c.shape)
-
         # If no masks are provided, consider all elements
         if z_mask is None:
             z_mask = torch.ones(z.shape, dtype=torch.bool, device=z.device)
@@ -125,13 +123,6 @@ class LundWeight(nn.Module):
             b_mask = torch.ones(b.shape, dtype=torch.bool, device=b.device)
         if c_mask is None:
             c_mask = torch.ones(c.shape, dtype=torch.bool, device=c.device)
-        # print('masks: ')
-        # print(z_mask)
-        # print(mT_mask)
-        # print(a_mask)
-        # print(b_mask)
-        # print(c_mask)
-
 
         # Broadcast z, mT, and their masks to the common shape
         z_broad = z.expand(broadcast_shape)
@@ -150,7 +141,6 @@ class LundWeight(nn.Module):
         
         # Create a tensor to store the results, initialized with zeros
         likelihood = torch.zeros(broadcast_shape, dtype=z.dtype, device=z.device)
-        # likelihood = torch.zeros(broadcast_shape, dtype=, device=z.device)
     
         # Only perform calculations on unmasked elements
         z_unmasked = z_broad[combined_mask]
@@ -192,14 +182,19 @@ class LundWeight(nn.Module):
 
         return likelihood
 
-    def sigma_weights(self, px, py):
-        sigma_base = self.params_base['sigma']
-        sigma_target = self.params['sigma']
-        kappa = - (torch.pow(px,2) + torch.pow(py,2))/(2 * torch.pow(sigma_base, 2))
+    def sigma_weights(self, px, py, p_mask):
+        weights = torch.ones(px.shape, dtype=px.dtype)
+        sigma_base = torch.tensor(self.params_base['sigma'].item())/torch.sqrt(torch.tensor(2))
+        sigma_target = torch.tensor(self.params['sigma'].item())/torch.sqrt(torch.tensor(2))
+        px, py = px[p_mask], py[p_mask]
+        kappa = (torch.pow(px,2) + torch.pow(py,2))/(2 * torch.pow(sigma_base, 2))
         ratio = torch.pow(sigma_base,2)/torch.pow(sigma_target,2)
-        weights = ratio * torch.e(-kappa * (ratio-1))
-        return weights
+        weights[p_mask] = ratio * torch.exp(-kappa * (ratio-1))
 
+        return weights.prod(axis=1)
+
+
+    
     def forward(self, z_mT2_pid, fPrel):
         """
         Forward pass of the weight module -- consists of computing the event weights for a given batch
@@ -208,6 +203,7 @@ class LundWeight(nn.Module):
         Args:
             z_mT2 (torch.Tensor): Tensor containing mT2 and z accept-reject data 
             fPrel (torch.Tensor): Tensor containing fPrel values
+
         Returns:
             weights (torch.Tensor): Computed event weights
         """
@@ -236,21 +232,21 @@ class LundWeight(nn.Module):
         c_mask = a_base != 0.
 
         # Extract the mT2 values 
-        mT2 = z_mT2_pid[:, :, 2]
+        mT2 = torch.tensor(z_mT2_pid[:, :, 2],dtype=a_base.dtype)
         # Reshape into column tensor
         mT2 = mT2.view(mT2.shape[0], mT2.shape[1], 1)
         # Create a mask for zero values
         mT2_mask = mT2 != 0.
 
         # Extract the accepted z values
-        z_accept = z_mT2_pid[:, :, 3]
+        z_accept = z_mT2_pid[:, :, 5]
         # Reshape into column tensor
         z_accept = z_accept.view(z_accept.shape[0], z_accept.shape[1], 1)
         # Remove any zero values
         z_accept_mask = z_accept != 0.
 
         # Extract the rejected z values
-        z_reject = z_mT2_pid[:, :, 4:]
+        z_reject = z_mT2_pid[:, :, 6:]
         # Reshape into column tensor
         z_reject = z_reject.view(z_reject.shape[0], z_reject.shape[1], z_reject.shape[2])
         # Remove any zero values along the event index
@@ -267,16 +263,22 @@ class LundWeight(nn.Module):
         reject_weights = ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_alt, b_alt, c_alt, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask)) \
                          / ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_base, b_base, c_base, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask))
 
-
-
         # Flatten the weights
         accept_weights = (accept_weights * z_accept_mask).masked_fill(z_accept_mask == 0, 1).prod(dim=2).prod(dim=1)
         reject_weights = (reject_weights * z_reject_mask).masked_fill(z_reject_mask == 0, 1).prod(dim=2).prod(dim=1)
-        
+
         # Add weights for reweighting sigma_pT
-        weights_sigma = self.sigma_weights(px,py)
+        if self.params['sigma']:
+            px, py = z_mT2_pid[:, :, 3], z_mT2_pid[:, :, 4]
+            p_mask = (px != 0)
+            # print(type(px),px.shape)
+            weights_sigma = self.sigma_weights(px,py,p_mask)
+        # print(weights_sigma.shape)
+        # print(weights.shape)
 
         # The final event weight is the product of accepted and rejected weights
-        weights = accept_weights * reject_weights * weights_sigma
+        weights = accept_weights * reject_weights
+        if self.params['sigma']:
+            weights = weights * weights_sigma
 
         return weights
