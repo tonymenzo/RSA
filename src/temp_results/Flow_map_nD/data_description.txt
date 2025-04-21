@@ -43,3 +43,13 @@ _____
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.63, b=0.88, sigma=0.300
 N=10
+
+-> data_12: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.63, b=0.88, sigma=0.300
+N=10
+
+-> data_13: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.310
+N=10
