@@ -23,3 +23,10 @@ grid:6x6
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.68, b=0.98, sigma=0.300
 N=10
+grid:custom
+
+-> data_8: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.68, b=0.98, sigma=0.300
+N=10
+grid:6x6
