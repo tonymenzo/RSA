@@ -53,3 +53,8 @@ N=10
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.58, b=0.88, sigma=0.310
 N=10
+
+-> data_15: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.63, b=0.88, sigma=0.335
+N=10
