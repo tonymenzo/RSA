@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 import importlib
-import lund_weight_nD as lund_weight_nD
+import lund_weight_nD_temp as lund_weight_nD
 import pseudo_chi2_loss
 import wasserstein_loss
 
@@ -23,7 +23,7 @@ importlib.reload(lund_weight_nD)
 importlib.reload(pseudo_chi2_loss)
 importlib.reload(wasserstein_loss)
 
-from lund_weight_nD import LundWeight
+from lund_weight_nD_temp import LundWeight
 from pseudo_chi2_loss import PseudoChiSquareLoss
 from wasserstein_loss import WassersteinLoss
 
