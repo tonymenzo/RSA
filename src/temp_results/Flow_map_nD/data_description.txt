@@ -86,3 +86,9 @@ base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.78, b=0.88, sigma=0.335
 N=1000
 same as 19 but for different grid
+
+-> data_23: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=1000
+same as 19 but for different grid

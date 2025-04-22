@@ -33,7 +33,7 @@ def format_double(value):
     #     return f"{value}"
     if value == int(value):
         print(value)
-        return f"{value}"
+        return f"{int(value)}"
     else:
         return f"{value}"
 
@@ -42,7 +42,8 @@ def format_double(value):
 filename_base = (
     # f"/global/homes/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
     f"/pscratch/sd/l/ljpuslar/RSA/pythia8312/examples/pgun_data/model/"
-    f"pgun_uubar_allhadsigma_"
+    # f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/Pythia/pythia_git/pythia_fork/examples/pgun_data/model/"
+    f"pgun_uubar_allhadsigma_"   
     f"a{format_double(aLund)}_"    
     f"b{format_double(bLund)}_"    
     f"aD{format_double(aExtraDQuark)}_"
@@ -70,6 +71,7 @@ acceptReject_PATH = f"{filename_base}_accept_reject_z.txt"
 mT2_PATH = f"{filename_base}_mT2.txt"
 fPrel_PATH = f"{filename_base}_fPrel.txt"
 id_PATH = f"{filename_base}_pid.txt"
+pT_PATH = f"{filename_base}_pT.txt"
 
 # Print the paths to check
 print("Hadron Path: ", hadron_PATH)
@@ -77,14 +79,16 @@ print("AcceptReject Path: ", acceptReject_PATH)
 print("mT2 Path: ", mT2_PATH)
 print("fPrel Path: ", fPrel_PATH)
 print("id Path: ", id_PATH)
+print("pT Path: ", pT_PATH)
 
 # Use formatted string literals (f-strings) to automatically generate the paths
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 # filename_base = f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_standard_a_{aLund}_b_{bLund}_sigma_{sigma}_N_{nEvent:.1e}"
 filename_base = (
-    f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
     # f"/global/homes/l/ljpuslar/RSA/RSA/data/structured_data/"
-    f"pgun_uubar_allhadsigma_"
+    f"/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/"
+    # f"/Users/lukapuslar/Desktop/other/ASEF/Project/Code/RSA/RSA/data/structured_data/"
+    f"pgun_uubar_allhadsigma_"   
     f"a{aLund}_"
     f"b{bLund}_"
     f"aD{aExtraDQuark}_"
@@ -110,12 +114,13 @@ write_id_mT2_acceptReject_PATH = f"{filename_base}_id_mT2_accept_reject_z.npy" #
 
 # Define the arguments to be passed
 args = [
-    "python", "RSA_nD_data_converter.py",  # Call the Python script you want to execute
+    "python", "RSA_nD_data_converter_sigma.py",  # Call the Python script you want to execute
     "--data_path_accept_reject", acceptReject_PATH,
     "--data_path_fPrel", fPrel_PATH,
     "--data_path_mT2", mT2_PATH,
     "--data_path_hadrons", hadron_PATH,
     "--data_path_id", id_PATH,
+    "--data_path_pT", pT_PATH,
     "--write_path_id_mT2_accept_reject", write_id_mT2_acceptReject_PATH,
     "--write_path_fPrel", write_fPrel_PATH,
     "--write_path_hadrons", write_hadron_PATH,
