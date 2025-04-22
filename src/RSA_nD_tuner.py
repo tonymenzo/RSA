@@ -203,7 +203,7 @@ class RSA_nD_tuner():
             a_b_c_init_dict = self.params_init.copy()
             for i,(k,v) in enumerate(a_b_c_init_dict.items()):
                 a_b_c_init_dict[k] = a_b_c_init[i]  #a_b_c_init_grid needs to have the same order of parameters as params_init
-
+            print(a_b_c_init_dict)
             # Create an intermediate gradient tensor
             a_b_c_gradient_i = torch.zeros(3)
             # Initialize new weight module with different initial parameters
