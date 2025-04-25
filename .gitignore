@@ -4,3 +4,4 @@ src/neural_statistician/output
 data/weights
 data/data_for_git
 src/temp_results/reweighting_mult
+*.out
