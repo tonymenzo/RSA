@@ -1,0 +1,18 @@
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_nD_flow_map_sigma_deepset.py", line 72
+    current_path = 
+                   ^
+SyntaxError: invalid syntax
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_nD_flow_map_sigma_deepset.py", line 72
+    current_path = 
+                   ^
+SyntaxError: invalid syntax
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_nD_flow_map_sigma_deepset.py", line 72
+    current_path = 
+                   ^
+SyntaxError: invalid syntax
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_nD_flow_map_sigma_deepset.py", line 72
+    current_path = 
+                   ^
+SyntaxError: invalid syntax
+srun: error: nid002869: tasks 0-3: Exited with exit code 1
+srun: Terminating StepId=38057870.0

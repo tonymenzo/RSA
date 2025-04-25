@@ -91,4 +91,62 @@ same as 19 but for different grid
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.58, b=0.88, sigma=0.31
 N=1000
-same as 19 but for different grid
+
+-> data_24: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.78, b=0.98, sigma=0.325
+N=100
+
+-> data_25: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.78, b=0.98, sigma=0.325
+N=1000
+
+-> data_26: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.78, b=0.98, sigma=0.325
+N=10000
+
+-> data_27: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=100
+
+-> data_28: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=1000
+
+-> data_29?: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=1000
+grid: b_d = 0.88
+
+_____
+-> data_30: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=10000
+grid: b_d = 0.88
+
+-> data_31: wasserstein distance
+deepsets classifier
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=1000
+grid: b_d = 0.88
+
+-> data_32: wasserstein distance
+deepsets classifier
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=10000? -not done yet
+grid: b_d = 0.88
+
+-> data_33: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.58, b=0.88, sigma=0.31
+N=1000
+grid: b_d = 0.88
+

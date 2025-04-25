@@ -74,7 +74,7 @@ class RSA_nD_tuner():
         self.weight_nexus = LundWeight(self.params_base, self.params_init, over_sample_factor = self.over_sample_factor)
         
         # Initialize the loss
-        self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
+        # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
         self.wasserstein_loss = WassersteinLoss(p = 1)
 
         # Create a results directory if it doesn't exist
