@@ -1,3 +1,9 @@
+'''
+# Gradient stability calculation on a line_grid connecting target and base parametrization points
+# Define base parameters in params_base, target parameters in r_t and define parameters to be reweighted in params_learn
+# !NOTE: parameters need to be in the same order in r_t, params_base and params_learn
+'''
+
 import importlib
 from RSA_nD_tuner import *
 import RSA_nD_tuner
@@ -115,7 +121,7 @@ all_metrics_mu = []
 
 Ns = [10,50,100,500,1000,2500,5000,7500,10000,25000]
 Ns = np.linspace(10,10000,10)
-Ns = [50000,100000]
+Ns = [30000,50000]
 Ns = [int(N) for N in Ns]
 for N_events in Ns:
 
@@ -146,7 +152,7 @@ for N_events in Ns:
     sim_mT            = ObservableDataset(sim_fPrel_t)
     exp_mult_t          = ObservableDataset(exp_mult_t)
 
-    # Set batch size -- set it eqaul to the number of events, we only want one 'batch'
+    # Set batch size -- set it equal to the number of events, we only want one 'batch'
     batch_size = N_events
 
     # Initialize data-loaders

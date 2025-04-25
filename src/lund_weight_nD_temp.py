@@ -4,6 +4,7 @@
 # RSA is licensed under the GNU GPL v3 or later, see LICENSE for details.
 # Please respect the MCnet Guidelines, see GUIDELINES for details.
 """
+# Added reweighting of sigma parameter
 
 import torch
 from torch import nn

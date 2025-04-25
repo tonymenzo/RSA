@@ -1,3 +1,11 @@
+"""
+# Flowmap for reweighting of parameters including sigma usin multiplicity histogram
+# Run file from src directory to avoid path errors
+# Define base parameters in params_base, define parameters to be reweighted in params_learn and parameters for the grid computation in ad_au_bd_init
+# !NOTE: parameters need to be in the same order in grid, params_base and params_learn
+"""
+
+
 import importlib
 from RSA_nD_tuner import *
 import RSA_nD_tuner

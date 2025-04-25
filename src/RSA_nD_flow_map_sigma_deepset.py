@@ -1,3 +1,8 @@
+"""
+# Flowmap for reweighting of parameters including sigma using the deepset classifier
+# Run file from src directory to avoid path errors
+"""
+
 import importlib
 from RSA_nD_tuner import *
 import RSA_nD_tuner
@@ -340,7 +345,6 @@ sigma_points = torch.arange(0.305, 0.340, 0.005)
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
 
-n_points = 6
 # ad_bd_au_init = a_b_c_grid(ad_range, bd_range, au_range, n_points) #The order need to be the same as the parameters_learn order
 ad_bd_au_init = a_b_c_grid_custom(ad_points, bd_points, sigma_points) #The order need to be the same as the parameters_learn order
 
