@@ -131,8 +131,28 @@ for i in tqdm(range(len(lines_ar)), ncols = 100):
             # Zero-pad the accept-reject array and append
             arz_I = np.array([np.pad(np.array(lines_ar[i].split(), dtype = float), (0, npad_accept_reject - len(lines_ar[i].split())))])
             # Prepend the squared transverse mass
-            arz_I = np.insert(arz_I, 0, lines_pT[i].split()[1], axis = 1)
-            arz_I = np.insert(arz_I, 0, lines_pT[i].split()[0], axis = 1)
+            try:
+                arz_I = np.insert(arz_I, 0, lines_pT[i].split()[1], axis = 1)
+                arz_I = np.insert(arz_I, 0, lines_pT[i].split()[0], axis = 1)
+            except:
+                print()
+                # for ind in range(50):
+                #     print(ind, ' ', lines_ar[i+ind])
+                # for ind in range(50):
+                #     print(ind, ' ', lines_pT[i+ind])
+                # print('1',lines_pT[i-1])
+                # print('2',lines_pT[i])
+                # print('3',lines_pT[i+1])
+                # print('1',lines_mT2[i-1])
+                # print('2',lines_mT2[i])
+                # print('3',lines_mT2[i+1])
+                # print('4',lines_ar[i-1])
+                # print('5',lines_ar[i])
+                # print('6',lines_ar[i+1])
+                print(event_counter)
+
+
+
             arz_I = np.insert(arz_I, 0, lines_mT2[i], axis = 1)
             # Prepend the id (new first, then old)
             arz_I = np.insert(arz_I, 0, int(lines_id[i].split()[1]), axis = 1)
