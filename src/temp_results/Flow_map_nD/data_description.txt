@@ -165,14 +165,51 @@ grid: b_d = 0.88
 
 -> data_36: wasserstein distance
 base: a=0.68, b = 0.98, sigma=0.335
-target: a=0.76, b=0.98, sigma=0.330
+target: a=1.28, b=0.98, sigma=0.330  #wrong a_d target 0.06 -> 0.6
 N=10000
 grid: b_d = 0.88
 
 -> data_37: wasserstein distance
 deepsets
 base: a=0.68, b = 0.98, sigma=0.335
-target: a=0.76, b=0.98, sigma=0.330
+target: a=1.28, b=0.98, sigma=0.330  #wrong a_d target 0.06 -> 0.6
 N=10000
 grid: b_d = 0.88
+
+-> data_38: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=1.28, b=0.98, sigma=0.330  #wrong a_d target 0.06 -> 0.6
+N=10000
+grid: b_d = 0.88
+larger grid
+
+-> data_39: wasserstein distance
+deepsets
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=1.28, b=0.98, sigma=0.330  #wrong a_d target 0.06 -> 0.6
+N=10000
+grid: b_d = 0.88
+larger grid
+
+-> data_40: wasserstein distance   -> the important one
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10000
+grid: b_d = 0.88
+larger grid
+
+-> data_41: wasserstein distance
+deepsets
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330 
+N=10000
+grid: b_d = 0.88
+larger grid
+
+-> data_42: wasserstein distance
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  -> plotted the wrong plane: this is actually the starting plane
+N=10000
+grid: b_d = 0.88
+larger grid
 

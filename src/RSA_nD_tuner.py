@@ -91,7 +91,7 @@ class RSA_nD_tuner():
         scheduler: Specified learning rate scheduler
         """
         # Initialize a,b array
-        params_array = np.array([v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True])
+        params_array = [[v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]]
         batch_counter = 0
 
         # Start the tuning (training) loop
@@ -110,7 +110,7 @@ class RSA_nD_tuner():
                 # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
                 loss = self.wasserstein_loss(z, w, weights)
                 print('----------------------------------------------')
-                print('Loss:', loss.clone().detach().numpy())
+                # print('Loss:', loss.clone().detach().numpy())
                 # Compute gradients via backprop
                 # torch.autograd.set_detect_anomaly(True)
                 epoch_loss += loss.clone().detach().numpy()
@@ -132,12 +132,12 @@ class RSA_nD_tuner():
 
                 # Output the loss and learning rate 
                 print(f'Loss: {loss.clone().detach().numpy():>8f}, \n LR: {optimizer.param_groups[0]["lr"]:>8f}')
-                array_temp = np.array([v.clone().detach().numpy()  for k,v in self.weight_nexus.params.items() if v.requires_grad == True])
-                print(f'{array_temp}')
+                array_temp = [v.clone().detach().numpy()  for k,v in self.weight_nexus.params.items() if v.requires_grad == True]
+                print(f'Parameters: {array_temp}')
                 print('----------------------------------------------')
 
                 # Record the tuned parameters
-                params_array = np.append(params_array, array_temp)
+                params_array.append(array_temp)
                 
                 # if self.print_details:
                 #     import matplotlib.pyplot as plt
@@ -180,7 +180,7 @@ class RSA_nD_tuner():
                 #     plt.close(fig_1)
                 #     plt.close(fig_2)
         # Return the final tuned parameters as well as the full search space path     
-        return np.array([v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]), params_array
+        return np.array([v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]), np.array(params_array)
     
     def RSA_flow(self, optimizer, a_b_c_init_grid):
 

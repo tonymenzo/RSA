@@ -111,12 +111,12 @@ params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': 
 
 
 r_b = torch.tensor([aLundD,bLundD,sigma_base])
-r_t = torch.tensor([0.78,0.88,0.300])
+r_t = torch.tensor([0.78,0.88,0.330])
 s = torch.linspace(0,1,4)
 # delta_s = s[1]-s[0]
 s_eps = 1e-5
 s[0] = s[0] + s_eps # for stability
-s = np.append(s, 1+0.1)
+s = torch.cat([s, torch.tensor([1.1])])
 s = s[:, torch.newaxis]
 
 line_grid = r_b + s*(r_t-r_b)
@@ -161,6 +161,7 @@ for N_events in Ns:
         sim_accept_reject_t[sim_accept_reject_t == 1] = 1 - epsilon
 
         # Print dataset shapes
+        print('N_events and repeat: ', N_events,' ; ', r)
         print('Experimental multiplicity shape:', exp_mult_t.shape)
         print('Simulated multiplicity shape:', sim_mult_t.shape)
         print('Simulated z shape:', sim_accept_reject_t.shape) # only has the z values, accepted and rejected
