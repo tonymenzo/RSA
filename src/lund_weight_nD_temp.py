@@ -22,18 +22,21 @@ class LundWeight(nn.Module):
             over_sample_factor (int): -------- Over-sampling factor for the rejected events
         """
 
+        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = 'cpu'
+
         # Intialize the module parameters
         self.params_base = params_base
-        # Initialize the params dictionary
 
+        # Initialize the params dictionary
         self.params = torch.nn.ParameterDict({})
+
         # Iterate of all keys in the dictionary and create a parameter for each key
         for key in params_base.keys():
             if key in params:
-                self.params[key] = torch.nn.Parameter(params[key], requires_grad = True)
+                self.params[key] = torch.nn.Parameter(params[key].to(self.device), requires_grad = True)
             else:
-                self.params[key] = torch.nn.Parameter(params_base[key].clone().detach(), requires_grad = False)
-
+                self.params[key] = torch.nn.Parameter(params_base[key].clone().detach().to(self.device), requires_grad = False)
         # Initialize the over-sampling factor
         self.over_sample_factor = over_sample_factor
 
@@ -41,6 +44,7 @@ class LundWeight(nn.Module):
         self.AFROMZERO = 0.02
         self.EXPMAX = 50.
         self.AFROMC = 0.01
+
 
     def zMaxCalc(self, a, b, c):
         """
@@ -184,9 +188,9 @@ class LundWeight(nn.Module):
         return likelihood
 
     def sigma_weights(self, px, py, p_mask):
-        weights = torch.ones(px.shape, dtype=px.dtype)
-        sigma_base = self.params_base['sigma'] / torch.sqrt(torch.tensor(2.0, device=self.params_base['sigma'].device))
-        sigma_target = self.params['sigma'] / torch.sqrt(torch.tensor(2.0, device=self.params['sigma'].device))
+        weights = torch.ones(px.shape, dtype=px.dtype, device=self.device)
+        sigma_base = self.params_base['sigma'] / torch.sqrt(torch.tensor(2.0, device=self.device))
+        sigma_target = self.params['sigma'] / torch.sqrt(torch.tensor(2.0, device=self.device))
         px, py = px[p_mask], py[p_mask]
         kappa = (torch.pow(px,2) + torch.pow(py,2))/(2 * torch.pow(sigma_base, 2))
         ratio = torch.pow(sigma_base,2)/torch.pow(sigma_target,2)
@@ -209,21 +213,21 @@ class LundWeight(nn.Module):
             weights (torch.Tensor): Computed event weights
         """
         batch_size = z_mT2_pid.shape[0]
-        weights = torch.ones(batch_size)
+        weights = torch.ones(batch_size, device=self.device)
 
         # Extract the (absolute value) pid values
         pid_old = torch.abs(z_mT2_pid[:, :, 0])
         pid_new = torch.abs(z_mT2_pid[:, :, 1])
 
         # Compute and create a, b, and c tensors for base and alternative parameters (This is a bottleneck, there isn't a good way to vectorize)
-        a_old_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        a_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        b_base = torch.stack([torch.stack([self.params_base[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_old_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
+        a_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
+        b_base = torch.stack([torch.stack([self.params_base[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
         c_base = 1 + a_base - a_old_base
 
-        a_old_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        a_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
-        b_alt = torch.stack([torch.stack([self.params[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_old_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
+        a_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
+        b_alt = torch.stack([torch.stack([self.params[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
         c_alt = 1 + a_alt - a_old_alt
 
         # Create masks for base and alternate parameters (masks should be the same)
@@ -232,7 +236,9 @@ class LundWeight(nn.Module):
         c_mask = a_base != 0.
 
         # Extract the mT2 values 
-        mT2 = torch.tensor(z_mT2_pid[:, :, 2],dtype=a_base.dtype)
+        # mT2 = torch.tensor(z_mT2_pid[:, :, 2], dtype=a_base.dtype)
+        mT2 = z_mT2_pid[:, :, 2].clone().detach().to(dtype=a_base.dtype)
+
         # Reshape into column tensor
         mT2 = mT2.view(mT2.shape[0], mT2.shape[1], 1)
         # Create a mask for zero values

@@ -1,0 +1,18 @@
+data_1
+base: a_d=0.68, b_d=0.98, sigma=0.335
+target: a_d=0.78, b_d=0.88, sigma=0.33
+
+data_2
+base: a_d=0.68, b_d=0.98, sigma=0.335
+target: a_d=0.78, b_d=0.88, sigma=0.33
+
+
+data_3
+base: a_d=0.68, b_d=0.98, sigma=0.335
+target: a_d=0.74, b_d=0.88, sigma=0.33
+
+data_4
+base: a_d=0.68, b_d=0.98, sigma=0.335
+target: a_d=0.78, b_d=0.88, sigma=0.3
+
+

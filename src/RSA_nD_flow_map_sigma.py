@@ -137,10 +137,10 @@ exp_mult          = ObservableDataset(exp_mult)
 batch_size = N_events
 
 # Initialize data-loaders
-sim_observable_dataloader    = DataLoader(sim_mult,          batch_size = batch_size, shuffle = False)
-sim_accept_reject_dataloader = DataLoader(sim_accept_reject, batch_size = batch_size, shuffle = False)
-sim_fPrel_dataloader         = DataLoader(sim_fPrel,         batch_size = batch_size, shuffle = False)
-exp_observable_dataloader    = DataLoader(exp_mult,          batch_size = batch_size, shuffle = False)
+sim_observable_dataloader    = DataLoader(sim_mult,          batch_size = batch_size, shuffle = False, pin_memory=True)
+sim_accept_reject_dataloader = DataLoader(sim_accept_reject, batch_size = batch_size, shuffle = False, pin_memory=True)
+sim_fPrel_dataloader         = DataLoader(sim_fPrel,         batch_size = batch_size, shuffle = False, pin_memory=True)
+exp_observable_dataloader    = DataLoader(exp_mult,          batch_size = batch_size, shuffle = False, pin_memory=True)
 
 print('Size of sim_observable_dataloader:', len(sim_observable_dataloader.dataset))
 print('Size of sim_accept_reject_dataloader:', len(sim_accept_reject_dataloader.dataset))
@@ -245,10 +245,11 @@ n_points = 10
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
-ad_points  = torch.linspace(0.6,0.9,10)
-bd_points  = torch.tensor([0.88])
+ad_points  = torch.linspace(0.65,0.88,6)
+bd_points  = torch.linspace(0.78,0.98,6)
+# bd_points  = torch.tensor([0.88])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
-sigma_points = torch.linspace(0.200, 0.400, 15)
+sigma_points = torch.linspace(0.300, 0.350, 6)
 
 
 n_points = 6
@@ -285,10 +286,10 @@ print(magnitudes.shape)
 
 mu = metrics[0]
 Neff = metrics[1]
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_40', mu)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_40', Neff)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_40',magnitudes)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_40',a_b_gradients)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_40',a_b_c)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_40',loss_grid)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_47', mu)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_47', Neff)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_47',magnitudes)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_47',a_b_gradients)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_47',a_b_c)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_47',loss_grid)
 

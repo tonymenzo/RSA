@@ -21,6 +21,8 @@ class WassersteinLoss(torch.nn.Module):
             (torch.tensor): One-dimensional Wasserstein distance
         """
         self.p = p
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = 'cpu'
 
     def forward(self, x, y, x_weights = None, y_weights = None):
         """
@@ -29,6 +31,6 @@ class WassersteinLoss(torch.nn.Module):
         """
         # The weights must be normalized for the Wasserstein loss
         x_weights = x_weights / torch.sum(x_weights)
-        y_weights = torch.ones(y.shape[0]) / y.shape[0]
+        y_weights = torch.ones(y.shape[0], device=self.device) / y.shape[0]
         # Compute the Wasserstein distance
         return ot.wasserstein_1d(x, y, u_weights = x_weights, v_weights = y_weights, p = self.p)

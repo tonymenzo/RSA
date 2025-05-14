@@ -77,6 +77,9 @@ class RSA_nD_tuner():
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
         self.wasserstein_loss = WassersteinLoss(p = 1)
 
+        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = 'cpu'
+
         # Create a results directory if it doesn't exist
         if self.results_dir != None:
             if not os.path.exists(self.results_dir):
@@ -93,11 +96,13 @@ class RSA_nD_tuner():
         # Initialize a,b array
         params_array = [[v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]]
         batch_counter = 0
+        loss_values = []
+        device = self.device
 
         # Start the tuning (training) loop
         for i in tqdm(range(self.epochs), ncols = 100):
             epoch_loss = 0
-            device = "cpu"
+            
             batch_counter = 0
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
                 print('Batch #', batch_counter)
@@ -109,12 +114,14 @@ class RSA_nD_tuner():
                 # Compute the loss
                 # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
                 loss = self.wasserstein_loss(z, w, weights)
+                loss_values.append(loss.clone().detach().numpy())
                 print('----------------------------------------------')
                 # print('Loss:', loss.clone().detach().numpy())
                 # Compute gradients via backprop
                 # torch.autograd.set_detect_anomaly(True)
                 epoch_loss += loss.clone().detach().numpy()
-                loss.backward()
+                loss.backward(create_graph=True) # For AdaHessian
+                # loss.backward()
                 
                 if self.print_details:
                         # Output the gradients of parameters
@@ -139,6 +146,10 @@ class RSA_nD_tuner():
                 # Record the tuned parameters
                 params_array.append(array_temp)
                 
+                if self.print_details and self.results_dir != None:
+                    np.save(self.results_dir + '/RSA_tuning_params.npy', np.array(params_array))
+                    np.save(self.results_dir + '/RSA_tuning_loss.npy', np.array(loss_values))
+
                 # if self.print_details:
                 #     import matplotlib.pyplot as plt
                 #     # Check the histograms
@@ -191,23 +202,32 @@ class RSA_nD_tuner():
         a_b_c_init_grid: Initial parameter grid for the loss landscape (parameter plane with loss magnitudes and gradients)
         """
 
-        # Initialize gradient tensor
-        a_b_c_gradient = torch.zeros(len(a_b_c_init_grid), 3)
-        loss_grid = torch.zeros(len(a_b_c_init_grid))
-        mu_metric = torch.zeros(len(a_b_c_init_grid),2)
-        N_eff_metric = torch.zeros(len(a_b_c_init_grid))
+        device = self.device
 
-        device = 'cpu'
+        # Initialize gradient tensor
+        a_b_c_gradient = torch.zeros(len(a_b_c_init_grid), 3, device=device)
+        loss_grid = torch.zeros(len(a_b_c_init_grid), device=device)
+        mu_metric = torch.zeros(len(a_b_c_init_grid), 2, device=device)
+        N_eff_metric = torch.zeros(len(a_b_c_init_grid), device=device)
+
         init_counter = 0
         for a_b_c_init in tqdm(a_b_c_init_grid, ncols=100):
-            a_b_c_init_dict = self.params_init.copy()
-            for i,(k,v) in enumerate(a_b_c_init_dict.items()):
-                a_b_c_init_dict[k] = a_b_c_init[i]  #a_b_c_init_grid needs to have the same order of parameters as params_init
-            print(a_b_c_init_dict)
+
+            # a_b_c_init_dict = {k: torch.tensor(v, device=device) for (k, _), v in zip(self.params_init.items(), a_b_c_init)}
+            a_b_c_init_dict = {
+                k: v.clone().detach().to(device).requires_grad_(True) for (k, _), v in zip(self.params_init.items(), a_b_c_init)
+            }
+            # a_b_c_init_dict = self.params_init.copy()
+            # for i,(k,v) in enumerate(a_b_c_init_dict.items()):
+            #     a_b_c_init_dict[k] = a_b_c_init[i]  #a_b_c_init_grid needs to have the same order of parameters as params_init
+            
+
             # Create an intermediate gradient tensor
-            a_b_c_gradient_i = torch.zeros(3)
+            a_b_c_gradient_i = torch.zeros(3, device=device)
+
             # Initialize new weight module with different initial parameters
-            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor)
+            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor).to(device)
+
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
                 # Reset the gradients
@@ -229,24 +249,36 @@ class RSA_nD_tuner():
                 loss.backward()
                 # Save the gradients of a and b
                 print('----------------------------------------------')
-                print('Loss:', loss.clone().detach().numpy())
+                print('Loss:', loss.clone().detach().cpu().numpy())
                 for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
-                    print(param.clone().detach().numpy())
+                    # print(param.clone().detach().numpy())
                     a_b_c_gradient_i[ip] = param.grad.clone().detach()
                 print('----------------------------------------------')
+
             # Write to the master gradient tensor
-            a_b_c_gradient[init_counter] = a_b_c_gradient_i.clone()
-            # Write to the master loss tensor
+            # a_b_c_gradient[init_counter] = a_b_c_gradient_i.clone()
+            # # Write to the master loss tensor
+            # loss_grid[init_counter] = loss.clone().detach()
+            # # Metrics:
+            # mu_metric[init_counter] = torch.tensor([mu.item(), mu_sig.item()])
+            # N_eff_metric[init_counter] = N_eff.clone().detach()
+            # # Iterate the init_counter
+            # init_counter += 1
+
+            a_b_c_gradient[init_counter] = a_b_c_gradient_i
             loss_grid[init_counter] = loss.clone().detach()
-            # Metrics:
-            mu_metric[init_counter] = torch.tensor([mu.item(), mu_sig.item()])
+            mu_metric[init_counter] = torch.tensor([mu, mu_sig], device=device)
             N_eff_metric[init_counter] = N_eff.clone().detach()
-            # Iterate the init_counter
             init_counter += 1
 
-        # Convert the gradient and loss tensors to numpy arrays
-        a_b_c_gradient = a_b_c_gradient.numpy()
-        loss_grid = loss_grid.numpy()
+        # # Convert the gradient and loss tensors to numpy arrays
+        # a_b_c_gradient = a_b_c_gradient.numpy()
+        # loss_grid = loss_grid.numpy()
 
         # Return the gradients and losses
-        return a_b_c_gradient, loss_grid, [mu_metric, N_eff_metric]
+        # return a_b_c_gradient, loss_grid, [mu_metric, N_eff_metric]
+        return (
+            a_b_c_gradient.detach().cpu().numpy(),
+            loss_grid.detach().cpu().numpy(),
+            [mu_metric.detach().cpu().numpy(), N_eff_metric.detach().cpu().numpy()],
+        )
