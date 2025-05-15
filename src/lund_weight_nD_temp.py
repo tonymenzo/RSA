@@ -37,6 +37,8 @@ class LundWeight(nn.Module):
                 self.params[key] = torch.nn.Parameter(params[key].to(self.device), requires_grad = True)
             else:
                 self.params[key] = torch.nn.Parameter(params_base[key].clone().detach().to(self.device), requires_grad = False)
+
+
         # Initialize the over-sampling factor
         self.over_sample_factor = over_sample_factor
 
@@ -229,6 +231,7 @@ class LundWeight(nn.Module):
         a_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
         b_alt = torch.stack([torch.stack([self.params[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
         c_alt = 1 + a_alt - a_old_alt
+        #check i a_old_alt is on device
 
         # Create masks for base and alternate parameters (masks should be the same)
         a_mask = a_base != 0.

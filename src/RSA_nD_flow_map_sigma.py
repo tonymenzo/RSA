@@ -245,11 +245,7 @@ n_points = 10
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
-ad_points  = torch.linspace(0.65,0.88,6)
-bd_points  = torch.linspace(0.78,0.98,6)
-# bd_points  = torch.tensor([0.88])
-# sigma_points = torch.arange(0.328, 0.337, 0.001)
-sigma_points = torch.linspace(0.300, 0.350, 6)
+c
 
 
 n_points = 6

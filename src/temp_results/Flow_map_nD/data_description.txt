@@ -230,18 +230,26 @@ grid: b_d = 0.88
 -> data_45: wasserstein distance
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  
-N=1000
+N=10000
 grid: b_d = 0.88
 3d grid
 
 -> data_46: wasserstein distance -> same as 45
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  
-N=1000
+N=10000
 grid: b_d = 0.88
 3d grid
 
 -> data_47: wasserstein distance -> same as 45
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10000
+grid: b_d = 0.88
+3d grid
+
+-> data_48: wasserstein distance 
+deepset
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  
 N=10000
