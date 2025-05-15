@@ -7,10 +7,16 @@
 
 
 import importlib
-from RSA_nD_tuner import *
-import RSA_nD_tuner
-importlib.reload(RSA_nD_tuner)
-from RSA_nD_tuner import *
+from RSA_nD_tuner_emb import *
+import RSA_nD_tuner_emb
+importlib.reload(RSA_nD_tuner_emb)
+from RSA_nD_tuner_emb import *
+
+# import importlib
+# from RSA_nD_tuner import *
+# import RSA_nD_tuner
+# importlib.reload(RSA_nD_tuner)
+# from RSA_nD_tuner import *
 
 class ObservableDataset(Dataset):
 	"""
@@ -245,7 +251,11 @@ n_points = 10
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
-c
+ad_points  = torch.linspace(0.65,0.88,10)
+bd_points  = torch.linspace(0.78,0.98,10)
+# bd_points  = torch.tensor([0.88])
+# sigma_points = torch.arange(0.328, 0.337, 0.001)
+sigma_points = torch.linspace(0.300, 0.350, 10)
 
 
 n_points = 6
@@ -282,10 +292,10 @@ print(magnitudes.shape)
 
 mu = metrics[0]
 Neff = metrics[1]
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_47', mu)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_47', Neff)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_47',magnitudes)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_47',a_b_gradients)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_47',a_b_c)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_47',loss_grid)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_50', mu)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_50', Neff)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_50',magnitudes)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_50',a_b_gradients)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_50',a_b_c)
+np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_50',loss_grid)
 

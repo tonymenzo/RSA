@@ -66,7 +66,7 @@ exp_mult          = torch.Tensor(exp_mult[0:N_events].copy())
 # The a-coefficient when computing the likelihood has a term proportional to log(1-z). If 
 # z = 1, this term diverges to -inf and completely destroys the backward pass.
 epsilon = 1e-5
-sim_accept_reject[sim_accept_reject == 1] = 1 - epsilon
+sim_accept_reject[:,:,2:][sim_accept_reject[:,:,2:] == 1] = 1 - epsilon # Do not change pid values!
 
 # Print dataset shapes
 print('Experimental multiplicity shape:', exp_mult.shape)

@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 import importlib
-import lund_weight_nD_temp as lund_weight_nD
+import lund_weight_nD_temp_emb as lund_weight_nD
 import pseudo_chi2_loss
 import wasserstein_loss
 
@@ -23,7 +23,7 @@ importlib.reload(lund_weight_nD)
 importlib.reload(pseudo_chi2_loss)
 importlib.reload(wasserstein_loss)
 
-from lund_weight_nD_temp import LundWeight
+from lund_weight_nD_temp_emb import LundWeight
 from pseudo_chi2_loss import PseudoChiSquareLoss
 from wasserstein_loss import WassersteinLoss
 
@@ -77,8 +77,8 @@ class RSA_nD_tuner():
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
         self.wasserstein_loss = WassersteinLoss(p = 1)
 
-        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.device = 'cpu'
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # self.device = 'cpu'
 
         # Create a results directory if it doesn't exist
         if self.results_dir != None:
@@ -175,7 +175,8 @@ class RSA_nD_tuner():
 
             # a_b_c_init_dict = {k: torch.tensor(v, device=device) for (k, _), v in zip(self.params_init.items(), a_b_c_init)}
             a_b_c_init_dict = {
-                k: v.clone().detach().to(device).requires_grad_(True) for (k, _), v in zip(self.params_init.items(), a_b_c_init)
+                k: v.clone().detach().to(device) for (k, _), v in zip(self.params_init.items(), a_b_c_init)
+                # k: v.clone().detach().to(device).requires_grad_(True) for (k, _), v in zip(self.params_init.items(), a_b_c_init)
             }
             # a_b_c_init_dict = self.params_init.copy()
             # for i,(k,v) in enumerate(a_b_c_init_dict.items()):
@@ -183,7 +184,8 @@ class RSA_nD_tuner():
             
 
             # Create an intermediate gradient tensor
-            a_b_c_gradient_i = torch.zeros(3, device=device)
+            # a_b_c_gradient_i = torch.zeros(3, device=device)
+            a_b_c_gradient_i = []
 
             # Initialize new weight module with different initial parameters
             self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor).to(device)
@@ -210,11 +212,39 @@ class RSA_nD_tuner():
                 # Save the gradients of a and b
                 print('----------------------------------------------')
                 print('Loss:', loss.clone().detach().cpu().numpy())
-                for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
-                    # print(param.clone().detach().numpy())
-                    a_b_c_gradient_i[ip] = param.grad.clone().detach()
+                # for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
+                #     if param.clone().detach().cpu().numpy().shape == ():
+                #         a_b_c_gradient_i[ip] = param.grad.clone().detach()
+                #     else:
+                #         a_b_c_gradient_i[ip] = param.grad.clone().detach()
+
+                #     print(param.grad.clone().detach().cpu().shape)
+                #     print(param.grad.clone().detach().cpu().numpy())
+                #     print(param.clone().detach().numpy())
+                #     # a_b_c_gradient_i[ip] = param.grad.clone().detach()
                 print('----------------------------------------------')
-                print('Gradients:', a_b_c_gradient_i.clone().detach().cpu().numpy())
+                for name, param in self.weight_nexus.named_parameters():
+                    if not param.requires_grad or param.grad is None:
+                        continue
+
+                    grad = param.grad.clone().detach()
+                    # print(name, grad.shape)
+                    if grad.numel() == 1:
+                        a_b_c_gradient_i.append(grad.item())
+                    else:
+                        nonzero = grad[grad != 0]
+                        a_b_c_gradient_i.extend(nonzero.tolist())
+
+                    if len(a_b_c_gradient_i) >= 3:
+                        break  # stop once we have 3 values
+                    # print(param.grad.clone().detach().cpu().shape)
+                    # print(param.grad.clone().detach().cpu().numpy())
+                    # print(param.clone().detach().numpy())
+                    # a_b_c_gradient_i[ip] = param.grad.clone().detach()
+                a_b_c_gradient_i = torch.tensor(a_b_c_gradient_i, device=device)
+                a_b_c_gradient_i = torch.cat([a_b_c_gradient_i[1:], a_b_c_gradient_i[:1]])
+                print('Gradient:', a_b_c_gradient_i.clone().detach().cpu().numpy())
+                print('----------------------------------------------')
 
             # Write to the master gradient tensor
             # a_b_c_gradient[init_counter] = a_b_c_gradient_i.clone()
