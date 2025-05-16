@@ -1,15 +1,15 @@
 import importlib
-from RSA_tuner import *
-import RSA_nD_tuner
-importlib.reload(RSA_nD_tuner)
-from RSA_nD_tuner import *
+from RSA_nD_tuner_emb import *
+import RSA_nD_tuner_emb
+importlib.reload(RSA_nD_tuner_emb)
+from RSA_nD_tuner_emb import *
 import sys
 import os
 
-# Add the directory containing deepsets_classifier.py to the Python path
-current_path = os.getcwd()
-sys.path.append(os.path.join(current_path, 'classifier'))
-from deepsets_classifier import *
+# # Add the directory containing deepsets_classifier.py to the Python path
+# current_path = os.getcwd()
+# sys.path.append(os.path.join(current_path, 'classifier'))
+# from deepsets_classifier import *
 
 
 class ObservableDataset(Dataset):
@@ -89,18 +89,24 @@ exp_mult = np.array([len(exp_hadrons[i,:][np.abs(exp_hadrons[i,:,0]) > 0.0]) for
 sim_mult = np.array([len(sim_hadrons[i,:][np.abs(sim_hadrons[i,:,0]) > 0.0]) for i in range(N)])
 
 # # Randomly sample N unique event indices
-np.random.seed(42)
+np.random.seed(43)
 
 
 
-repeat = 10
+# repeat = 2
+# batch_size = 10000     
+# N_events = int(10000)   # -> 30k random events per each repetition
+# epochs = 100
+
+repeat = 300
 batch_size = 10000     
 N_events = int(10000)   # -> 30k random events per each repetition
-epochs = 10
+epochs = 100
 
 
 all_params_list = []
 params_final_list = []
+all_loss_values = []
 
 for i in range(repeat):
     random_indices = np.random.choice(N, size=N_events, replace=False)
@@ -209,12 +215,14 @@ for i in range(repeat):
     #optimizer = torch.optim.SGD(macroscopic_trainer.weight_nexus.parameters(), lr=learning_rate)
 
     # Generate gradients
-    params_final, all_params = RSA.RSA_tune(optimizer)
+    params_final, all_params, loss_values = RSA.RSA_tune(optimizer)
 	
     all_params_list.append(all_params)
     params_final_list.append(params_final)
+    all_loss_values.append(loss_values)
 
     # Save the parameters
-    save_nm = 2
+    save_nm = 5
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/all_params_{save_nm}', all_params_list)
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/params_final_{save_nm}', params_final_list)
+    np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/loss_values_{save_nm}', all_loss_values)

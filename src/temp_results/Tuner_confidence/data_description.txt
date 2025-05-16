@@ -19,3 +19,13 @@ epochs = 10
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
+data_3:
+multiplicity
+repeat = 100
+batch_size = 10000     
+N_events = int(10000)   # -> 30k random events per each repetition
+epochs = 100
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+
