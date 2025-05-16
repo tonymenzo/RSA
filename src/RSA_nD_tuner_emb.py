@@ -233,7 +233,7 @@ class RSA_nD_tuner():
             if self.weight_nexus != None:
                 del self.weight_nexus
             torch.cuda.empty_cache()
-            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor).to(device)
+            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor, device= self.device)
 
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
