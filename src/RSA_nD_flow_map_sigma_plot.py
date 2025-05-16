@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # -- Load data for the chosen plot --
-plot_nm = '23'
+plot_nm = '51'
 magnitudes    = np.load(f'temp_results/Flow_map_nD/magnitudes_{plot_nm}.npy')
 a_b_gradients = np.load(f'temp_results/Flow_map_nD/gradients_{plot_nm}.npy')
 loss_grid     = np.load(f'temp_results/Flow_map_nD/loss_grid_{plot_nm}.npy')
@@ -43,6 +43,8 @@ plot3d_configs = {
     '40': {'scale': 8e2, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
     '41': {'scale': 2e4, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
     '42': {'scale': 8e2, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '50': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '51': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
 }
 config = plot3d_configs.get(plot_nm)
 if config is None:
@@ -66,6 +68,11 @@ ax.quiver(ad, bd, sig,
           g2 / config['scale'],
           g3 / config['scale'],
           length=1.0, normalize=False)
+
+ind_min = np.argmin(loss_grid)
+# Plot the minimum loss point
+ax.scatter(ad[ind_min], bd[ind_min], sig[ind_min],
+           marker='x', color='black', s=100, label='min loss')
 
 # Scatter colored by loss value
 sc = ax.scatter(ad, bd, sig,
