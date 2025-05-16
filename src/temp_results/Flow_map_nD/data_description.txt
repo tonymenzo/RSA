@@ -256,8 +256,7 @@ N=10000
 grid: b_d = 0.88
 3d grid
 
--> data_49: wasserstein distance -> same as 74 calculated with embeded method
-deepset
+-> data_49: wasserstein distance -> same as 47 calculated with embeded method
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  
 N=10000
@@ -265,10 +264,26 @@ grid: b_d = 0.88
 3d grid
 
 -> data_50: 
-deepset
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  
 N=10000
+grid: b_d = 0.88
+10x10 grid
+3d grid
+
+-> data_51: 
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=50000
+grid: b_d = 0.88
+10x10 grid
+3d grid
+
+-> data_52: 
+deepset
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=50000
 grid: b_d = 0.88
 10x10 grid
 3d grid

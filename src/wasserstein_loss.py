@@ -9,7 +9,7 @@ import torch
 import ot
 
 class WassersteinLoss(torch.nn.Module):
-    def __init__(self, p):
+    def __init__(self, p, device):
         super(WassersteinLoss, self).__init__()
         """
         Compute the one-dimensional Wasserstein distance between two input tensors x and y with weights x_weights and y_weights
@@ -21,7 +21,11 @@ class WassersteinLoss(torch.nn.Module):
             (torch.tensor): One-dimensional Wasserstein distance
         """
         self.p = p
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        # Device
+        self.device = device
+
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.device = 'cpu'
 
     def forward(self, x, y, x_weights = None, y_weights = None):

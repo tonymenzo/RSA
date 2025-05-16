@@ -11,7 +11,7 @@ from torch import nn
 
 
 class LundWeight(nn.Module):
-    def __init__(self, params_base, params, over_sample_factor):
+    def __init__(self, params_base, params, over_sample_factor, device):
         super(LundWeight, self).__init__()
         """
         LundWeight class for computing event weights for the Lund fragmentation function
@@ -22,8 +22,11 @@ class LundWeight(nn.Module):
             over_sample_factor (int): -------- Over-sampling factor for the rejected events
         """
 
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # self.device = 'cpu'
+
+        # Device
+        self.device = device
 
         # Intialize the module parameters
         self.params_base = params_base

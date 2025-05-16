@@ -4,10 +4,10 @@
 """
 
 import importlib
-from RSA_nD_tuner import *
-import RSA_nD_tuner
-importlib.reload(RSA_nD_tuner)
-from RSA_nD_tuner import *
+from RSA_nD_tuner_emb import *
+import RSA_nD_tuner_emb
+importlib.reload(RSA_nD_tuner_emb)
+from RSA_nD_tuner_emb import *
 
 class ObservableDataset(Dataset):
 	"""
@@ -117,7 +117,8 @@ def prescale(exp_data, sim_data, axes=(0, 1)):
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+04_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD-0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.31_N_1.0e+05_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.325_N_1.0e+04_hadrons.npy'
-exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_2.0e+04_hadrons.npy'
+# exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_2.0e+04_hadrons.npy'
+exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
 
 # sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+05_hadrons.npy'
 sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
@@ -141,7 +142,7 @@ print('Simulated fPrel shape:', sim_fPrel.shape)
 
 
 # Restrict to a subset of the full dataset (for memory)
-N_events = int(10000)
+N_events = int(50000)
 N = N_events
 
 
@@ -238,7 +239,7 @@ exp_scores          = torch.Tensor(exp_scores[0:N_events].clone())
 # The a-coefficient when computing the likelihood has a term proportional to log(1-z). If 
 # z = 1, this term diverges to -inf and completely destroys the backward pass.
 epsilon = 1e-5
-sim_accept_reject[sim_accept_reject == 1] = 1 - epsilon
+sim_accept_reject[:,:,2:][sim_accept_reject[:,:,2:] == 1] = 1 - epsilon # Do not change pid values!
 
 # Print dataset shapes
 print('Experimental scores shape:', exp_scores.shape)
@@ -343,11 +344,11 @@ n_points = 10
 # ad_points  = torch.arange(0.67,0.79,0.01)
 # bd_points  = torch.tensor([0.98])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
-ad_points  = torch.linspace(0.65,0.88,6)
-bd_points  = torch.linspace(0.78,0.98,6)
+ad_points  = torch.linspace(0.65,0.88,10)
+bd_points  = torch.linspace(0.78,0.98,10)
 # bd_points  = torch.tensor([0.88])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
-sigma_points = torch.linspace(0.300, 0.350, 6)
+sigma_points = torch.linspace(0.300, 0.350, 10)
 
 # Search the whole range of parameters
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
@@ -366,7 +367,7 @@ epochs = 1
 # Create an RSA instance
 RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
 				params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
-				sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = True, 
+				sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
 				results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_sigma", params_init = params_learn, fixed_binning = True)
 
 
@@ -386,10 +387,11 @@ print(magnitudes.shape)
 mu = metrics[0]
 Neff = metrics[1]
 
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_48', mu)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_48', Neff)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_48',magnitudes)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_48',a_b_gradients)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_48',a_b_c)
-np.save('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_48',loss_grid)
+plt_nm = 52
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_{plt_nm}', mu)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_{plt_nm}', Neff)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_{plt_nm}',magnitudes)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_{plt_nm}',a_b_gradients)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_{plt_nm}',a_b_c)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_{plt_nm}',loss_grid)
 

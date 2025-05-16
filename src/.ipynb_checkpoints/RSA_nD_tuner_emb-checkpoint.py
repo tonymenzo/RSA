@@ -31,7 +31,7 @@ from wasserstein_loss import WassersteinLoss
 class RSA_nD_tuner():
     def __init__(self, epochs, dim_multiplicity, dim_accept_reject, over_sample_factor, params_base,
                  sim_observable_dataloader, sim_z_dataloader, sim_fPrel_dataloader, exp_observable_dataloader,
-                 params_init = None, print_details = False, results_dir = None, fixed_binning = True, device = 'cuda'):
+                 params_init = None, print_details = False, results_dir = None, fixed_binning = True):
         """
         RSA-based training/tuning class for tuning microscopic dynamics (hadronization parameters) from macroscopic observables.
         
@@ -70,26 +70,15 @@ class RSA_nD_tuner():
         self.results_dir = results_dir
         self.fixed_binning = fixed_binning
 
-        # Device
-        if device == 'cuda':
-            if torch.cuda.is_available():
-                self.device = torch.device('cuda')
-            else:
-                print('CUDA is not available, using CPU instead.')
-                self.device = torch.device('cpu')
-        else:
-            self.device = torch.device('cpu')
-
         # Initialize the Lund weight module
         torch.cuda.empty_cache()
-        self.weight_nexus = LundWeight(self.params_base, self.params_init, over_sample_factor = self.over_sample_factor, device= self.device)
-
+        self.weight_nexus = LundWeight(self.params_base, self.params_init, over_sample_factor = self.over_sample_factor)
+        
         # Initialize the loss
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
-        self.wasserstein_loss = WassersteinLoss(p = 1, device = self.device)
+        self.wasserstein_loss = WassersteinLoss(p = 1)
 
-
-        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # self.device = 'cpu'
 
         # Create a results directory if it doesn't exist

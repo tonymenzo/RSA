@@ -27,15 +27,15 @@ print(f'{ncores_available=}')
 
 import torch
 from multiprocessing import Pool, cpu_count
-from RSA_nD_tuner import RSA_nD_tuner, Dataset
+from RSA_nD_tuner_emb import RSA_nD_tuner, Dataset
 from torch.utils.data import DataLoader
 import multiprocessing as mp
 
 import importlib
-from RSA_nD_tuner import *
-import RSA_nD_tuner
-importlib.reload(RSA_nD_tuner)
-from RSA_nD_tuner import *
+from RSA_nD_tuner_emb import *
+import RSA_nD_tuner_emb
+importlib.reload(RSA_nD_tuner_emb)
+from RSA_nD_tuner_emb import *
 import numpy as np
 
 class ObservableDataset(Dataset):
@@ -56,8 +56,8 @@ class ObservableDataset(Dataset):
 # Paths to the datasets
 
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
-# exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
-exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.3_N_1.5e+05_hadrons.npy'
+exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
+# exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.3_N_1.5e+05_hadrons.npy'
 
 sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
 sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
@@ -131,8 +131,8 @@ params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': 
 
 
 r_b = torch.tensor([aLundD,bLundD,sigma_base])
-r_t = torch.tensor([0.78,0.88,0.3])
-s = torch.linspace(0,1,4)
+r_t = torch.tensor([0.74,0.88,0.33])
+s = torch.linspace(0,1,20)
 # delta_s = s[1]-s[0]
 s_eps = 1e-5
 s[0] = s[0] + s_eps # for stability
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         all_mus         = []
         all_neffs       = []
 
-        plt_nm = 4
+        plt_nm = 5
 
         a_b_c = line_grid.detach().numpy()
         np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/grad_stability_errors/all_Ns{plt_nm}',
