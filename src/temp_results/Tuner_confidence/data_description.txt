@@ -5,7 +5,7 @@ data_1:
 deepset
 repeat = 10
 batch_size = 10000     
-N_events = int(10000)   # -> random events per each repetition
+N_events = int(10000)  
 epochs = 10
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
@@ -14,16 +14,16 @@ data_2:
 multiplicity
 repeat = 10
 batch_size = 10000     
-N_events = int(10000)   # -> random events per each repetition
+N_events = int(10000)   
 epochs = 10
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_3:
 deepset
-repeat = 200
+repeat = 100
 batch_size = 10000     
-N_events = int(10000)   # -> 30k random events per each repetition
+N_events = int(10000)   
 epochs = 100
 adam:lr=0.001
 base: a=0.68,b=0.98,sigma=0.335
@@ -33,7 +33,7 @@ data_4:
 multiplicity
 repeat = 10
 batch_size = 10000     
-N_events = int(10000)   # -> 30k random events per each repetition
+N_events = int(10000)  
 epochs = 100
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
@@ -42,17 +42,17 @@ data_5:
 multiplicity
 repeat = 300
 batch_size = 10000     
-N_events = int(10000)   # -> 30k random events per each repetition
+N_events = int(10000)   
 epochs = 100
 adam:lr=0.01
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
-data_6:
+data_6: ?
 multiplicity
-repeat = 10
+repeat = 4?
 batch_size = 10000     
-N_events = int(10000)   # -> 30k random events per each repetition
+N_events = int(10000)   
 epochs = 300
 adam:lr=0.001
 base: a=0.68,b=0.98,sigma=0.335
@@ -60,10 +60,10 @@ target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_7:
 multiplicity
-repeat = 3
+repeat = 100
 batch_size = 10000     
-N_events = int(10000)   # -> 30k random events per each repetition
-epochs = 700
+N_events = int(10000)   
+epochs = 300
 adam:lr=0.001
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330

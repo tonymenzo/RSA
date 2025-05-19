@@ -210,7 +210,7 @@ larger grid
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  -> plotted the wrong plane: this is actually the starting plane
 N=10000
-grid: b_d = 0.88
+grid: b_d = 0.98
 larger grid
 
 -> data_43: wasserstein distance
@@ -293,6 +293,15 @@ deepset
 base: a=0.68, b = 0.98, sigma=0.335
 target: a=0.74, b=0.88, sigma=0.330  
 N=50000
+grid: b_d = 0.88
+10x10 grid
+3d larger grid
+
+-> data_54: 
+deepset
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10000
 grid: b_d = 0.88
 10x10 grid
 3d larger grid
