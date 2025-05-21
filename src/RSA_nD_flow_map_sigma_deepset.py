@@ -344,11 +344,11 @@ n_points = 10
 # ad_points  = torch.arange(0.67,0.79,0.01)
 # bd_points  = torch.tensor([0.98])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
-ad_points  = torch.linspace(0.65,0.88,10)
-bd_points  = torch.linspace(0.78,0.98,10)
+ad_points  = torch.linspace(0.65,0.76,10)
+bd_points  = torch.linspace(0.86,0.98,10)
 # bd_points  = torch.tensor([0.88])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
-sigma_points = torch.linspace(0.300, 0.350, 10)
+sigma_points = torch.linspace(0.327, 0.337, 10)
 
 # Search the whole range of parameters
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
@@ -387,7 +387,7 @@ print(magnitudes.shape)
 mu = metrics[0]
 Neff = metrics[1]
 
-plt_nm = 52
+plt_nm = 55
 np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_{plt_nm}', mu)
 np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_{plt_nm}', Neff)
 np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_{plt_nm}',magnitudes)

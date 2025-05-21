@@ -162,12 +162,31 @@ classifier.eval()
 np.random.seed(42)
 
 
+#!TEMP!
+
+exp_obs, sim_obs = prescale(exp_obs[:], sim_obs[:])
+
+# Convert into torch objects
+exp_obs = torch.Tensor(exp_obs.copy())
+sim_obs = torch.Tensor(sim_obs.copy())
+
+
+# Extract the scores
+exp_scores = torch.sigmoid(classifier.forward(exp_obs[:], device="cpu")).to(device).detach()
+sim_scores = torch.sigmoid(classifier.forward(sim_obs[:], device="cpu")).to(device).detach()
+
+
+
+
+
 
 
 repeat = 100
-batch_size = 10000       
-N_events = int(10000)   # -> 30k random events per each repetition 
-epochs = 300
+batch_size = 50000       
+N_events = int(50000)   # -> 30k random events per each repetition 
+epochs = 100
+learning_rate = 0.005
+
 
 
 all_params_list = []
@@ -177,29 +196,36 @@ all_loss_values = []
 for i in range(repeat):
     random_indices = np.random.choice(N, size=N_events, replace=False)
 
-    exp_obs_t, sim_obs_t = prescale(exp_obs[random_indices], sim_obs[random_indices])
+    # exp_obs_t, sim_obs_t = prescale(exp_obs[random_indices], sim_obs[random_indices])
+	
+    # # Convert into torch objects
+    # exp_obs_t = torch.Tensor(exp_obs_t.copy())
+    # sim_obs_t = torch.Tensor(sim_obs_t.copy())
 
+
+    # # Extract the scores
+    # exp_scores = torch.sigmoid(classifier.forward(exp_obs_t[:N_events], device="cpu")).to(device).detach()
+    # sim_scores = torch.sigmoid(classifier.forward(sim_obs_t[:N_events], device="cpu")).to(device).detach()
+
+    # # Convert into torch objects
+    # sim_scores          = torch.Tensor(sim_scores[0:N_events].clone())
+    # sim_accept_reject_t = torch.Tensor(sim_accept_reject[0:N_events].copy())
+    # sim_fPrel_t         = torch.Tensor(sim_fPrel[0:N_events].copy())
+    # exp_scores          = torch.Tensor(exp_scores[0:N_events].clone())
+	
+    #!TEMP!
     # Convert into torch objects
-    exp_obs_t = torch.Tensor(exp_obs_t.copy())
-    sim_obs_t = torch.Tensor(sim_obs_t.copy())
-
-
-    # Extract the scores
-    exp_scores = torch.sigmoid(classifier.forward(exp_obs_t[:N_events], device="cpu")).to(device).detach()
-    sim_scores = torch.sigmoid(classifier.forward(sim_obs_t[:N_events], device="cpu")).to(device).detach()
-
-    # Convert into torch objects
-    sim_scores          = torch.Tensor(sim_scores[0:N_events].clone())
-    sim_accept_reject_t = torch.Tensor(sim_accept_reject[0:N_events].copy())
-    sim_fPrel_t         = torch.Tensor(sim_fPrel[0:N_events].copy())
-    exp_scores          = torch.Tensor(exp_scores[0:N_events].clone())
+    sim_scores_t          = torch.Tensor(sim_scores[random_indices].clone())
+    sim_accept_reject_t = torch.Tensor(sim_accept_reject[random_indices].copy())
+    sim_fPrel_t         = torch.Tensor(sim_fPrel[random_indices].copy())
+    exp_scores_t          = torch.Tensor(exp_scores[random_indices].clone())
 
 
     # Check the accepted z-values, if z == 1 reduce it by epsilon (a very nasty bug to find).
     # The a-coefficient when computing the likelihood has a term proportional to log(1-z). If 
     # z = 1, this term diverges to -inf and completely destroys the backward pass.
     epsilon = 1e-5
-    sim_accept_reject_t[sim_accept_reject_t == 1] = 1 - epsilon
+    sim_accept_reject_t[:,:,2:][sim_accept_reject_t[:,:,2:] == 1] = 1 - epsilon # Do not change pid values!
 
     # Print dataset shapes
     print('Experimental scores shape:', exp_scores.shape)
@@ -209,17 +235,17 @@ for i in range(repeat):
     print('Simulated fPrel shape:', sim_fPrel.shape)
 
     # Prepare data for DataLoader
-    sim_scores            = ObservableDataset(sim_scores)
+    sim_scores_t            = ObservableDataset(sim_scores_t)
     sim_accept_reject_t   = ObservableDataset(sim_accept_reject_t)
     sim_fPrel_t           = ObservableDataset(sim_fPrel_t)
-    exp_scores            = ObservableDataset(exp_scores)
+    exp_scores_t            = ObservableDataset(exp_scores_t)
 
 
     # Initialize data-loaders
-    sim_observable_dataloader    = DataLoader(sim_scores,          batch_size = batch_size, shuffle = False)
+    sim_observable_dataloader    = DataLoader(sim_scores_t,          batch_size = batch_size, shuffle = False)
     sim_accept_reject_dataloader = DataLoader(sim_accept_reject_t, batch_size = batch_size, shuffle = False)
     sim_fPrel_dataloader         = DataLoader(sim_fPrel_t,         batch_size = batch_size, shuffle = False)
-    exp_observable_dataloader    = DataLoader(exp_scores,          batch_size = batch_size, shuffle = False)
+    exp_observable_dataloader    = DataLoader(exp_scores_t,          batch_size = batch_size, shuffle = False)
 
     # print('Size of sim_observable_dataloader:', len(sim_observable_dataloader.dataset))
     # print('Size of sim_accept_reject_dataloader:', len(sim_accept_reject_dataloader.dataset))
@@ -230,7 +256,6 @@ for i in range(repeat):
     # Training hyperparameters
     over_sample_factor = 10.0
     # The flow map will be dependent on the learning rate (size of the gradients)
-    learning_rate = 0.001
     fixed_binning = True
     # Length of event buffer
     dim_multiplicity  = sim_accept_reject_dataloader.dataset.data.shape[1]
@@ -281,7 +306,7 @@ for i in range(repeat):
                 'sigma': torch.tensor(sigma_base)}
 
     eps = 1e-4
-    params_learn = {'a1': torch.tensor(aLundD+1e-5), 'b1': torch.tensor(bLundD+1e-5),'sigma': torch.tensor(sigma_base+1e-5)}
+    params_learn = {'a1': torch.tensor(aLundD+eps), 'b1': torch.tensor(bLundD+eps),'sigma': torch.tensor(sigma_base+eps)}
     print(params_learn)
     # Irrelevant parameters for the flow plot that must be initialized for the RSA class
 
@@ -294,7 +319,7 @@ for i in range(repeat):
 
     # optimizer = optim.Adahessian(RSA.weight_nexus.parameters())
     optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
-    #optimizer = torch.optim.SGD(macroscopic_trainer.weight_nexus.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.SGD(RSA.weight_nexus.parameters(), lr=learning_rate)
 
     # Generate gradients
     params_final, all_params, loss_values = RSA.RSA_tune(optimizer)
@@ -305,7 +330,7 @@ for i in range(repeat):
 
 
     # Save the parameters
-    save_nm = 3
+    save_nm = 13
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/all_params_{save_nm}', all_params_list)
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/params_final_{save_nm}', params_final_list)
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/loss_values_{save_nm}', all_loss_values)

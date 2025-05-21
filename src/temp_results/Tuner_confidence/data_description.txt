@@ -68,4 +68,74 @@ adam:lr=0.001
 base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
+data_8:
+deepset
+repeat = 100
+batch_size = 10000     
+N_events = int(10000)   
+epochs = 300
+adam:lr=0.001
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+data_8:
+deepset
+repeat = 100
+batch_size = 10000     
+N_events = int(10000)   
+epochs = 300
+adam:lr=0.001
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+data_9:?
+deepset
+repeat = 5
+batch_size = 10000     
+N_events = int(50000)   
+epochs = 100
+adam:lr=0.001
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+data_10:
+mult
+repeat = 2
+batch_size = 10000     
+N_events = int(50000)   
+epochs = 700
+adam:lr=0.001
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+data_11:
+mult
+repeat = 100
+batch_size = 50000     
+N_events = int(50000)  
+epochs = 300
+adam:lr=0.001
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+data_12:
+deepset
+repeat = 100
+batch_size = 50000     
+N_events = int(50000)  
+epochs = 300
+adam:lr=0.001
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
+data_13:
+deepset
+repeat = 100
+batch_size = 50000     
+N_events = int(50000)  
+epochs = 100
+SGD:lr=0.005
+base: a=0.68,b=0.98,sigma=0.335
+target: a_d=0.74,b_d=0.88,sigma=0.330
+
 

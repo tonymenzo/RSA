@@ -98,10 +98,12 @@ np.random.seed(43)
 # N_events = int(10000)   # -> 30k random events per each repetition
 # epochs = 100
 
-repeat = 300
-batch_size = 10000     
-N_events = int(10000)   # -> 30k random events per each repetition
-epochs = 100
+repeat = 100
+batch_size = 50000     
+N_events = int(50000)   # -> N_events random events per each repetition
+epochs = 300
+learning_rate = 0.01
+
 
 
 all_params_list = []
@@ -148,7 +150,6 @@ for i in range(repeat):
     # Training hyperparameters
     over_sample_factor = 10.0
     # The flow map will be dependent on the learning rate (size of the gradients)
-    learning_rate = 0.01
     fixed_binning = True
     # Length of event buffer
     dim_multiplicity  = sim_accept_reject_dataloader.dataset.data.shape[1]
@@ -199,7 +200,7 @@ for i in range(repeat):
                 'sigma': torch.tensor(sigma_base)}
 
     eps = 1e-4
-    params_learn = {'a1': torch.tensor(aLundD+1e-5), 'b1': torch.tensor(bLundD+1e-5),'sigma': torch.tensor(sigma_base+1e-5)}
+    params_learn = {'a1': torch.tensor(aLundD+eps), 'b1': torch.tensor(bLundD+eps),'sigma': torch.tensor(sigma_base+eps)}
     print(params_learn)
     # Irrelevant parameters for the flow plot that must be initialized for the RSA class
 
@@ -222,7 +223,7 @@ for i in range(repeat):
     all_loss_values.append(loss_values)
 
     # Save the parameters
-    save_nm = 5
+    save_nm = 11
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/all_params_{save_nm}', all_params_list)
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/params_final_{save_nm}', params_final_list)
     np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_confidence/loss_values_{save_nm}', all_loss_values)

@@ -155,6 +155,7 @@ class RSA_nD_tuner():
                 # print(f'Loss: {loss_cpu:>8f}, \n LR: {optimizer.param_groups[0]["lr"]:>8f}')
                 # array_temp = [v.clone().detach().numpy()  for k,v in self.weight_nexus.params.items() if v.requires_grad == True]
                 array_temp = []
+                grad_temp = []
                 for name, param in self.weight_nexus.named_parameters():
                     if not param.requires_grad or param.grad is None:
                         continue
@@ -164,19 +165,26 @@ class RSA_nD_tuner():
                     # print(name, grad.shape)
                     if val.numel() == 1:
                         array_temp.append(val.item())
+                        grad_temp.append(grad.item())
                     else:
                         nonzero = val[grad != 0]
                         array_temp.extend(nonzero.tolist())
+                        nonzero_grad = grad[grad != 0]
+                        grad_temp.extend(nonzero_grad.tolist())
 
                     if len(array_temp) >= 3:
                         break  # stop once we have 3 values
+                    
                     # print(param.grad.clone().detach().cpu().shape)
                     # print(param.grad.clone().detach().cpu().numpy())
                     # print(param.clone().detach().numpy())
                     # a_b_c_gradient_i[ip] = param.grad.clone().detach()
                 array_temp = torch.tensor(array_temp, device='cpu')
                 array_temp = torch.cat([array_temp[1:], array_temp[:1]])
-                # print(f'Parameters: {array_temp}')
+                grad_temp = torch.tensor(grad_temp, device='cpu')
+                grad_temp = torch.cat([grad_temp[1:], grad_temp[:1]])
+                print(f'Parameters: {array_temp}')
+                print(f'Gradients: {grad_temp}')
                 # print('----------------------------------------------')
 
                 # Record the tuned parameters
