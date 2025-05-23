@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # -- Load data for the chosen plot --
-plot_nm = '46'
+plot_nm = '51'
 magnitudes    = np.load(f'temp_results/Flow_map_nD/magnitudes_{plot_nm}.npy')
 a_b_gradients = np.load(f'temp_results/Flow_map_nD/gradients_{plot_nm}.npy')
 loss_grid     = np.load(f'temp_results/Flow_map_nD/loss_grid_{plot_nm}.npy')
@@ -44,6 +44,7 @@ plot3d_configs = {
     '45': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
     '46': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
     '47': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '51': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
 }
 config = plot3d_configs.get(plot_nm)
 if config is None:
@@ -54,8 +55,11 @@ ad, bd, sig = a_b_c[:, 0], a_b_c[:, 1], a_b_c[:, 2]
 g1, g2, g3  = -a_b_gradients[:, 0], -a_b_gradients[:, 1], -a_b_gradients[:, 2]
 
 # Unpack tuner values
-# points = np.load('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner/jupyter/ADAgrad_N50k_5/RSA_tuning_params.npy')
-points = np.load('/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner/jupyter/RSA_tuning_params_SGD_lr_0.001.npy')
+datafolder = 'temp_results/Tuner_confidence/'
+save_nm = 5
+points = np.load(datafolder + f'params_final_{save_nm}.npy')
+all_loss = np.load(datafolder + f'loss_values_{save_nm}.npy')
+loss_values_final = all_loss[:, -1]
 
 # Unpack the three columns
 x, y, z = points[:, 0], points[:, 1], points[:, 2]
@@ -72,7 +76,7 @@ ax  = fig.add_subplot(111, projection='3d')
 # Plot base and target
 ax.scatter(*config['base'],  marker='o', color='black', s=50, label='base')
 ax.scatter(*config['target'], marker='o', color='red',   s=50, label='target')
-ax.plot(x, y, z, marker='o', c='blue')  # 3D scatter plot
+ax.scatter(x, y, z, c='black', marker='x')  # 3D scatter plot
 
 # Quiver for gradient field
 ax.quiver(ad, bd, sig,
