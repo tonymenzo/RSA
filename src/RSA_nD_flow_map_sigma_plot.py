@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # -- Load data for the chosen plot --
-plot_nm = '51'
+plot_nm = '56'
 magnitudes    = np.load(f'temp_results/Flow_map_nD/magnitudes_{plot_nm}.npy')
 a_b_gradients = np.load(f'temp_results/Flow_map_nD/gradients_{plot_nm}.npy')
 loss_grid     = np.load(f'temp_results/Flow_map_nD/loss_grid_{plot_nm}.npy')
@@ -45,6 +45,11 @@ plot3d_configs = {
     '42': {'scale': 8e2, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
     '50': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
     '51': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '52': {'scale': 5e2, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '53': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '54': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '55': {'scale': 5e3, 'base': (0.68, 0.98, 0.335), 'target': (0.74, 0.88, 0.33)},
+    '56': {'scale': 5e3, 'base': (0.757, 0.939, 0.324), 'target': (0.74, 0.88, 0.33)},
 }
 config = plot3d_configs.get(plot_nm)
 if config is None:
