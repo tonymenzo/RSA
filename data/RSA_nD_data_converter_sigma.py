@@ -136,19 +136,6 @@ for i in tqdm(range(len(lines_ar)), ncols = 100):
                 arz_I = np.insert(arz_I, 0, lines_pT[i].split()[0], axis = 1)
             except:
                 print()
-                # for ind in range(50):
-                #     print(ind, ' ', lines_ar[i+ind])
-                # for ind in range(50):
-                #     print(ind, ' ', lines_pT[i+ind])
-                # print('1',lines_pT[i-1])
-                # print('2',lines_pT[i])
-                # print('3',lines_pT[i+1])
-                # print('1',lines_mT2[i-1])
-                # print('2',lines_mT2[i])
-                # print('3',lines_mT2[i+1])
-                # print('4',lines_ar[i-1])
-                # print('5',lines_ar[i])
-                # print('6',lines_ar[i+1])
                 print(event_counter)
 
 

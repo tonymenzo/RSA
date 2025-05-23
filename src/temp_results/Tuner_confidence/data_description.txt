@@ -2,7 +2,7 @@ data_0
 test 
 
 data_1:
-deepset
+deepset -> probably bug in code
 repeat = 10
 batch_size = 10000     
 N_events = int(10000)  
@@ -20,7 +20,7 @@ base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_3:
-deepset
+deepset -> probably bug in code
 repeat = 100
 batch_size = 10000     
 N_events = int(10000)   
@@ -69,7 +69,7 @@ base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_8:
-deepset
+deepset -> probably bug in code
 repeat = 100
 batch_size = 10000     
 N_events = int(10000)   
@@ -79,7 +79,7 @@ base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_8:
-deepset
+deepset -> probably bug in code
 repeat = 100
 batch_size = 10000     
 N_events = int(10000)   
@@ -89,7 +89,7 @@ base: a=0.68,b=0.98,sigma=0.335
 target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_9:?
-deepset
+deepset -> probably bug in code
 repeat = 5
 batch_size = 10000     
 N_events = int(50000)   
@@ -110,7 +110,7 @@ target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_11:
 mult
-repeat = 100
+repeat = 19
 batch_size = 50000     
 N_events = int(50000)  
 epochs = 300
@@ -120,7 +120,7 @@ target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_12:
 deepset
-repeat = 100
+repeat = 2
 batch_size = 50000     
 N_events = int(50000)  
 epochs = 300
@@ -130,7 +130,7 @@ target: a_d=0.74,b_d=0.88,sigma=0.330
 
 data_13:
 deepset
-repeat = 100
+repeat = 47
 batch_size = 50000     
 N_events = int(50000)  
 epochs = 100

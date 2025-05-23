@@ -59,9 +59,13 @@ class ObservableDataset(Dataset):
 exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.3_N_1.5e+05_hadrons.npy'
 
-sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
-sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
-sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_fPrel.npy'
+# sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
+# sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
+# sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_fPrel.npy'
+
+sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.077_aU0_aS0_aC0_aB0_aH0.97_bD0.939_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.324_N_1.5e+05_hadrons.npy'
+sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.077_aU0_aS0_aC0_aB0_aH0.97_bD0.939_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.324_N_1.5e+05_id_mT2_accept_reject_z.npy'
+sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.077_aU0_aS0_aC0_aB0_aH0.97_bD0.939_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.324_N_1.5e+05_fPrel.npy'
 
 
 # Load the arrays
@@ -84,36 +88,36 @@ learning_rate = 0.01
 fixed_binning = True
 
 # Define base parameters of simulated data (a, b)
-aExtraDQuark = 0
+aExtraDQuark = 0.077
 aExtraUQuark = 0
 aExtraSQuark = 0
 aExtraCquark = 0
 aExtraBquark = 0
 aExtraDiquark = 0.97
 
-bNonstandardD = 0.88
-bNonstandardU = 0.88
-bNonstandardS = 0.88
-bNonstandardC = 0.88
-bNonstandardB = 0.88
-bNonstandardH = 0.88
+bNonstandardD = 0.939
+bNonstandardU = 0.98
+bNonstandardS = 0.98
+bNonstandardC = 0.98
+bNonstandardB = 0.98
+bNonstandardH = 0.98
 
 aLund = 0.68
 bLund = 0.98
-sigma_base = 0.335
+sigma_base = 0.324
 
 aLundD = aLund + aExtraDQuark
 # bLundD = bNonstandardD
-bLundD = bLund
+bLundD = bNonstandardD
 aLundU = aLund + aExtraUQuark
 # bLundU = bNonstandardU
-bLundU = bLund
+bLundU = bNonstandardU
 aLundS = aLund + aExtraSQuark
 # bLundS = bNonstandardS
-bLundS = bLund
+bLundS = bNonstandardS
 aLundDiquark = aLund + aExtraDiquark
 # bLundDiquark = bNonstandardH
-bLundDiquark = bLund
+bLundDiquark = bNonstandardH
 
 
 # params_base = {'a0': torch.tensor(aLund), 'b0': torch.tensor(bLund),
@@ -132,11 +136,12 @@ params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': 
 
 r_b = torch.tensor([aLundD,bLundD,sigma_base])
 r_t = torch.tensor([0.74,0.88,0.33])
-s = torch.linspace(0,1,20)
+# s = torch.linspace(0,1.2,20)
+s = torch.arange(0,1.2,0.05)
 # delta_s = s[1]-s[0]
 s_eps = 1e-5
 s[0] = s[0] + s_eps # for stability
-s = torch.cat([s, torch.tensor([1.1])])
+# s = torch.cat([s, torch.tensor([1.1])])
 s = s[:, torch.newaxis]
 
 line_grid = r_b + s*(r_t-r_b)
@@ -149,11 +154,13 @@ all_metrics_Neff = []
 all_metrics_mu = []
 
 
-Ns = [100,500,1000,2500,5000,7500,10000,25000,50000]
+# Ns = [100,500,1000,2500,5000,7500,10000,25000,50000]
+Ns = [10000,25000,50000]
 # Ns = [100,500,1000,2500]
 # Ns = [1000,5000]
 Ns = [int(N) for N in Ns]
-repeat = {100:50, 500: 50, 1000:20, 2500:10, 5000:10, 7500:10, 10000:10, 25000:5, 50000:3}
+# repeat = {100:50, 500: 50, 1000:20, 2500:10, 5000:10, 7500:10, 10000:10, 25000:5, 50000:3}
+repeat = {10000:10, 25000:5, 50000:3}
 # repeat = {100:100, 500: 50, 1000:20, 2500:10}
 # repeat = {1000: 5, 5000:4, }
 
@@ -213,7 +220,7 @@ if __name__ == "__main__":
         all_mus         = []
         all_neffs       = []
 
-        plt_nm = 5
+        plt_nm = 6
 
         a_b_c = line_grid.detach().numpy()
         np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/grad_stability_errors/all_Ns{plt_nm}',
