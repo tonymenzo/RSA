@@ -8,11 +8,11 @@ import subprocess
 # Define the parameters
 aLund = 0.68 # Example value for aLund
 bLund = 0.98  # Example value for bLund
-sigma = 0.324  # Example value for sigma
-nEvent = 150000  # Example value for nEvent
+sigma = 0.33  # Example value for sigma
+nEvent = 1000000  # Example value for nEvent
 
 # Define parameters
-aExtraDQuark = 0.077
+aExtraDQuark = 0.06
 aExtraUQuark = 0
 aExtraSQuark = 0
 aExtraCquark = 0
@@ -20,7 +20,7 @@ aExtraBquark = 0
 aExtraDiquark = 0.97
 
 
-bNonstandardD = 0.939
+bNonstandardD = 0.88
 bNonstandardU = 0.98
 bNonstandardS = 0.98
 bNonstandardC = 0.98
