@@ -7,10 +7,10 @@
 
 
 import importlib
-from RSA_nD_tuner_emb import *
-import RSA_nD_tuner_emb
-importlib.reload(RSA_nD_tuner_emb)
-from RSA_nD_tuner_emb import *
+from RSA_4D_tuner_emb import *
+import RS_4D_tuner_emb
+importlib.reload(RSA_4D_tuner_emb)
+from RSA_4D_tuner_emb import *
 
 # import importlib
 # from RSA_nD_tuner import *
@@ -87,7 +87,8 @@ def a_b_c_grid_custom(x_points, y_points, z_points):
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+04_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_2.0e+04_hadrons.npy'
-exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
+# exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
+exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.0e+06_id_mT2_accept_reject_z.npy'
 
 # sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+05_hadrons.npy'
 sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
@@ -111,16 +112,17 @@ print('Simulated fPrel shape:', sim_fPrel.shape)
 
 # Restrict to a subset of the full dataset (for memory)
 N_events = int(10000)
+N_target = min(int(100000), len(exp_hadrons)) # the number of events in the experimental dataset
 
 # Extract the hadron multiplicity
-exp_mult = np.array([len(exp_hadrons[i,:][np.abs(exp_hadrons[i,:,0]) > 0.0]) for i in range(N_events)])
+exp_mult = np.array([len(exp_hadrons[i,:][np.abs(exp_hadrons[i,:,0]) > 0.0]) for i in range(N_target)])
 sim_mult = np.array([len(sim_hadrons[i,:][np.abs(sim_hadrons[i,:,0]) > 0.0]) for i in range(N_events)])
 
 # Convert into torch objects
 sim_mult          = torch.Tensor(sim_mult[0:N_events].copy())
 sim_accept_reject = torch.Tensor(sim_accept_reject[0:N_events].copy())
 sim_fPrel         = torch.Tensor(sim_fPrel[0:N_events].copy())
-exp_mult          = torch.Tensor(exp_mult[0:N_events].copy())
+exp_mult          = torch.Tensor(exp_mult[0:N_target].copy())
 
 # Check the accepted z-values, if z == 1 reduce it by epsilon (a very nasty bug to find).
 # The a-coefficient when computing the likelihood has a term proportional to log(1-z). If 
@@ -147,7 +149,7 @@ batch_size = N_events
 sim_observable_dataloader    = DataLoader(sim_mult,          batch_size = batch_size, shuffle = False, pin_memory=True)
 sim_accept_reject_dataloader = DataLoader(sim_accept_reject, batch_size = batch_size, shuffle = False, pin_memory=True)
 sim_fPrel_dataloader         = DataLoader(sim_fPrel,         batch_size = batch_size, shuffle = False, pin_memory=True)
-exp_observable_dataloader    = DataLoader(exp_mult,          batch_size = batch_size, shuffle = False, pin_memory=True)
+exp_observable_dataloader    = DataLoader(exp_mult,          batch_size = N_target, shuffle = False, pin_memory=True)
 
 print('Size of sim_observable_dataloader:', len(sim_observable_dataloader.dataset))
 print('Size of sim_accept_reject_dataloader:', len(sim_accept_reject_dataloader.dataset))
