@@ -22,9 +22,6 @@ class LundWeight(nn.Module):
             over_sample_factor (int): -------- Over-sampling factor for the rejected events
         """
 
-        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        # self.device = 'cpu'
-
         # Device
         self.device = device
 
@@ -36,34 +33,11 @@ class LundWeight(nn.Module):
             self.sigma_alt = torch.nn.Parameter(self.params['sigma'].to(self.device), requires_grad = True)
 
         # Initialize the params dictionary
-        # self.params = torch.nn.ParameterDict({})
-
-        # Iterate of all keys in the dictionary and create a parameter for each key
-        # fixed_list    = []
-        # trainable_list = []
-        # for ind, key in enumerate(params_base.keys()):
-        #     if key in params:
-        #         self.params[key] = torch.nn.Parameter(params[key].to(self.device), requires_grad = True)
-        #         # trainable_list.append(ind)
-        #     else:
-        #         self.params[key] = torch.nn.Parameter(params_base[key].clone().detach().to(self.device), requires_grad = False)
-                # fixed_list.append(ind)
-
-        # # fixed_idxs     = torch.tensor(sorted(fixed_list),     dtype=torch.long, device=self.device)
-        # # trainable_idxs = torch.tensor(sorted(trainable_list), dtype=torch.long, device=self.device)
-
-
-        # # emb = list(self.params.keys()) 
-        # # emb2idx = {k: i for i, k in enumerate(emb)}
-        # # embweight = torch.stack([self.params[k] for k in emb], dim=0)
-
         # Two lookups (one for 'a', one for 'b')
         self.a_lookup_alt = PIDLookup(params_base, params, prefix='a', device=self.device, alt=True)
         self.b_lookup_alt = PIDLookup(params_base, params, prefix='b', device=self.device, alt=True)
         self.a_lookup_base = PIDLookup(params_base, params, prefix='a', device=self.device, alt=False)
         self.b_lookup_base = PIDLookup(params_base, params, prefix='b', device=self.device, alt=False)
-
-
 
         # Initialize the over-sampling factor
         self.over_sample_factor = over_sample_factor
@@ -248,6 +222,7 @@ class LundWeight(nn.Module):
         pid_old = z_mT2_pid[..., 0].abs().round().long()  # → (B, T)
         pid_new = z_mT2_pid[..., 1].abs().round().long()  # → (B, T)
 
+        # # Extract the (absolute value) pid values
         # Four batched lookups, no Python loops
         a_old_base = self.a_lookup_base(pid_old)
         a_base     = self.a_lookup_base(pid_new)
@@ -258,23 +233,6 @@ class LundWeight(nn.Module):
         a_alt      = self.a_lookup_alt(pid_new)
         b_alt      = self.b_lookup_alt(pid_new)
         c_alt = 1 + a_alt - a_old_alt
-
-
-        # # Extract the (absolute value) pid values
-        # pid_old = torch.abs(z_mT2_pid[:, :, 0])
-        # pid_new = torch.abs(z_mT2_pid[:, :, 1])
-
-        # # Compute and create a, b, and c tensors for base and alternative parameters (This is a bottleneck, there isn't a good way to vectorize)
-        # a_old_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
-        # a_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
-        # b_base = torch.stack([torch.stack([self.params_base[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
-        # c_base = 1 + a_base - a_old_base
-
-        # a_old_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
-        # a_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
-        # b_alt = torch.stack([torch.stack([self.params[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1).to(self.device)
-        # c_alt = 1 + a_alt - a_old_alt
-        #check i a_old_alt is on device
 
         # Create masks for base and alternate parameters (masks should be the same)
         a_mask = a_base != 0.
@@ -422,39 +380,3 @@ class PIDLookup(nn.Module):
         idxs = torch.searchsorted(self.pid_keys, pid_values)
         # Single fused gather
         return self.embed(idxs)
-
-
-# class FastPIDModule(nn.Module):
-#     def __init__(
-#         self,
-#         params_base: dict[str, torch.Tensor],
-#         params:      dict[str, torch.Tensor],
-#         device:      str = 'cuda'
-#     ):
-#         super().__init__()
-#         self.device = device
-
-#         # Two lookups (one for 'a', one for 'b')
-#         self.a_lookup = PIDLookup(params_base, params, prefix='a', device=device)
-#         self.b_lookup = PIDLookup(params_base, params, prefix='b', device=device)
-
-#     def forward(self, z_mT2_pid: torch.Tensor):
-#         # z_mT2_pid: Tensor of shape (B, T, 2)
-#         pid_old = z_mT2_pid[..., 0].abs().round().long()  # → (B, T)
-#         pid_new = z_mT2_pid[..., 1].abs().round().long()  # → (B, T)
-
-#         # Four batched lookups, no Python loops
-#         a_old_base = self.a_lookup(pid_old)
-#         a_base     = self.a_lookup(pid_new)
-#         b_base     = self.b_lookup(pid_new)
-
-#         a_old_alt  = self.a_lookup(pid_old)
-#         a_alt      = self.a_lookup(pid_new)
-#         b_alt      = self.b_lookup(pid_new)
-
-#         # Compute c’s
-#         c_base = 1 + a_base - a_old_base
-#         c_alt  = 1 + a_alt  - a_old_alt
-
-#         return a_old_base, a_base, b_base, c_base, \
-#                a_old_alt,  a_alt,  b_alt,  c_alt
