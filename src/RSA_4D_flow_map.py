@@ -8,7 +8,7 @@
 
 import importlib
 from RSA_4D_tuner_emb import *
-import RS_4D_tuner_emb
+import RSA_4D_tuner_emb
 importlib.reload(RSA_4D_tuner_emb)
 from RSA_4D_tuner_emb import *
 
@@ -79,6 +79,33 @@ def a_b_c_grid_custom(x_points, y_points, z_points):
 
     return grid_flattened
 
+def grid_from_dict(params_grid: dict, params_learn: dict) -> torch.Tensor:
+    """
+    Creates a grid of all parameter combinations based on values in `params_grid`,
+    ordered by the keys in `params_learn`.
+
+    Args:
+        params_grid (dict): Dictionary of parameter_name: tensor_of_grid_points.
+        params_learn (dict): Dictionary that defines the key order.
+
+    Returns:
+        torch.Tensor: A tensor of shape (num_points, num_parameters),
+                      with rows representing parameter combinations.
+    """
+    # 1. Get ordered keys from params_learn
+    ordered_keys = list(params_learn.keys())
+
+    # 2. Collect the grid vectors in the desired order
+    grid_axes = [params_grid[k] for k in ordered_keys]
+
+    # 3. Build meshgrid in correct order
+    mesh = torch.meshgrid(*grid_axes, indexing='ij')
+
+    # 4. Flatten and stack each mesh into (N_points, N_dims)
+    grid = torch.stack([m.flatten() for m in mesh], dim=-1)
+
+    return grid, ordered_keys
+
 
 
 # Paths to the datasets
@@ -111,8 +138,8 @@ print('Simulated z shape:', sim_accept_reject.shape)
 print('Simulated fPrel shape:', sim_fPrel.shape)
 
 # Restrict to a subset of the full dataset (for memory)
-N_events = int(10000)
-N_target = min(int(100000), len(exp_hadrons)) # the number of events in the experimental dataset
+N_events = int(1000)
+N_target = min(int(1000), len(exp_hadrons)) # the number of events in the experimental dataset
 
 # Extract the hadron multiplicity
 exp_mult = np.array([len(exp_hadrons[i,:][np.abs(exp_hadrons[i,:,0]) > 0.0]) for i in range(N_target)])
@@ -218,6 +245,7 @@ params_base = {'a0': torch.tensor(0.0), 'b0': torch.tensor(0.0),
 
 # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD), 'a2': torch.tensor(aLundU)}
 params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': torch.tensor(sigma_base)}
+params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'a2': torch.tensor(aLundU),'sigma': torch.tensor(sigma_base)}
 # params_learn = {'a1': torch.tensor(aLundD), 'sigma': torch.tensor(sigma_base)}
 
 # Define a grid of initial parameters
@@ -254,18 +282,23 @@ n_points = 10
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
 # a_range  = (0.03, 3.0)#(0.6, 0.80)
 # b_range  = (0.2, 2.0)#(0.85, 1.05)
-ad_points  = torch.linspace(0.6,0.9,10)
-bd_points  = torch.linspace(0.7,1.1,10)
+a1_points  = torch.linspace(0.6,0.9,10)
+a2_points  = torch.linspace(0.68,0.68,10)
+b1_points  = torch.linspace(0.7,1.1,3)
 # bd_points  = torch.tensor([0.88])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
 sigma_points = torch.linspace(0.200, 0.400, 10)
 
+params_grid_dict = {'a1':a1_points, 'b1': b1_points,'a2': a2_points, 'sigma': sigma_points}
 
 # n_points = 6
 # ad_bd_au_init = a_b_c_grid(ad_range, bd_range, au_range, n_points) #The order need to be the same as the parameters_learn order
-ad_bd_au_init = a_b_c_grid_custom(ad_points, bd_points, sigma_points) #The order need to be the same as the parameters_learn order
+# ad_bd_au_init = a_b_c_grid_custom(ad_points, bd_points, sigma_points) #The order need to be the same as the parameters_learn order
+params_grid, ordered_keys = grid_from_dict(params_grid=params_grid_dict, params_learn=params_learn)
 
-print('Initial ad_au_bd grid shape:', ad_bd_au_init.shape)
+
+print('Initial ad_au_bd grid shape:', params_grid.shape)
+print('Parameter order: ', ordered_keys)
 
 
 # Irrelevant parameters for the flow plot that must be initialized for the RSA class
@@ -285,21 +318,32 @@ RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_acc
 optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
 #optimizer = torch.optim.SGD(macroscopic_trainer.weight_nexus.parameters(), lr=learning_rate)
 # Generate gradients
-a_b_gradients, loss_grid, metrics = RSA.RSA_flow(optimizer, ad_bd_au_init)
-a_b_c = ad_bd_au_init.detach().numpy()
+gradients, loss_grid, metrics = RSA.RSA_flow(optimizer, params_grid)
+a_b_c = params_grid.detach().numpy()
 
 #to save:
 # Calculate the magnitude of each vector in a_b_gradients
-magnitudes = np.linalg.norm(a_b_gradients, axis=1)
+magnitudes = np.linalg.norm(gradients, axis=1)
 print(magnitudes.shape)
 
 mu = metrics[0]
 Neff = metrics[1]
-plt_nm = 57
-np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/mu_{plt_nm}', mu)
-np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/Neff_{plt_nm}', Neff)
-np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/magnitudes_{plt_nm}',magnitudes)
-np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/gradients_{plt_nm}',a_b_gradients)
-np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/ad_bd_sig_{plt_nm}',a_b_c)
-np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map_nD/loss_grid_{plt_nm}',loss_grid)
+plt_nm = 1
+dim = len(params_learn)
+
+
+# Construct full path
+folder_path = f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/'
+file_path = os.path.join(folder_path, f'ordered_params_{plt_nm}.npy')
+
+# Create directory if it doesn't exist
+os.makedirs(folder_path, exist_ok=True)
+
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/mu_{plt_nm}', mu)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/Neff_{plt_nm}', Neff)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/magnitudes_{plt_nm}',magnitudes)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/gradients_{plt_nm}',gradients)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/params_grid_{plt_nm}',params_grid)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/loss_grid_{plt_nm}',loss_grid)
+np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flow_map/{dim}D/ordered_params_{plt_nm}', ordered_keys)
 

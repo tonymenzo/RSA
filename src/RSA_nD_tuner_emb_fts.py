@@ -227,18 +227,11 @@ class RSA_nD_tuner():
         init_counter = 0
         for a_b_c_init in tqdm(a_b_c_init_grid, ncols=100):
 
-            # a_b_c_init_dict = {k: torch.tensor(v, device=device) for (k, _), v in zip(self.params_init.items(), a_b_c_init)}
             a_b_c_init_dict = {
                 k: v.clone().detach().to(device) for (k, _), v in zip(self.params_init.items(), a_b_c_init)
-                # k: v.clone().detach().to(device).requires_grad_(True) for (k, _), v in zip(self.params_init.items(), a_b_c_init)
             }
-            # a_b_c_init_dict = self.params_init.copy()
-            # for i,(k,v) in enumerate(a_b_c_init_dict.items()):
-            #     a_b_c_init_dict[k] = a_b_c_init[i]  #a_b_c_init_grid needs to have the same order of parameters as params_init
-            
 
             # Create an intermediate gradient tensor
-            # a_b_c_gradient_i = torch.zeros(3, device=device)
             a_b_c_gradient_i = []
 
             # Initialize new weight module with different initial parameters
@@ -256,7 +249,7 @@ class RSA_nD_tuner():
                 # Compute the loss
                 # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
                 loss = self.wasserstein_loss(z, w, weights)
-                
+                print()
                 
                 # Compute Performance Metrics
                 mu = torch.mean(weights)
