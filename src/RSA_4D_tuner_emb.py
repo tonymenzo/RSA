@@ -104,6 +104,27 @@ class RSA_nD_tuner():
         optimizer: Specified network optimizer
         scheduler: Specified learning rate scheduler
         """
+
+        # Choose the correct order of gradient components:
+        pid_keys_map = {int(key.item()): i for i, key in enumerate(self.weight_nexus.pid_keys)}
+        sigma_ind = 0
+        a_ind_lookup_pos = []
+        a_ind_params_init_pos = []
+        b_ind_lookup_pos = []
+        b_ind_params_init_pos = []
+
+        for p_ind, (k,_) in enumerate(self.params_init.items()):
+            if k == 'sigma': 
+                sigma_ind = p_ind
+            elif 'a' in k:
+                pid = int(k[1:])
+                a_ind_lookup_pos.append(pid_keys_map[pid])
+                a_ind_params_init_pos.append(p_ind)
+            elif 'b' in k:
+                pid = int(k[1:])
+                b_ind_lookup_pos.append(pid_keys_map[pid])
+                b_ind_params_init_pos.append(p_ind)     
+        
         device = self.device
         # Initialize a,b array
         params_array = [[v for v in self.params_init.values()]]
@@ -115,7 +136,8 @@ class RSA_nD_tuner():
             epoch_loss = 0
             
             batch_counter = 0
-            for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
+            w = next(iter(self.exp_observable))
+            for (x,y,z) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base):
                 # print('Batch #', batch_counter)
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
                 # Reset the gradients in the optimizer
@@ -134,6 +156,33 @@ class RSA_nD_tuner():
                 epoch_loss += loss_cpu
                 # loss.backward(create_graph=True) # For AdaHessian
                 loss.backward()
+
+                # Initialize gradient and value containers
+                N = len(self.params_init)
+                param_gradient = torch.zeros(N, device='cpu')
+                param_value = torch.zeros(N, device='cpu')
+
+                for pname, param in self.weight_nexus.named_parameters():
+                    if param.grad is None:
+                        continue
+
+                    grad = param.grad.clone().detach().cpu()
+                    val = param.clone().detach().cpu()
+
+                    if pname == "sigma_alt":
+                        param_gradient[sigma_ind] = grad
+                        param_value[sigma_ind] = val
+
+                    elif "a_lookup_alt" in pname:
+                        param_gradient[a_ind_params_init_pos] = grad[a_ind_lookup_pos].view(-1)
+                        param_value[a_ind_params_init_pos] = val[a_ind_lookup_pos].view(-1)
+
+                    elif "b_lookup_alt" in pname:
+                        param_gradient[b_ind_params_init_pos] = grad[b_ind_lookup_pos].view(-1)
+                        param_value[b_ind_params_init_pos] = val[b_ind_lookup_pos].view(-1)
+
+                    else:
+                        break  # avoid base (frozen) parameters
                 
                 # if self.print_details:
                 #         # Output the gradients of parameters
@@ -152,41 +201,43 @@ class RSA_nD_tuner():
                 # Output the loss and learning rate 
                 # print(f'Loss: {loss_cpu:>8f}, \n LR: {optimizer.param_groups[0]["lr"]:>8f}')
                 # array_temp = [v.clone().detach().numpy()  for k,v in self.weight_nexus.params.items() if v.requires_grad == True]
-                array_temp = []
-                grad_temp = []
-                for name, param in self.weight_nexus.named_parameters():
-                    if not param.requires_grad or param.grad is None:
-                        continue
+                # array_temp = []
+                # grad_temp = []
+                # for name, param in self.weight_nexus.named_parameters():
+                #     if not param.requires_grad or param.grad is None:
+                #         continue
 
-                    grad = param.grad.clone().detach()
-                    val = param.clone().detach()
-                    # print(name, grad.shape)
-                    if val.numel() == 1:
-                        array_temp.append(val.item())
-                        grad_temp.append(grad.item())
-                    else:
-                        nonzero = val[grad != 0]
-                        array_temp.extend(nonzero.tolist())
-                        nonzero_grad = grad[grad != 0]
-                        grad_temp.extend(nonzero_grad.tolist())
+                #     grad = param.grad.clone().detach()
+                #     val = param.clone().detach()
+                #     # print(name, grad.shape)
+                #     if val.numel() == 1:
+                #         array_temp.append(val.item())
+                #         grad_temp.append(grad.item())
+                #     else:
+                #         nonzero = val[grad != 0]
+                #         array_temp.extend(nonzero.tolist())
+                #         nonzero_grad = grad[grad != 0]
+                #         grad_temp.extend(nonzero_grad.tolist())
 
-                    if len(array_temp) >= 3:
-                        break  # stop once we have 3 values
+                #     if len(array_temp) >= 3:
+                #         break  # stop once we have 3 values
                     
-                    # print(param.grad.clone().detach().cpu().shape)
-                    # print(param.grad.clone().detach().cpu().numpy())
-                    # print(param.clone().detach().numpy())
-                    # param_gradient_i[ip] = param.grad.clone().detach()
-                array_temp = torch.tensor(array_temp, device='cpu')
-                array_temp = torch.cat([array_temp[1:], array_temp[:1]])
-                grad_temp = torch.tensor(grad_temp, device='cpu')
-                grad_temp = torch.cat([grad_temp[1:], grad_temp[:1]])
-                print(f'Parameters: {array_temp}')
-                print(f'Gradients: {grad_temp}')
-                # print('----------------------------------------------')
+                #     # print(param.grad.clone().detach().cpu().shape)
+                #     # print(param.grad.clone().detach().cpu().numpy())
+                #     # print(param.clone().detach().numpy())
+                #     # param_gradient_i[ip] = param.grad.clone().detach()
+                # array_temp = torch.tensor(array_temp, device='cpu')
+                # array_temp = torch.cat([array_temp[1:], array_temp[:1]])
+                # grad_temp = torch.tensor(grad_temp, device='cpu')
+                # grad_temp = torch.cat([grad_temp[1:], grad_temp[:1]])
+                print('----------------------------------------------')
+                print(f'Loss: {loss_cpu}')
+                print(f'Parameters: {param_value}')
+                print(f'Gradients: {param_gradient}')
+                print('----------------------------------------------')
 
                 # Record the tuned parameters
-                params_array.append(array_temp.detach())
+                params_array.append(param_value.detach())
                 # params_array = torch.tensor(params_array, device= 'cpu')
                 
                 if self.print_details and self.results_dir != None:
@@ -199,7 +250,7 @@ class RSA_nD_tuner():
                 
         # Return the final tuned parameters as well as the full search space path     
         # return np.array([v.clone().detach().cpu().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]), np.array(params_array)
-        return array_temp, params_array, loss_values
+        return param_value, params_array, loss_values
     
     def RSA_flow(self, optimizer, param_grid):
 
@@ -259,9 +310,10 @@ class RSA_nD_tuner():
             if self.weight_nexus != None:
                 del self.weight_nexus
             torch.cuda.empty_cache()
-            
+
             self.weight_nexus = LundWeight(self.params_base, param_point_dict, over_sample_factor = self.over_sample_factor, device= self.device)
-            for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
+            w = next(iter(self.exp_observable))
+            for (x,y,z) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base):
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
                 # Reset the gradients
                 optimizer.zero_grad()

@@ -29,17 +29,22 @@ class LundWeight(nn.Module):
         self.params_base = params_base
         self.params = params
 
-        if self.params['sigma']:
+        if "sigma" in self.params and self.params["sigma"] is not None:
+            #!NOTE: don't change variable name
             self.sigma_alt = torch.nn.Parameter(self.params['sigma'].to(self.device), requires_grad = True)
 
         # Initialize the params dictionary
         # Two lookups (one for 'a', one for 'b')
+        #!NOTE: don't change variable name
         self.a_lookup_alt = PIDLookup(params_base, params, prefix='a', device=self.device, alt=True)
         self.b_lookup_alt = PIDLookup(params_base, params, prefix='b', device=self.device, alt=True)
         self.a_lookup_base = PIDLookup(params_base, params, prefix='a', device=self.device, alt=False)
         self.b_lookup_base = PIDLookup(params_base, params, prefix='b', device=self.device, alt=False)
 
-        # Initialize the over-sampling factor
+        # Register pid_keys to use for gradient saving
+        self.pid_keys = self.a_lookup_alt.pid_keys
+
+        # Initialize the over-sampling factor 
         self.over_sample_factor = over_sample_factor
 
         # Constants for numerical stability checks
@@ -281,7 +286,7 @@ class LundWeight(nn.Module):
         weights = accept_weights * reject_weights
 
         # Add weights for reweighting sigma_pT
-        if self.sigma_alt:
+        if getattr(self, "sigma_alt", None) is not None:
             px, py = z_mT2_pid[:, :, 3], z_mT2_pid[:, :, 4]
             p_mask = (px != 0)
             weights_sigma = self.sigma_weights(px,py,p_mask)
@@ -332,7 +337,7 @@ class PIDLookup(nn.Module):
                     # frozen
                     weight[i, 0] = params_base[key].to(device)
                     fixed_rows.append(i)
-            
+
             # 4) Create an Embedding from this weight (all rows trainable initially)
             self.embed = nn.Embedding.from_pretrained(weight, freeze=False)
             

@@ -1,0 +1,9 @@
+plt_nm = 1 (same as data_72 from Flowmap_nD)
+multiplicity, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 500k
+20x20x2 grid:b_d=0.98,0.88
+
+

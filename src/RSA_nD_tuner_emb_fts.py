@@ -249,7 +249,6 @@ class RSA_nD_tuner():
                 # Compute the loss
                 # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
                 loss = self.wasserstein_loss(z, w, weights)
-                print()
                 
                 # Compute Performance Metrics
                 mu = torch.mean(weights)

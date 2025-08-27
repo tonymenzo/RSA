@@ -322,5 +322,133 @@ grid: b_d = 0.88
 10x10 grid
 3d finer grid
 
+-> data_57: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10000
+N_target = 1e6
+10x10 grid
+
+-> data_58: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=1000
+N_target = 1000
+10x10 grid
+
+-> data_59?: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=1ok
+N_target = 500k
+10x10 grid
+
+-> data_60: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10k
+N_target = 1M
+5x5x5 grid
+
+-> data_61: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10k
+N_target = 10k
+5x5x5 grid
+
+-> data_62: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10k
+N_target = 1M
+10x10x10 grid
+
+-> data_63: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10k
+N_target = 1M
+10x10x10 grid
+
+-> data_64: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.74, b=0.88, sigma=0.330  
+N=10k
+N_target = 1M
+20x20x2 grid
+
+-> data_65: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.85, b=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+10x10x10 grid
+
+-> data_66: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.335
+target: a=0.85, b=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+20x20x2 grid
+
+-> data_67: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+20x20x2 grid:b_d=0.98,0.88
+
+-> data_68: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.2925, a_d=+0.085, b_d=0.93
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+20x20x2 grid:b_d=0.98,0.88
+
+-> data_69: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+20x20x2 grid:b_d=0.98,0.88
+
+-> data_70: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.250, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+20x20x2 grid:b_d=0.98,0.88
+
+-> data_71 - repeated for testing: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+20x20x2 grid:b_d=0.98,0.88
+
+-> data_72 - repeated for testing: 
+mult, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 500k
+20x20x2 grid:b_d=0.98,0.88
+
 
 

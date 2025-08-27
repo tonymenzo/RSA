@@ -20,7 +20,7 @@ base: a_d=0.68, b_d=0.98, sigma=0.335
 target: a_d=0.74, b_d=0.88, sigma=0.33
 20 points on the line
 
-data_6 -> to do
+data_6 
 base: a_d=0.757, b_d=0.939, sigma=0.324
 target: a_d=0.74, b_d=0.88, sigma=0.33
 20 points on the line

@@ -115,14 +115,25 @@ def grid_from_dict(params_grid: dict, params_learn: dict) -> torch.Tensor:
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_2.0e+04_hadrons.npy'
 # exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
-exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.0e+06_id_mT2_accept_reject_z.npy'
+exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.17_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.25_N_1.0e+06_hadrons.npy'
 
 # sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+05_hadrons.npy'
-sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
+# sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
+sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.0425_aU0_aS0_aC0_aB0_aH0.97_bD0.955_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.31375_N_1.0e+05_hadrons.npy'
+# sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.085_aU0_aS0_aC0_aB0_aH0.97_bD0.93_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.2925_N_1.0e+05_hadrons.npy'
+# sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_hadrons.npy'
+# sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.17_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.25_N_1.0e+05_hadrons.npy'
 # sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+05_id_mT2_accept_reject_z.npy'
-sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
+sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.0425_aU0_aS0_aC0_aB0_aH0.97_bD0.955_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.31375_N_1.0e+05_id_mT2_accept_reject_z.npy'
+# sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.085_aU0_aS0_aC0_aB0_aH0.97_bD0.93_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.2925_N_1.0e+05_id_mT2_accept_reject_z.npy'
+# sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_id_mT2_accept_reject_z.npy'
+# sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.17_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.25_N_1.0e+05_id_mT2_accept_reject_z.npy'
 # sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.0e+05_fPrel.npy'
-sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_fPrel.npy'
+sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.0425_aU0_aS0_aC0_aB0_aH0.97_bD0.955_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.31375_N_1.0e+05_fPrel.npy'
+# sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.085_aU0_aS0_aC0_aB0_aH0.97_bD0.93_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.2925_N_1.0e+05_fPrel.npy'
+# sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_fPrel.npy'
+# sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.17_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.25_N_1.0e+05_fPrel.npy'
+
 
 # Load the arrays
 exp_hadrons       = np.load(exp_hadrons_PATH, mmap_mode="r")
@@ -138,8 +149,9 @@ print('Simulated z shape:', sim_accept_reject.shape)
 print('Simulated fPrel shape:', sim_fPrel.shape)
 
 # Restrict to a subset of the full dataset (for memory)
-N_events = int(1000)
-N_target = min(int(1000), len(exp_hadrons)) # the number of events in the experimental dataset
+N_events = int(50000)
+N_target = min(int(1000000), len(exp_hadrons)) # the number of events in the experimental dataset
+print('N_target: ', N_target)
 
 # Extract the hadron multiplicity
 exp_mult = np.array([len(exp_hadrons[i,:][np.abs(exp_hadrons[i,:,0]) > 0.0]) for i in range(N_target)])
@@ -155,7 +167,7 @@ exp_mult          = torch.Tensor(exp_mult[0:N_target].copy())
 # The a-coefficient when computing the likelihood has a term proportional to log(1-z). If 
 # z = 1, this term diverges to -inf and completely destroys the backward pass.
 epsilon = 1e-5
-sim_accept_reject[sim_accept_reject == 1] = 1 - epsilon
+sim_accept_reject[:,:,2:][sim_accept_reject[:,:,2:] == 1] = 1 - epsilon # Do not change pid values!
 
 # Print dataset shapes
 print('Experimental multiplicity shape:', exp_mult.shape)
@@ -166,7 +178,7 @@ print('Simulated fPrel shape:', sim_fPrel.shape)
 # Prepare data for DataLoader
 sim_mult          = ObservableDataset(sim_mult)
 sim_accept_reject = ObservableDataset(sim_accept_reject)
-sim_mT            = ObservableDataset(sim_fPrel)
+sim_fPrel            = ObservableDataset(sim_fPrel) #!NOTE: changed sim_mt to sim_fPrel
 exp_mult          = ObservableDataset(exp_mult)
 
 # Set batch size -- set it eqaul to the number of events, we only want one 'batch'
@@ -201,36 +213,39 @@ print('Each emission has been zero-padded to a length of', dim_accept_reject)
 # Define base parameters of simulated data (a, b)
 # params_base = torch.tensor([0.72, 0.88])
 
-aExtraDQuark = 0
+aExtraDQuark = 0.0425
+# aExtraDQuark = 0.17
 aExtraUQuark = 0
 aExtraSQuark = 0
 aExtraCquark = 0
 aExtraBquark = 0
 aExtraDiquark = 0.97
 
-bNonstandardD = 0.88
-bNonstandardU = 0.88
-bNonstandardS = 0.88
-bNonstandardC = 0.88
-bNonstandardB = 0.88
-bNonstandardH = 0.88
+bNonstandardD = 0.955
+# bNonstandardD = 0.93
+# bNonstandardD = 0.88
+bNonstandardU = 0.98
+bNonstandardS = 0.98
+bNonstandardC = 0.98
+bNonstandardB = 0.98
+bNonstandardH = 0.98
 
 aLund = 0.68
 bLund = 0.98
-sigma_base = 0.335
+sigma_base = 0.31375
 
 aLundD = aLund + aExtraDQuark
-# bLundD = bNonstandardD
-bLundD = bLund
+bLundD = bNonstandardD
+# bLundD = bLund
 aLundU = aLund + aExtraUQuark
-# bLundU = bNonstandardU
-bLundU = bLund
+bLundU = bNonstandardU
+# bLundU = bLund
 aLundS = aLund + aExtraSQuark
-# bLundS = bNonstandardS
-bLundS = bLund
+bLundS = bNonstandardS
+# bLundS = bLund
 aLundDiquark = aLund + aExtraDiquark
-# bLundDiquark = bNonstandardH
-bLundDiquark = bLund
+bLundDiquark = bNonstandardH
+# bLundDiquark = bLund
 
 
 # params_base = {'a0': torch.tensor(aLund), 'b0': torch.tensor(bLund),
@@ -244,56 +259,21 @@ params_base = {'a0': torch.tensor(0.0), 'b0': torch.tensor(0.0),
             'sigma': torch.tensor(sigma_base)}
 
 # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD), 'a2': torch.tensor(aLundU)}
-params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': torch.tensor(sigma_base)}
 params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'a2': torch.tensor(aLundU),'sigma': torch.tensor(sigma_base)}
-# params_learn = {'a1': torch.tensor(aLundD), 'sigma': torch.tensor(sigma_base)}
+# params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': torch.tensor(sigma_base)}
 
 # Define a grid of initial parameters
-ad_range  = (0.5-0.1, 1.5+0.1)#(0.6, 0.80)
-au_range  = (0.5-0.1, 1.5+0.1)#(0.6, 0.80)
-bd_range  = (0.6-0.1, 1.6+0.1)#(0.85, 1.05)
-
-n_points = 10
-# ad_points  = torch.linspace(0.5-0.1, 1.5+0.1,n_points)#(0.6, 0.80)
-# au_points  = torch.tensor([0.58])
-# bd_points  = torch.linspace(0.6-0.1, 1.6+0.1, n_points)#(0.85, 1.05)
-# ad_points  = torch.tensor([0.68])
-# bd_points  = torch.tensor([0.98])
-# sigma_points  = torch.tensor([0.285, 0.300, 0.335])
-# ad_points  = torch.linspace(0.68-0.1, 0.68+0.1, n_points)#(0.6, 0.80)
-# bd_points  = torch.linspace(0.98-0.1, 0.98+0.1, n_points)#(0.6, 0.80)
-# sigma_points  = torch.tensor([0.285, 0.300, 0.335])
-# ad_points  = torch.tensor([0.62,0.63,0.64,0.65,0.66,0.67,0.68])
-# ad_points  = torch.tensor([0.67,0.68,0.69,0.70,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79])
-# ad_points  = torch.arange(0.67,0.80,0.01)
-# ad_points  = torch.arange(0.57,0.70,0.01)
-# bd_points  = torch.arange(0.87,0.99,0.01)
-
-# bd_points  = torch.tensor([0.87,0.88,0.89,0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99])
-# bd_points  = torch.tensor([0.88])
-# sigma_points  = torch.tensor([0.295,0.300,0.305,0.310,0.315,0.320,0.325,0.330,0.335,0.340])
-# sigma_points  = torch.tensor([0.330,0.335,0.340])
-# sigma_points = torch.arange(0.305, 0.340, 0.005)
-# sigma_points = torch.tensor([0.310, 0.335])
-# b_range = (0.88,1)
-
-# Search the whole range of parameters
-# a_range  = (0.03, 3.0)#(0.6, 0.80)
-# b_range  = (0.2, 2.0)#(0.85, 1.05)
-# a_range  = (0.03, 3.0)#(0.6, 0.80)
-# b_range  = (0.2, 2.0)#(0.85, 1.05)
 a1_points  = torch.linspace(0.6,0.9,10)
-a2_points  = torch.linspace(0.68,0.68,10)
-b1_points  = torch.linspace(0.7,1.1,3)
+# a2_points  = torch.linspace(0.68,0.68,10)
+a2_points  = torch.tensor([0.67,0.68,0.69])
+b1_points  = torch.linspace(0.88, 0.98, 2)
 # bd_points  = torch.tensor([0.88])
 # sigma_points = torch.arange(0.328, 0.337, 0.001)
 sigma_points = torch.linspace(0.200, 0.400, 10)
 
 params_grid_dict = {'a1':a1_points, 'b1': b1_points,'a2': a2_points, 'sigma': sigma_points}
+# params_grid_dict = {'a1':a1_points, 'b1': b1_points, 'sigma': sigma_points}
 
-# n_points = 6
-# ad_bd_au_init = a_b_c_grid(ad_range, bd_range, au_range, n_points) #The order need to be the same as the parameters_learn order
-# ad_bd_au_init = a_b_c_grid_custom(ad_points, bd_points, sigma_points) #The order need to be the same as the parameters_learn order
 params_grid, ordered_keys = grid_from_dict(params_grid=params_grid_dict, params_learn=params_learn)
 
 
@@ -328,7 +308,7 @@ print(magnitudes.shape)
 
 mu = metrics[0]
 Neff = metrics[1]
-plt_nm = 1
+plt_nm = 2
 dim = len(params_learn)
 
 

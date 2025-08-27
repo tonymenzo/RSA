@@ -26,35 +26,6 @@ class ObservableDataset(Dataset):
 		sample = self.data[idx]
 		return sample
 	
-# def prescale(exp_data, sim_data, axes=(0, 1)):
-#     """
-#     Prescale the experimental and simulated data using the combined mean and standard deviation.
-
-#     Args:
-#         exp_data (np.ndarray): The experimental data.
-#         sim_data (np.ndarray): The simulated data.
-#         axes (tuple): The axes along which to calculate the mean and standard deviation.
-
-#     Returns:
-#         np.ndarrays: The prescaled experimental and simulated data.
-#     """
-#     # Mask to identify non-padded entries (i.e., entries that are not [0.0, 0.0, 0.0, 0.0])
-#     non_padded_mask_exp = ~(np.all(exp_data == 0, axis=-1))
-#     non_padded_mask_sim = ~(np.all(sim_data == 0, axis=-1))
-    
-#     # Flatten the non-padded parts of the datasets along the specified axes for mean/std calculation
-#     combined_data = np.concatenate([exp_data[non_padded_mask_exp], sim_data[non_padded_mask_sim]], axis=0)
-#     combined_mean = combined_data.mean(axis=0)
-#     print("Mean:", combined_mean)
-#     combined_std = combined_data.std(axis=0)
-
-#     # Scale only the non-padded entries using the combined mean and std
-#     exp_data_scaled = np.copy(exp_data)
-#     sim_data_scaled = np.copy(sim_data)
-#     exp_data_scaled[non_padded_mask_exp] = (exp_data[non_padded_mask_exp] - combined_mean) / combined_std
-#     sim_data_scaled[non_padded_mask_sim] = (sim_data[non_padded_mask_sim] - combined_mean) / combined_std
-    
-#     return exp_data_scaled, sim_data_scaled
 
 # Paths to the datasets
 exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.06_aU0_aS0_aC0_aB0_aH0.97_bD0.88_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.33_N_1.5e+05_hadrons.npy'
