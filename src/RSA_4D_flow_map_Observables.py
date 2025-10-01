@@ -1,5 +1,5 @@
 """
-# Flowmap for reweighting of parameters including sigma usin multiplicity histogram
+# Flowmap for reweighting of parameters including sigma using multiplicity histogram
 # Run file from src directory to avoid path errors
 # Define base parameters in params_base, define parameters to be reweighted in params_learn and parameters for the grid computation in ad_au_bd_init
 # !NOTE: parameters need to be in the same order in grid, params_base and params_learn
@@ -12,11 +12,6 @@ import RSA_4D_tuner_emb
 importlib.reload(RSA_4D_tuner_emb)
 from RSA_4D_tuner_emb import *
 
-# import importlib
-# from RSA_nD_tuner import *
-# import RSA_nD_tuner
-# importlib.reload(RSA_nD_tuner)
-# from RSA_nD_tuner import *
 
 class ObservableDataset(Dataset):
 	"""
@@ -464,7 +459,7 @@ epochs = 1
 RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
 				params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
 				sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
-				results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flowmap", params_init = params_learn, fixed_binning = True)
+				results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Flowmap", params_init = params_learn, fixed_binning = True, loss_type = 'emd')
 
 # for k,v in RSA.weight_nexus.params.items():
 #     print(v)

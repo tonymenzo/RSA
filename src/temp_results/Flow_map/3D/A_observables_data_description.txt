@@ -1,0 +1,190 @@
+observable: p_all_1mom
+
+plt_nm = 1
+multiplicity, fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+
+
+observable: p_all_skew
+
+plt_nm = 1
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+
+
+observable: mult,charged_mult
+
+plt_nm = 0
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+wasserstein:
+n_projections = 50
+p=2
+
+plt_nm = 1
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+wasserstein:
+n_projections = 128
+p=2
+
+plt_nm = 2
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+wasserstein:
+n_projections = 128
+p=1
+
+mult,charged_mult,p_all_1mom,p_charged_1mom,p_all_var,p_charged_var,p_all_skew,p_charged_skew:
+plt_nm = 1
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.31375, a_d=+0.0425, b_d=0.955
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+wasserstein:
+n_projections = 128
+p=1
+
+plt_nm = 2
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+wasserstein:
+n_projections = 128
+p=1
+
+plt_nm = 3
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=50k
+N_target = 1M
+wasserstein:
+n_projections = 128
+p=1
+#different ranges
+
+Observable: Joker
+plt_nm = 1
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=10k
+N_target = 10k
+wasserstein sum
+p=1
+
+plt_nm = 3
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=5 00
+N_target = 1000
+wasserstein sum
+p=1
+
+plt_nm = 2
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=20k
+N_target = 20k
+wasserstein:
+n_projections = 128
+p=1
+
+plt_nm = 4
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=30k
+N_target = 30k
+wasserstein:
+n_projections = 128
+p=1
+
+
+plt_nm = 6
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=30k
+N_target = 30k
+wasserstein: only pT_loss
+n_projections = 128
+p=1
+
+plt_nm = 6
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=30k
+N_target = 30k
+wasserstein: only pT_loss
+n_projections = 128
+p=1
+
+plt_nm = 7
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=30k
+N_target = 30k
+wasserstein: only z_loss
+n_projections = 128
+p=1
+
+plt_nm = 8
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=30k
+N_target = 30k
+wasserstein: only mult
+n_projections = 128
+p=1
+
+plt_nm = 9
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.250  
+N=30k
+N_target = 30k
+wasserstein: only z_loss
+n_projections = 128
+p=1
+grid of a_d and b_d
+
+plt_nm = 10
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.085, b_d=0.93, sigma=0.2925  
+N=30k
+N_target = 30k
+wasserstein: only z_loss
+n_projections = 128
+p=1
+grid of a_d and b_d
+
+
+
+
+

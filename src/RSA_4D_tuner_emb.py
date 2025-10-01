@@ -26,12 +26,13 @@ importlib.reload(wasserstein_loss)
 from lund_weight_nD_temp_emb import LundWeight
 from pseudo_chi2_loss import PseudoChiSquareLoss
 from wasserstein_loss import WassersteinLoss
+from wasserstein_loss_nd import WassersteinLoss_nD
 
 
 class RSA_nD_tuner():
     def __init__(self, epochs, dim_multiplicity, dim_accept_reject, over_sample_factor, params_base,
                  sim_observable_dataloader, sim_z_dataloader, sim_fPrel_dataloader, exp_observable_dataloader,
-                 params_init = None, print_details = False, results_dir = None, fixed_binning = True, device = 'cuda'):
+                 params_init = None, print_details = False, results_dir = None, fixed_binning = True, device = 'cuda', loss_type='emd'):
         """
         RSA-based training/tuning class for tuning microscopic dynamics (hadronization parameters) from macroscopic observables.
         
@@ -48,6 +49,7 @@ class RSA_nD_tuner():
             !NOTE! params_init define the parameters to be reweighted
             print_details (bool): --------------- Option to output intermediate results during training
             results_dir (string): --------------- Option for path to store results (if the directory doesn't exist, it will be created)
+            loss_type (string): ----------------- Option for loss function type (e.g., 'emd', 'sliced_emd', 'chi2')
         """
 
         # Model hyperparameters
@@ -70,6 +72,7 @@ class RSA_nD_tuner():
         self.print_details = print_details
         self.results_dir = results_dir
         self.fixed_binning = fixed_binning
+        self.loss_type = loss_type
 
         # Device
         if device == 'cuda':
@@ -87,7 +90,12 @@ class RSA_nD_tuner():
 
         # Initialize the loss
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
-        self.wasserstein_loss = WassersteinLoss(p = 1, device = self.device)
+        if self.loss_type == 'emd':
+            self.loss_func = WassersteinLoss(p = 1, device = self.device)
+        elif self.loss_type == 'sliced_emd':
+            self.loss_func = WassersteinLoss_nD(device = self.device, p = 1, n_projections = 128, seed = 42)
+        elif self.loss_type == 'chi2':
+            self.loss_func = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
 
 
         # Create a results directory if it doesn't exist
@@ -145,8 +153,10 @@ class RSA_nD_tuner():
                 # Compute the weights
                 weights = self.weight_nexus(x, y)
                 # Compute the loss
-                # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
-                loss = self.wasserstein_loss(z, w, weights)
+                if self.loss_type == 'chi2':
+                    loss = self.loss_func(z, w, weights) / x.shape[0]
+                else:
+                    loss = self.loss_func(z, w, weights)
                 loss_cpu = loss.clone().detach().cpu().numpy()
                 loss_values.append(loss_cpu)
                 # print('----------------------------------------------')
@@ -320,9 +330,10 @@ class RSA_nD_tuner():
                 # Compute the weights
                 weights = self.weight_nexus(x, y)
                 # Compute the loss
-                # loss = self.pseudo_chi2_loss(z, w, weights) / x.shape[0]
-                loss = self.wasserstein_loss(z, w, weights)
-                
+                if self.loss_type == 'chi2':
+                    loss = self.loss_func(z, w, weights) / x.shape[0]
+                else:
+                    loss = self.loss_func(z, w, weights)
                 
                 # Compute Performance Metrics
                 mu = torch.mean(weights)
