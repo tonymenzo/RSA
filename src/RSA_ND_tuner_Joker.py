@@ -99,6 +99,9 @@ class RSA_nD_tuner():
         elif self.loss_type == 'Joker':
             self.wasserstein_loss = WassersteinLoss(p = 1, device = self.device)
             self.loss_func = loss_func
+        elif self.loss_type == 'Joker_nosigma':
+            self.wasserstein_loss = WassersteinLoss(p = 1, device = self.device)
+            self.loss_func = loss_func_nosigma
                 
 
         # Create a results directory if it doesn't exist
@@ -339,12 +342,17 @@ class RSA_nD_tuner():
                 # Reset the gradients
                 optimizer.zero_grad()
                 # Compute the weights
-                weights, weights_sigma, accept_weights, reject_weights = self.weight_nexus(x, y)
+                if self.loss_type == 'Joker_nosigma':
+                    weights, accept_weights, reject_weights = self.weight_nexus(x, y)
+                else:
+                    weights, weights_sigma, accept_weights, reject_weights = self.weight_nexus(x, y)
                 # Compute the loss
                 if self.loss_type == 'chi2':
                     loss = self.loss_func(z, w, weights) / x.shape[0]
                 elif self.loss_type == 'Joker':
                     loss = self.loss_func([z1,z2,z3], [w1,w2,w3], (weights, weights_sigma, accept_weights, reject_weights), self.wasserstein_loss)
+                elif self.loss_type == 'Joker_nosigma':
+                    loss = self.loss_func([z1,z2,z3], [w1,w2,w3], (weights, accept_weights, reject_weights), self.wasserstein_loss)
                 else:
                     loss = self.loss_func(z, w, weights)
                 
@@ -415,6 +423,68 @@ def loss_func(sim, exp, weights, wasserstein_loss):
 
     # pT_loss = wasserstein_loss(pT_sim_1d, pT_exp_1d, sigma_weights_1d)  
 
+    # z_accept_sim_1d = z_accept_sim[z_accept_sim[:,:] > 0].reshape(-1)
+    # z_accept_exp_1d = z_accept_exp[z_accept_exp[:,:] > 0].reshape(-1)
+    # accept_weights_1d = accept_weights[z_accept_sim[:,:] > 0.0].reshape(-1)
+    # reject_weights_1d = reject_weights[z_accept_sim[:,:] > 0.0]
+    # reject_weights_1d = torch.where(
+    # torch.isnan(reject_weights_1d),
+    #     torch.tensor(1., device=reject_weights_1d.device),
+    #     reject_weights_1d
+    # ).prod(dim=1)
+    # sigma_weights_1d = sigma_weights[z_accept_sim[:,:] > 0.0]
+    # weights_1d = accept_weights_1d * reject_weights_1d * sigma_weights_1d
+    # z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
+    
+    #only first line
+    # print('SHAPES: ')
+    # print(z_accept_sim.shape)
+    # print(z_accept_exp.shape)
+    # print(accept_weights.shape)
+    # print(reject_weights.shape)
+    # print(sigma_weights.shape)
+    # print('----------------------------------------------')
+    z_accept_sim_1d = z_accept_sim[:,1][z_accept_sim[:,1] > 0].reshape(-1)
+    z_accept_exp_1d = z_accept_exp[:,1][z_accept_exp[:,1] > 0].reshape(-1)
+    accept_weights_1d = accept_weights[:,1][z_accept_sim[:,1] > 0.0].reshape(-1)
+    reject_weights_1d = reject_weights[:,1][z_accept_sim[:,1] > 0.0]
+    reject_weights_1d = torch.where(
+    torch.isnan(reject_weights_1d),
+        torch.tensor(1., device=reject_weights_1d.device),
+        reject_weights_1d
+    ).prod(dim=1)
+    sigma_weights_1d = sigma_weights[:,1][z_accept_sim[:,1] > 0.0]
+    weights_1d = accept_weights_1d * reject_weights_1d * sigma_weights_1d
+    z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
+    
+    # loss = mult_loss + pT_loss + z_loss
+    loss = z_loss
+    return loss
+
+def loss_func_nosigma(sim, exp, weights, wasserstein_loss):
+    # calculates sliced wasserstein for Joker observables
+    
+    weights, accept_weights, reject_weights = weights
+    mult_sim, pT_sim, z_accept_sim = sim
+    mult_exp, pT_exp, z_accept_exp = exp
+    loss = 0.0
+
+    mult_loss = wasserstein_loss(mult_sim, mult_exp, weights)
+
+    # sigma_weights_1d = sigma_weights.reshape(-1)
+    # pT_exp_1d = pT_exp.reshape(-1)
+    # pT_sim_1d = pT_sim.reshape(-1)
+    
+    # mask_sim = (pT_sim_1d!=0)
+    # mask_exp = (pT_exp_1d!=0)
+
+    # pT_exp_1d = pT_exp_1d[mask_exp]
+    # pT_sim_1d = pT_sim_1d[mask_sim]
+    # sigma_weights_1d = sigma_weights_1d[mask_sim]
+    # sigma_weights_1d.reshape(-1)
+
+    # pT_loss = wasserstein_loss(pT_sim_1d, pT_exp_1d, sigma_weights_1d)  
+
     z_accept_sim_1d = z_accept_sim[z_accept_sim[:,:] > 0].reshape(-1)
     z_accept_exp_1d = z_accept_exp[z_accept_exp[:,:] > 0].reshape(-1)
     accept_weights_1d = accept_weights[z_accept_sim[:,:] > 0.0].reshape(-1)
@@ -424,9 +494,27 @@ def loss_func(sim, exp, weights, wasserstein_loss):
         torch.tensor(1., device=reject_weights_1d.device),
         reject_weights_1d
     ).prod(dim=1)
-    sigma_weights_1d = sigma_weights[z_accept_sim[:,:] > 0.0]
-    weights_1d = accept_weights_1d * reject_weights_1d * sigma_weights_1d
+    weights_1d = accept_weights_1d * reject_weights_1d
     z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
+    
+    # #only first line
+    # print('SHAPES: ')
+    # print(z_accept_sim.shape)
+    # print(z_accept_exp.shape)
+    # print(accept_weights.shape)
+    # print(reject_weights.shape)
+    # print('----------------------------------------------')
+    # z_accept_sim_1d = z_accept_sim[:,1][z_accept_sim[:,1] > 0].reshape(-1)
+    # z_accept_exp_1d = z_accept_exp[:,1][z_accept_exp[:,1] > 0].reshape(-1)
+    # accept_weights_1d = accept_weights[:,1][z_accept_sim[:,1] > 0.0].reshape(-1)
+    # reject_weights_1d = reject_weights[:,1][z_accept_sim[:,1] > 0.0]
+    # reject_weights_1d = torch.where(
+    # torch.isnan(reject_weights_1d),
+    #     torch.tensor(1., device=reject_weights_1d.device),
+    #     reject_weights_1d
+    # ).prod(dim=1)
+    # weights_1d = accept_weights_1d * reject_weights_1d 
+    # z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
     
     # loss = mult_loss + pT_loss + z_loss
     loss = z_loss

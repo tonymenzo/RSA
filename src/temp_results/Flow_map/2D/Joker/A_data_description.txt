@@ -1,0 +1,41 @@
+Observables: Joker
+
+plt_nm = 1
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.27125  
+N=30k
+N_target = 30k
+wasserstein sum:
+loss_z with only first z_accept
+p=1
+
+plt_nm = 2
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.27125  
+N=30k
+N_target = 30k
+wasserstein sum:
+loss_z with only first z_accept
+p=1
+
+plt_nm = 3
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.27125  
+N=30k
+N_target = 30k
+wasserstein sum:
+loss_z with all entries
+p=1
+
+plt_nm = 4
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.85, b_d=0.88, sigma=0.27125  
+N=30k
+N_target = 30k
+wasserstein sum:
+loss_z with all entries
+p=1

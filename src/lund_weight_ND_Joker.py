@@ -147,7 +147,6 @@ class LundWeight(nn.Module):
         a_mask_broad = a_mask.expand(broadcast_shape)
         b_mask_broad = b_mask.expand(broadcast_shape)
         c_mask_broad = c_mask.expand(broadcast_shape)
-    
         # Combine masks
         combined_mask = z_mask_broad & mT_mask_broad & a_mask_broad & b_mask_broad & c_mask_broad
         
@@ -297,7 +296,10 @@ class LundWeight(nn.Module):
             weights_sigma = self.sigma_weights(px,py,p_mask)
             weights = weights * weights_sigma
 
-        return weights, self.weights_sigma_full, self.accept_weights, self.reject_weights
+        if getattr(self, "sigma_alt", None) is not None:
+            return weights, self.weights_sigma_full, self.accept_weights, self.reject_weights
+        else:
+            return weights, self.accept_weights, self.reject_weights
 
 
 class PIDLookup(nn.Module):

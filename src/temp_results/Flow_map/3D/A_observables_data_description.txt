@@ -184,6 +184,17 @@ n_projections = 128
 p=1
 grid of a_d and b_d
 
+plt_nm = 12
+fts(fixed target size)
+base: a=0.68, b = 0.98, sigma=0.27125, a_d=+0.1275, b_d=0.905
+target: a_d=0.085, b_d=0.93, sigma=0.2925  
+N=30k
+N_target = 30k
+wasserstein: only z_loss, with only first z_accept
+n_projections = 128
+p=1
+grid of a_d and b_d
+
 
 
 
