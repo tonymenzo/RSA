@@ -1,0 +1,56 @@
+Tune map confidence data:
+-> repetitions of tuning process with different random events from the same experiment -> same simulation data
+-consists of:
+--all_params: all parameters indicating individual tuning steps
+--loss_values: loss at individual tuning steps
+
+observables:Joker
+save_nm= 3
+base: ad=0.68+0.1275, bd=0.905, ax=0.68, bx=0.98, sigma=0.27125
+target: ad=0.68, bd=0.98, ax=0.68, bx=0.98, sigma=0.27125
+loss_func: z_accept
+epochs= 75
+optimizer= ADAM
+lr= 0.001
+N_events= 30000
+N_target= 30000
+repeat=3
+
+observables:Joker
+save_nm= 5
+base: ad=0.68+0.1275, bd=0.905, ax=0.68, bx=0.98, sigma=0.27125
+target: ad=0.68, bd=0.98, ax=0.68, bx=0.98, sigma=0.27125
+loss_func observable: z_accept
+loss_func type: wasserstein(p=2)
+epochs= 75
+optimizer= ADAM
+lr= 0.01
+N_events= 30000
+N_target= 30000
+repeat=3
+
+observables:Joker
+save_nm= 6
+base: ad=0.68+0.1275, bd=0.905, ax=0.68, bx=0.98, sigma=0.27125
+target: ad=0.68, bd=0.98, ax=0.68, bx=0.98, sigma=0.27125
+loss_func observable: z_accept
+loss_func type: wasserstein(p=2)
+epochs= 75
+optimizer= ADAM
+lr= 0.1
+N_events= 30000
+N_target= 30000
+repeat=5
+
+observables:Joker
+save_nm= 7
+base: ad=0.68+0.1275, bd=0.905, ax=0.68, bx=0.98, sigma=0.27125
+target: ad=0.68, bd=0.98, ax=0.68, bx=0.98, sigma=0.27125
+loss_func observable: z_accept
+loss_func type: wasserstein(p=2)
+epochs= 75
+optimizer= ADAM
+lr= 0.1
+N_events= 30000
+N_target= 30000
+repeat=3

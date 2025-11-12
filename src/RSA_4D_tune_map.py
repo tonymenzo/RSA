@@ -183,7 +183,7 @@ params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'a2': tor
 
 
 # Irrelevant parameters for the flow plot that must be initialized for the RSA class
-epochs = 500
+epochs = 5
 
 # Create an RSA instance
 RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
@@ -199,7 +199,7 @@ optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
 # Generate gradients
 params_final, all_params, loss_values = RSA.RSA_tune(optimizer)
 
-save_nm = 2
+save_nm = 3
 dim = len(params_learn)
 
 # Construct full path
