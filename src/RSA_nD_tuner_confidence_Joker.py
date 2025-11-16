@@ -32,6 +32,7 @@ class ObservableDataset(Dataset):
 	def __getitem__(self, idx):
 		sample = self.data[idx]
 		return sample
+        
 class ObservableDatasetJoker(Dataset):
     """
     Converts observable dataset into PyTorch syntax.

@@ -1,10 +1,11 @@
 # Fitting distributions for Joker observable RSA_nD_tuner class
+# locked parameters
 
 import importlib
-from RSA_ND_tuner_Joker import *
-import RSA_ND_tuner_Joker
-importlib.reload(RSA_ND_tuner_Joker)
-from RSA_ND_tuner_Joker import *
+from RSA_ND_tuner_Joker_locked import *
+import RSA_ND_tuner_Joker_locked
+importlib.reload(RSA_ND_tuner_Joker_locked)
+from RSA_ND_tuner_Joker_locked import *
 
 import sys
 import os
@@ -32,7 +33,7 @@ class ObservableDataset(Dataset):
 	def __getitem__(self, idx):
 		sample = self.data[idx]
 		return sample
-
+        
 class ObservableDatasetJoker(Dataset):
     """
     Converts observable dataset into PyTorch syntax.
@@ -85,19 +86,10 @@ def charged_mask_from_pdg(pdg_ids, charged=1):
     return np.isin(pdg_ids, list(charged_set))
 
 # 2D dataset
-# sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_hadrons.npy'
-# sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_id_mT2_accept_reject_z.npy'
-# sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_fPrel.npy'
-# exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_5.0e+05_hadrons.npy'
-# exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_5.0e+05_id_mT2_accept_reject_z.npy'
-
-
-# 3D dataset
-sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.085_aU0_aS0_aC0_aB0_aH0.97_bD0.93_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.2925_N_1.0e+05_hadrons.npy'
-sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.085_aU0_aS0_aC0_aB0_aH0.97_bD0.93_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.2925_N_1.0e+05_id_mT2_accept_reject_z.npy'
-sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.085_aU0_aS0_aC0_aB0_aH0.97_bD0.93_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.2925_N_1.0e+05_fPrel.npy'
+sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_hadrons.npy'
+sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_id_mT2_accept_reject_z.npy'
+sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_fPrel.npy'
 exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_5.0e+05_hadrons.npy'
-# Extra: exp_accept_reject values for optimal ("Joker") fit
 exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_5.0e+05_id_mT2_accept_reject_z.npy'
 
 
@@ -304,7 +296,7 @@ for i in range(repeat):
     # Training hyperparameters
     over_sample_factor = 10.0
     # The flow map will be dependent on the learning rate (size of the gradients)
-    learning_rate = 0.005
+    learning_rate = 0.1
     fixed_binning = True
 
     # Length of event buffer
@@ -315,7 +307,7 @@ for i in range(repeat):
     print('Each emission has been zero-padded to a length of', dim_accept_reject)
 
     # Define base parameters of simulated data (a, b)
-    aExtraDQuark = 0.085
+    aExtraDQuark = 0.1275
     # aExtraDQuark = 0.17
     aExtraUQuark = 0
     aExtraSQuark = 0
@@ -323,7 +315,7 @@ for i in range(repeat):
     aExtraBquark = 0
     aExtraDiquark = 0.97
 
-    bNonstandardD = 0.93
+    bNonstandardD = 0.905
     # bNonstandardD = 0.93
     bNonstandardU = 0.98
     bNonstandardS = 0.98
@@ -333,7 +325,7 @@ for i in range(repeat):
 
     aLund = 0.68
     bLund = 0.98
-    sigma_base = 0.2925
+    sigma_base = 0.27125
 
     aLundD = aLund + aExtraDQuark
     bLundD = bNonstandardD
@@ -361,13 +353,19 @@ for i in range(repeat):
     # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD), 'a2': torch.tensor(aLundU)}
     # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'a2': torch.tensor(aLundU),'sigma': torch.tensor(sigma_base)}
     # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': torch.tensor(sigma_base)}
-    epsilon = 1e-5
-    params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon),'sigma': torch.tensor(sigma_base+epsilon)}
-
-
 
     #temp 2d
-    # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD)}
+    epsilon = 1e-5
+    # params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon)}
+    params_learn = {
+    'a1':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},
+    'a2':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
+    'a3':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
+    'b1':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
+    'b2':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
+    'b3':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
+    'sigma': {'value': torch.tensor(sigma_base + epsilon)}              # its own param
+    }
     # Irrelevant parameters for the flow plot that must be initialized for the RSA class
 
 	
@@ -375,7 +373,7 @@ for i in range(repeat):
     RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
                     params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
                     sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
-                    results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker')
+                    results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker_nosigma')
 
     # optimizer = optim.Adahessian(RSA.weight_nexus.parameters())
     optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
@@ -390,16 +388,16 @@ for i in range(repeat):
 
     # Save the parameters
     if i == 0:
-        save_nm = 3
+        save_nm = 1
         dim = len(params_learn)
 
         # Construct full path
-        folder_path = f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/{dim}D/'
+        folder_path = f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/'
 
         # Create directory if it doesn't exist
         os.makedirs(folder_path, exist_ok=True)
     
     if i % 1 == 0:
-        np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/{dim}D/all_params_{save_nm}', all_params_list)
-        np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/{dim}D/params_final_{save_nm}', params_final_list)
-        np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/{dim}D/loss_values_{save_nm}', all_loss_values)
+        np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/all_params_{save_nm}', all_params_list)
+        np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/params_final_{save_nm}', params_final_list)
+        np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/loss_values_{save_nm}', all_loss_values)

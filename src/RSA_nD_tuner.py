@@ -87,9 +87,6 @@ class RSA_nD_tuner():
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
         self.wasserstein_loss = WassersteinLoss(p = 1, device= self.device)
 
-        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        # self.device = 'cpu'
-
         # Create a results directory if it doesn't exist
         if self.results_dir != None:
             if not os.path.exists(self.results_dir):
