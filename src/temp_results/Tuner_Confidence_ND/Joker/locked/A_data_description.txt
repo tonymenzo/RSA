@@ -1,0 +1,22 @@
+Tune map confidence data:
+-> repetitions of tuning process with different random events from the same experiment -> same simulation data
+-consists of:
+--all_params: all parameters indicating individual tuning steps
+--loss_values: loss at individual tuning steps
+
+made for "locked" files: given parameters are locked to the same value: ie: a_d = a_u = a_s, b_d = b_u = b_s 
+trial runs: currently the grouping is provided in the lund_weight file -> the parameter printing is not fixed: prints 6 parameters instead of 3,
+but taking the first 2 parameters from files all_params should be fine and would give a,b
+
+6D -> only 2 parameters relevant
+observables:Joker_locked
+save_nm= 3
+base: ax=0.68+0.04, bx=0.88, sigma=0.335
+target: ad=0.68, bd=0.98, ax=0.68, bx=0.98, sigma=0.335
+loss_func: z_accept
+epochs= 75
+optimizer= ADAM
+lr= 0.1
+N_events= 30000
+N_target= 30000
+repeat=3

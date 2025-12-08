@@ -32,7 +32,7 @@ from wasserstein_loss_nd import WassersteinLoss_nD
 class RSA_nD_tuner():
     def __init__(self, epochs, dim_multiplicity, dim_accept_reject, over_sample_factor, params_base,
                  sim_observable_dataloader, sim_z_dataloader, sim_fPrel_dataloader, exp_observable_dataloader,
-                 params_init = None, print_details = False, results_dir = None, fixed_binning = True, device = 'cuda', loss_type='emd'):
+                 params_init = None, print_details = False, results_dir = None, fixed_binning = True, device = 'cuda', loss_type='emd', params_groups=None):
         """
         RSA-based training/tuning class for tuning microscopic dynamics (hadronization parameters) from macroscopic observables.
         
@@ -50,6 +50,7 @@ class RSA_nD_tuner():
             print_details (bool): --------------- Option to output intermediate results during training
             results_dir (string): --------------- Option for path to store results (if the directory doesn't exist, it will be created)
             loss_type (string): ----------------- Option for loss function type (e.g., 'emd', 'sliced_emd', 'chi2', 'Joker')
+            params_groups (dict, optional): ----- Optional dictionary specifying parameter groups for reweighting (default: None) -> check if it works when params_groups=None
         """
 
         # Model hyperparameters
@@ -63,6 +64,7 @@ class RSA_nD_tuner():
             self.params_init = self.params_base
         else:
             self.params_init = params_init
+        print(self.params_init)
 
         # Training data
         self.exp_observable = exp_observable_dataloader
@@ -73,6 +75,7 @@ class RSA_nD_tuner():
         self.results_dir = results_dir
         self.fixed_binning = fixed_binning
         self.loss_type = loss_type
+        self.params_groups = params_groups
 
         # Device
         if device == 'cuda':
@@ -87,7 +90,7 @@ class RSA_nD_tuner():
 
         # Initialize the Lund weight module
         torch.cuda.empty_cache()
-        self.weight_nexus = LundWeight(self.params_base, self.params_init, over_sample_factor = self.over_sample_factor, device= self.device)
+        self.weight_nexus = LundWeight(self.params_base, self.params_init, self.params_groups, over_sample_factor = self.over_sample_factor, device= self.device)
 
         # Initialize the loss
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
@@ -133,7 +136,7 @@ class RSA_nD_tuner():
                 sigma_ind = p_ind
             elif 'a' in k:
                 pid = int(k[1:])
-                a_ind_lookup_pos.append(pid_keys_map[pid])
+                a_ind_lookup_pos.append(self.weight_nexus.pid_to_group_idx[pid_keys_map[pid]])
                 a_ind_params_init_pos.append(p_ind)
             elif 'b' in k:
                 pid = int(k[1:])
@@ -157,7 +160,7 @@ class RSA_nD_tuner():
                 z1, z2, z3 = z
                 w1, w2, w3 = w
                 x, y, z1, z2, z3, w1, w2, w3 = x.to(device), y.to(device), z1.to(device), z2.to(device), z3.to(device), w1.to(device), w2.to(device), w3.to(device)
-                # x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
+
                 # Reset the gradients
                 optimizer.zero_grad()
                 # Compute the weights
@@ -203,10 +206,13 @@ class RSA_nD_tuner():
 
                 # Initialize gradient and value containers
                 N = len(self.params_init)
+                print('N parameters being tuned:', N)
                 param_gradient = torch.zeros(N, device='cpu')
                 param_value = torch.zeros(N, device='cpu')
 
                 for pname, param in self.weight_nexus.named_parameters():
+                    print('HEREEEE: ')
+                    print(pname, param)
                     if param.grad is None:
                         continue
 

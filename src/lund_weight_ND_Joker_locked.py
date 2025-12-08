@@ -11,7 +11,7 @@ from torch import nn
 
 
 class LundWeight(nn.Module):
-    def __init__(self, params_base, params, over_sample_factor, device):
+    def __init__(self, params_base, params, params_groups, over_sample_factor, device):
         super(LundWeight, self).__init__()
         """
         LundWeight class for computing event weights for the Lund fragmentation function
@@ -19,7 +19,9 @@ class LundWeight(nn.Module):
         Args:
             params_base (torch.Tensor): ------ Base parameters for the Lund fragmentation function
             params (torch.Tensor): ----------- Parameters to be reweighted for the Lund fragmentation function
+            params_groups (dict): ------------ Dictionary specifying parameter groups for reweighting
             over_sample_factor (int): -------- Over-sampling factor for the rejected events
+            device (str): -------------------- Device to run the computations on (e.g., 'cuda' or 'cpu')
         """
 
         # Device
@@ -31,19 +33,32 @@ class LundWeight(nn.Module):
 
         if "sigma" in self.params and self.params["sigma"] is not None:
             #!NOTE: don't change variable name
-            value, _ = _get_spec(self.params['sigma'])
+            value = self.params["sigma"]
             self.sigma_alt = torch.nn.Parameter(value.to(self.device), requires_grad = True)
 
         # Initialize the params dictionary
+        params_group = {'a1': 'a', 'a2': 'a', 'a3': 'a',
+                               'b1': 'b', 'b2': 'b', 'b3': 'b'}
+        per_prefix_groups = self.make_param_groups_per_prefix(
+            params=params,
+            global_param_groups=params_groups,
+            prefixes=("a", "b"),
+        )
+        a_groups = per_prefix_groups['a']
+        b_groups = per_prefix_groups['b']
+
         # Two lookups (one for 'a', one for 'b')
         #!NOTE: don't change variable name
-        self.a_lookup_alt = PIDLookup(params_base, params, prefix='a', device=self.device, alt=True)
-        self.b_lookup_alt = PIDLookup(params_base, params, prefix='b', device=self.device, alt=True)
-        self.a_lookup_base = PIDLookup(params_base, params, prefix='a', device=self.device, alt=False)
-        self.b_lookup_base = PIDLookup(params_base, params, prefix='b', device=self.device, alt=False)
-
+        self.a_lookup_alt = PIDLookup(params_base, params, prefix='a', device=self.device, alt=True, param_groups=a_groups)
+        self.b_lookup_alt = PIDLookup(params_base, params, prefix='b', device=self.device, alt=True, param_groups=b_groups)
+        self.a_lookup_base = PIDLookup(params_base, params, prefix='a', device=self.device, alt=False, param_groups=a_groups)
+        self.b_lookup_base = PIDLookup(params_base, params, prefix='b', device=self.device, alt=False, param_groups=b_groups)
+        
         # Register pid_keys to use for gradient saving
         self.pid_keys = self.a_lookup_alt.pid_keys
+        self.pid_to_group_idx = self.a_lookup_alt.pid_to_group_idx
+
+        print('LundWeight initialized with PIDs:', self.pid_to_group_idx)
 
         # Initialize the over-sampling factor 
         self.over_sample_factor = over_sample_factor
@@ -301,6 +316,36 @@ class LundWeight(nn.Module):
             return weights, self.weights_sigma_full, self.accept_weights, self.reject_weights
         else:
             return weights, self.accept_weights, self.reject_weights
+        
+    @staticmethod
+    def make_param_groups_per_prefix(
+        params: dict[str, torch.Tensor],
+        global_param_groups: dict[str, str] | None,
+        prefixes: tuple[str, ...] = ("a", "b"),
+    ) -> dict[str, dict[str, str]]:
+        """
+        Returns a mapping: prefix -> { param_name -> group_label }.
+
+        - If a param_name is in global_param_groups, use that group label.
+        - Otherwise, it becomes its own group (group_label = param_name).
+        - Only keys present in `params` and starting with one of `prefixes`
+        are included.
+        """
+        # initialize empty dict for each prefix
+        out: dict[str, dict[str, str]] = {p: {} for p in prefixes}
+
+        for key in params.keys():
+            for p in prefixes:
+                if key.startswith(p):
+                    if global_param_groups is not None and key in global_param_groups:
+                        out[p][key] = global_param_groups[key]
+                    else:
+                        # own group by default
+                        out[p][key] = key
+                    break  # don't match multiple prefixes like "ab", etc.
+
+        return out
+
 
 
 
@@ -402,111 +447,165 @@ class LundWeight(nn.Module):
 
 
 
-
-def _get_spec(entry):
-    if isinstance(entry, dict):
-        return entry['value'], entry.get('group', None)
-    else:
-        return entry, None
-
 class PIDLookup(nn.Module):
     def __init__(
         self,
         params_base: dict[str, torch.Tensor],
-        params:      dict[str, object],   # tensor or {'value':..., 'group': ...}
-        prefix:      str,                 # e.g. 'a' or 'b'
+        params:      dict[str, torch.Tensor],
+        prefix:      str,               # e.g. 'a' or 'b'
         device:      str = 'cuda',
-        alt:         bool = False,        # True → trainable rows if in params; else frozen
+        alt:         bool = False,      # True if this is the alternative (partly trainable) parameters
+        param_groups: dict[str, str] | None = None,  # NEW: param name -> group label
     ):
         super().__init__()
         self.device = device
 
         if alt:
-            # Collect PIDs from base (vocabulary)
-            all_pids = sorted(
-                int(k[len(prefix):]) for k in params_base.keys() if k.startswith(prefix)
+            # -------------------------
+            # ALT BRANCH: partly trainable with grouping
+            # -------------------------
+
+            # 1) Collect all PIDs from params_base with the given prefix
+            all_pids = set()
+            for key in params_base.keys():
+                if key.startswith(prefix):
+                    pid = int(key[len(prefix):])
+                    all_pids.add(pid)
+
+            # 2) Sort and register as tensor of shape (V,)
+            self.pid_keys = torch.tensor(
+                sorted(all_pids),
+                dtype=torch.long,
+                device=device,
             )
-            self.pid_keys = torch.tensor(all_pids, dtype=torch.long, device=self.device)
             V = self.pid_keys.size(0)
 
-            # Build weights, track frozen/trainable and group membership
-            weight = torch.zeros(V, 1, device=self.device)
-            fixed_rows, trainable_rows = [], []
-            group_rows: dict[str, list[int]] = {}
-
-            for i, pid in enumerate(all_pids):
-                key = f'{prefix}{pid}'
-                if key in params:
-                    value, group = _get_spec(params[key])
-                    weight[i, 0] = value.to(self.device)
-                    trainable_rows.append(i)
-                    if group is not None:
-                        group_rows.setdefault(group, []).append(i)  #setdefault: if key group in grouprows return value else set value to [] and return it
+            # 3) Build mapping: param_name -> group_label for TRAINABLE params
+            #    If no group is provided, the param is its own group (group_label = param_name).
+            param_to_group: dict[str, str] = {}
+            for key in params.keys():
+                if not key.startswith(prefix):
+                    continue
+                if param_groups is not None and key in param_groups:
+                    param_to_group[key] = param_groups[key]
                 else:
-                    weight[i, 0] = params_base[key].to(self.device)
-                    fixed_rows.append(i)
+                    param_to_group[key] = key  # its own group
 
-            self.embed = nn.Embedding.from_pretrained(weight, freeze=False)
+            # 4) Single pass over pid_keys to:
+            #    - assign a group label to each PID
+            #    - build group_label -> group_idx
+            #    - collect initial values and whether group is trainable
+            group_label_to_idx: dict[str, int] = {}
+            group_init_values: list[torch.Tensor] = []
+            group_trainable_mask: list[bool] = []
 
-            # Prepare masks
-            self._fixed_rows = torch.tensor(fixed_rows, dtype=torch.long, device=self.device) if fixed_rows else None
+            pid_to_group_idx = torch.empty(V, dtype=torch.long, device=device)
 
-            # Build locking info per group: pick smallest row index as ref
-            self._groups = []
-            for g, rows in group_rows.items():
-                rows = sorted(rows)
-                ref = rows[0]
-                others = [r for r in rows if r != ref]
-                if others:
-                    self._groups.append({
-                        'ref': torch.tensor(ref, dtype=torch.long, device=self.device),
-                        'rows': torch.tensor(rows, dtype=torch.long, device=self.device),
-                        'others': torch.tensor(others, dtype=torch.long, device=self.device),
-                    })
+            for i, pid in enumerate(self.pid_keys.tolist()):
+                key = f"{prefix}{pid}"
 
-            # Grad hook: zero frozen; tie group grads into ref
-            def _grad_hook(grad: torch.Tensor) -> torch.Tensor:
-                if self._fixed_rows is not None and self._fixed_rows.numel() > 0:
-                    grad[self._fixed_rows] = 0.
-                for g in self._groups:
-                    ref = g['ref'].item()
-                    others = g['others']
-                    if others.numel() > 0:
-                        grad[ref] = grad[ref] + grad[others].sum(dim=0)
-                        grad[others] = 0.
-                return grad
+                # Determine if this PID is trainable and its group label
+                if key in param_to_group:
+                    group_label = param_to_group[key]
+                    is_trainable = True
+                    source_dict = params
+                else:
+                    # Not in params → frozen, its own group
+                    group_label = key
+                    is_trainable = False
+                    source_dict = params_base
 
-            self.embed.weight.register_hook(_grad_hook)
+                if key not in source_dict:
+                    raise KeyError(
+                        f"PIDLookup (alt=True): key '{key}' not found in "
+                        f"{'params' if is_trainable else 'params_base'}."
+                    )
+
+                # If this group_label hasn't been seen, create a new group index
+                if group_label not in group_label_to_idx:
+                    g_idx = len(group_label_to_idx)
+                    group_label_to_idx[group_label] = g_idx
+                    group_init_values.append(source_dict[key].to(device))
+                    group_trainable_mask.append(is_trainable)
+                else:
+                    g_idx = group_label_to_idx[group_label]
+                    # Optionally: assert that remaining params in same group
+                    # are consistent with the first one. Skipped here.
+
+                pid_to_group_idx[i] = g_idx
+
+            # 5) Create the embedding for groups
+            G = len(group_init_values)
+            if G == 0:
+                raise ValueError("PIDLookup (alt=True): no parameter groups were created.")
+
+            group_weight = torch.stack(group_init_values, dim=0).view(G, 1)  # (G, 1)
+            self.embed = nn.Embedding.from_pretrained(group_weight, freeze=False)
+
+            # Store PID -> group_idx mapping for use in forward()
+            self.pid_to_group_idx = pid_to_group_idx  # (V,)
+
+            # 6) Freeze gradients for groups that correspond to untrainable params
+            frozen_groups = torch.tensor(
+                [idx for idx, trainable in enumerate(group_trainable_mask) if not trainable],
+                dtype=torch.long,
+                device=device,
+            )
+
+            if frozen_groups.numel() > 0:
+                def _freeze_group_rows(grad: torch.Tensor) -> torch.Tensor:
+                    grad[frozen_groups] = 0.
+                    return grad
+
+                self.embed.weight.register_hook(_freeze_group_rows)
 
         else:
-            # Fully frozen table from base
-            all_pids = sorted(
-                int(k[len(prefix):]) for k in params_base.keys() if k.startswith(prefix)
+            # -------------------------
+            # BASE BRANCH: fully frozen table (original behavior)
+            # -------------------------
+
+            # 1) Collect all PIDs with the given prefix (e.g., 'a', 'b', etc.)
+            all_pids = {
+                int(key[len(prefix):])
+                for key in params_base.keys()
+                if key.startswith(prefix)
+            }
+
+            # 2) Sort PIDs and register as tensor of shape (V,)
+            self.pid_keys = torch.tensor(
+                sorted(all_pids),
+                dtype=torch.long,
+                device=device,
             )
-            self.pid_keys = torch.tensor(all_pids, dtype=torch.long, device=self.device)
-            V = len(all_pids)
-            weight = torch.zeros(V, 1, device=self.device)
-            for i, pid in enumerate(all_pids):
-                key = f'{prefix}{pid}'
-                weight[i, 0] = params_base[key].to(self.device)
+            V = self.pid_keys.size(0)
+
+            # 3) Build the (V, 1) frozen weight matrix
+            weight = torch.zeros(V, 1, device=device)
+            for i, pid in enumerate(self.pid_keys.tolist()):
+                key = f"{prefix}{pid}"
+                weight[i, 0] = params_base[key].to(device)
+
+            # 4) Create nn.Embedding with freeze=True (weights won't update)
             self.embed = nn.Embedding.from_pretrained(weight, freeze=True)
-            self._groups = []
-            self._fixed_rows = None
+
+            # In the base case, we don't use grouping, so pid index == embedding row index.
+            # (No self.pid_to_group_idx attribute in this branch.)
 
     def forward(self, pid_values: torch.LongTensor) -> torch.Tensor:
         """
-        pid_values: LongTensor (B, T)
-        returns:    Tensor    (B, T, 1)
+        pid_values: LongTensor of shape (B, T), arbitrary integers
+        Returns:    Tensor of shape (B, T, 1)
         """
-        # Enforce identical values for locked groups (copy ref → others)
-        # (cheap, in-place; ensures equality even after optimizer steps)
-        if hasattr(self, "_groups"):
-            for g in self._groups:
-                ref = g['ref']
-                rows = g['rows']
-                others = rows[rows != ref]
-                with torch.no_grad():
-                    self.embed.weight[others] = self.embed.weight[ref]
+        # Map arbitrary PID values → indices in [0..V)
+        idxs = torch.searchsorted(self.pid_keys, pid_values)  # (B, T)
 
-        idxs = torch.searchsorted(self.pid_keys, pid_values)  # map to [0..V)
+        # ALT case: we have an extra mapping PID-index -> group-index
+        if hasattr(self, "pid_to_group_idx"):
+            group_idxs = self.pid_to_group_idx[idxs]          # (B, T)
+            return self.embed(group_idxs)                     # (B, T, 1)
+
+        # BASE case: direct PID-index -> embedding row
         return self.embed(idxs)
+
+
+    

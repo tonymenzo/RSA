@@ -86,11 +86,11 @@ def charged_mask_from_pdg(pdg_ids, charged=1):
     return np.isin(pdg_ids, list(charged_set))
 
 # 2D dataset
-sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_hadrons.npy'
-sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_id_mT2_accept_reject_z.npy'
-sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.1275_aU0_aS0_aC0_aB0_aH0.97_bD0.905_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_1.0e+05_fPrel.npy'
-exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_5.0e+05_hadrons.npy'
-exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.27125_N_5.0e+05_id_mT2_accept_reject_z.npy'
+sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_hadrons.npy'
+sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_id_mT2_accept_reject_z.npy'
+sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_fPrel.npy'
+exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
+exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
 
 
 
@@ -307,25 +307,25 @@ for i in range(repeat):
     print('Each emission has been zero-padded to a length of', dim_accept_reject)
 
     # Define base parameters of simulated data (a, b)
-    aExtraDQuark = 0.1275
+    aExtraDQuark = 0.04
     # aExtraDQuark = 0.17
-    aExtraUQuark = 0
-    aExtraSQuark = 0
-    aExtraCquark = 0
-    aExtraBquark = 0
+    aExtraUQuark = 0.04
+    aExtraSQuark = 0.04
+    aExtraCquark = 0.04
+    aExtraBquark = 0.04
     aExtraDiquark = 0.97
 
-    bNonstandardD = 0.905
+    bNonstandardD = 0.88
     # bNonstandardD = 0.93
-    bNonstandardU = 0.98
-    bNonstandardS = 0.98
-    bNonstandardC = 0.98
-    bNonstandardB = 0.98
+    bNonstandardU = 0.88
+    bNonstandardS = 0.88
+    bNonstandardC = 0.88
+    bNonstandardB = 0.88
     bNonstandardH = 0.98
 
     aLund = 0.68
     bLund = 0.98
-    sigma_base = 0.27125
+    sigma_base = 0.335
 
     aLundD = aLund + aExtraDQuark
     bLundD = bNonstandardD
@@ -356,16 +356,17 @@ for i in range(repeat):
 
     #temp 2d
     epsilon = 1e-5
-    # params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon)}
-    params_learn = {
-    'a1':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},
-    'a2':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
-    'a3':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
-    'b1':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
-    'b2':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
-    'b3':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
-    'sigma': {'value': torch.tensor(sigma_base + epsilon)}              # its own param
-    }
+    params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon), 'a2': torch.tensor(aLundU+epsilon), 'b2': torch.tensor(bLundU+epsilon), "a3": torch.tensor(aLundS+epsilon), "b3": torch.tensor(bLundS+epsilon)}
+    global_param_groups = {'a1': 'a', 'a2': 'a', 'a3': 'a','b1': 'b', 'b2': 'b', 'b3': 'b'}
+    # params_learn = {
+    # 'a1':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},
+    # 'a2':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
+    # 'a3':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
+    # 'b1':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
+    # 'b2':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
+    # 'b3':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
+    # 'sigma': {'value': torch.tensor(sigma_base + epsilon)}              # its own param
+    # }
     # Irrelevant parameters for the flow plot that must be initialized for the RSA class
 
 	
@@ -373,7 +374,7 @@ for i in range(repeat):
     RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
                     params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
                     sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
-                    results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker_nosigma')
+                    results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker_nosigma', params_groups=global_param_groups)
 
     # optimizer = optim.Adahessian(RSA.weight_nexus.parameters())
     optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
@@ -385,10 +386,10 @@ for i in range(repeat):
     all_params_list.append(all_params)
     params_final_list.append(params_final)
     all_loss_values.append(loss_values)
-
+    print(np.shape(all_params_list))
     # Save the parameters
     if i == 0:
-        save_nm = 1
+        save_nm = 4
         dim = len(params_learn)
 
         # Construct full path
@@ -398,6 +399,7 @@ for i in range(repeat):
         os.makedirs(folder_path, exist_ok=True)
     
     if i % 1 == 0:
+        print(np.shape(all_params_list))
         np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/all_params_{save_nm}', all_params_list)
         np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/params_final_{save_nm}', params_final_list)
         np.save(f'/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked/{dim}D/loss_values_{save_nm}', all_loss_values)

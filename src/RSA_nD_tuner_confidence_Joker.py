@@ -378,7 +378,7 @@ for i in range(repeat):
 
     # Save the parameters
     if i == 0:
-        save_nm = 8
+        save_nm = 9
         dim = len(params_learn)
 
         # Construct full path
