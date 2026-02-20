@@ -124,7 +124,8 @@ class RSA_nD_tuner():
         """
 
         # Choose the correct order of gradient components:
-        pid_keys_map = {int(key.item()): i for i, key in enumerate(self.weight_nexus.pid_keys)}
+        pid_keys_map_a = {int(key.item()): i for i, key in enumerate(self.weight_nexus.a_pid_keys)}
+        pid_keys_map_b = {int(key.item()): i for i, key in enumerate(self.weight_nexus.b_pid_keys)}
         sigma_ind = 0
         a_ind_lookup_pos = []
         a_ind_params_init_pos = []
@@ -136,11 +137,13 @@ class RSA_nD_tuner():
                 sigma_ind = p_ind
             elif 'a' in k:
                 pid = int(k[1:])
-                a_ind_lookup_pos.append(self.weight_nexus.pid_to_group_idx[pid_keys_map[pid]])
+                a_ind_lookup_pos.append(self.weight_nexus.a_pid_to_group_idx[pid_keys_map_a[pid]].item())
+                # a_ind_lookup_pos.append(pid_keys_map[pid])
                 a_ind_params_init_pos.append(p_ind)
             elif 'b' in k:
                 pid = int(k[1:])
-                b_ind_lookup_pos.append(pid_keys_map[pid])
+                b_ind_lookup_pos.append(self.weight_nexus.b_pid_to_group_idx[pid_keys_map_b[pid]].item())
+                # b_ind_lookup_pos.append(pid_keys_map[pid])
                 b_ind_params_init_pos.append(p_ind)     
         
         device = self.device
@@ -224,6 +227,8 @@ class RSA_nD_tuner():
                         param_value[sigma_ind] = val
 
                     elif "a_lookup_alt" in pname:
+                        print('1: ', a_ind_lookup_pos)
+                        print('2: ', grad.shape)
                         param_gradient[a_ind_params_init_pos] = grad[a_ind_lookup_pos].view(-1)
                         param_value[a_ind_params_init_pos] = val[a_ind_lookup_pos].view(-1)
 

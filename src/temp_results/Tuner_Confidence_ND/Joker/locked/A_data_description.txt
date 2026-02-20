@@ -20,3 +20,16 @@ lr= 0.1
 N_events= 30000
 N_target= 30000
 repeat=3
+
+7D -> 3 parameters tunable
+observables:Joker_locked
+save_nm= 5
+base: ax=0.68+0.04, bx=0.88, sigma=0.305
+target: ad=0.68, bd=0.98, ax=0.68, bx=0.98, sigma=0.335
+loss_func: z_accept
+epochs= 75
+optimizer= ADAM
+lr= 0.1
+N_events= 100
+N_target= 100
+repeat=3

@@ -1,0 +1,65 @@
+# joker_config.yaml
+
+# ----------------- General -----------------
+nD: 3              # choose 2 or 3
+random_seed: 43
+
+# ----------------- Data paths -----------------
+# 2D dataset paths
+sim_hadrons_path_2D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_hadrons.npy"
+sim_accept_reject_path_2D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_id_mT2_accept_reject_z.npy"
+sim_fPrel_path_2D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_fPrel.npy"
+exp_hadrons_path_2D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy"
+exp_accept_reject_path_2D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy"
+
+# 3D dataset paths
+sim_hadrons_path_3D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.305_N_1.0e+05_hadrons.npy"
+sim_accept_reject_path_3D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.305_N_1.0e+05_id_mT2_accept_reject_z.npy"
+sim_fPrel_path_3D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.305_N_1.0e+05_fPrel.npy"
+exp_hadrons_path_3D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy"
+exp_accept_reject_path_3D: "/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy"
+
+# ----------------- Event limits -----------------
+N_events_max: 100000   # max sim/exp events loaded
+N_target_max: 100000   # max exp events for target
+sample_events: 30000   # events per repetition
+
+# ----------------- Training -----------------
+repeat: 100
+batch_size: 30000
+epochs: 75
+over_sample_factor: 10.0
+learning_rate: 0.1
+fixed_binning: true
+
+epsilon_z: 1.0e-5       # for z == 1 protection
+epsilon_params: 1.0e-5  # for trainable param initialisation
+
+# ----------------- Physics parameters -----------------
+aExtraDQuark: 0.04
+aExtraUQuark: 0.04
+aExtraSQuark: 0.04
+aExtraCquark: 0.04
+aExtraBquark: 0.04
+aExtraDiquark: 0.97
+
+bNonstandardD: 0.88
+bNonstandardU: 0.88
+bNonstandardS: 0.88
+bNonstandardC: 0.88
+bNonstandardB: 0.88
+bNonstandardH: 0.98
+
+aLund: 0.68
+bLund: 0.98
+sigma_base_2D: 0.335
+sigma_base_3D: 0.305
+
+# ----------------- RSA / output -----------------
+observable: "Joker"
+loss_type_2D: "Joker_nosigma"
+loss_type_3D: "Joker_sigma"
+
+results_dir: "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD"
+confidence_dir_base: "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Confidence_ND/Joker/locked"
+save_nm: 1

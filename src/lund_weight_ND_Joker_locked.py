@@ -37,14 +37,13 @@ class LundWeight(nn.Module):
             self.sigma_alt = torch.nn.Parameter(value.to(self.device), requires_grad = True)
 
         # Initialize the params dictionary
-        params_group = {'a1': 'a', 'a2': 'a', 'a3': 'a',
-                               'b1': 'b', 'b2': 'b', 'b3': 'b'}
         per_prefix_groups = self.make_param_groups_per_prefix(
             params=params,
             global_param_groups=params_groups,
             prefixes=("a", "b"),
         )
         a_groups = per_prefix_groups['a']
+        print('5', (a_groups))
         b_groups = per_prefix_groups['b']
 
         # Two lookups (one for 'a', one for 'b')
@@ -55,10 +54,12 @@ class LundWeight(nn.Module):
         self.b_lookup_base = PIDLookup(params_base, params, prefix='b', device=self.device, alt=False, param_groups=b_groups)
         
         # Register pid_keys to use for gradient saving
-        self.pid_keys = self.a_lookup_alt.pid_keys
-        self.pid_to_group_idx = self.a_lookup_alt.pid_to_group_idx
-
-        print('LundWeight initialized with PIDs:', self.pid_to_group_idx)
+        self.a_pid_keys = self.a_lookup_alt.pid_keys #!NOTE: in this case it is the same for 'a' and 'b', things could change if generalizing
+        self.a_pid_to_group_idx = self.a_lookup_alt.pid_to_group_idx
+        self.b_pid_keys = self.b_lookup_alt.pid_keys #!NOTE: in this case it is the same for 'a' and 'b', things could change if generalizing
+        self.b_pid_to_group_idx = self.b_lookup_alt.pid_to_group_idx
+        # print('6', self.a_lookup_alt.pid_to_group_idx)
+        # print('6', self.b_lookup_alt.pid_to_group_idx)
 
         # Initialize the over-sampling factor 
         self.over_sample_factor = over_sample_factor
@@ -345,104 +346,6 @@ class LundWeight(nn.Module):
                     break  # don't match multiple prefixes like "ab", etc.
 
         return out
-
-
-
-
-# class PIDLookup(nn.Module):
-#     def __init__(
-#         self,
-#         params_base: dict[str, torch.Tensor],
-#         params:      dict[str, torch.Tensor],
-#         prefix:      str,               # e.g. 'a' or 'b'
-#         device:      str = 'cuda',
-#         alt:         bool = False # True if this is the alternative parameters
-#     ):
-#         super().__init__()
-#         self.device = device
-
-#         # For the alternative parameters, the look up table is partly trainable
-#         if alt:
-#             # 1) Single pass over both dicts to collect actual PIDs
-#             all_pids = set()
-#             # for key in list(params_base.keys()) + list(params.keys()):
-#             for key in list(params_base.keys()):
-#                 if key.startswith(prefix):
-#                     pid = int(key[len(prefix):])
-#                     all_pids.add(pid)
-
-#             # 2) Sort and register as a tensor of length V
-#             self.pid_keys = torch.tensor(
-#                 sorted(all_pids),
-#                 dtype=torch.long,
-#                 device=device
-#             )                           # shape (V,)
-#             V = self.pid_keys.size(0)
-
-#             # 3) Build the (V, 1) weight matrix, marking frozen rows
-#             weight = torch.zeros(V, 1, device=device)
-#             fixed_rows: list[int] = []
-#             for i, pid in enumerate(self.pid_keys.tolist()):
-#                 key = f'{prefix}{pid}'
-#                 if key in params:
-#                     # trainable
-#                     weight[i, 0] = params[key].to(device)
-#                 else:
-#                     # frozen
-#                     weight[i, 0] = params_base[key].to(device)
-#                     fixed_rows.append(i)
-
-#             # 4) Create an Embedding from this weight (all rows trainable initially)
-#             self.embed = nn.Embedding.from_pretrained(weight, freeze=False)
-            
-#             # 5) Hook to zero out grads on frozen rows
-#             fixed_rows_tensor = torch.tensor(fixed_rows, dtype=torch.long, device=device)
-#             def _freeze_rows(grad: torch.Tensor) -> torch.Tensor:
-#                 grad[fixed_rows_tensor] = 0.
-#                 return grad
-#             self.embed.weight.register_hook(_freeze_rows)
-
-#         # For the base parameters, the look up table is fixed    
-#         else:
-#             # 1) Collect all PIDs with the given prefix (e.g., 'a', 'b', etc.)
-#             all_pids = {
-#                 int(key[len(prefix):])
-#                 for key in params_base.keys()
-#                 if key.startswith(prefix)
-#             }
-
-#             # 2) Sort PIDs and register as tensor of shape (V,)
-#             self.pid_keys = torch.tensor(
-#                 sorted(all_pids),
-#                 dtype=torch.long,
-#                 device=device
-#             )
-#             V = self.pid_keys.size(0)
-
-#             # 3) Build the (V, 1) frozen weight matrix
-#             weight = torch.zeros(V, 1, device=device)
-#             for i, pid in enumerate(self.pid_keys.tolist()):
-#                 key = f'{prefix}{pid}'
-#                 weight[i, 0] = params_base[key].to(device)
-
-#             # 4) Create nn.Embedding with freeze=True (weights won't update)
-#             self.embed = nn.Embedding.from_pretrained(weight, freeze=True)
-
-
-
-#     def forward(self, pid_values: torch.LongTensor) -> torch.Tensor:
-#         """
-#         pid_values: LongTensor of shape (B, T), arbitrary integers
-#         Returns:    Tensor of shape (B, T, 1)
-#         """
-#         # Map arbitrary PID values → [0..V) with one C/CUDA call
-#         idxs = torch.searchsorted(self.pid_keys, pid_values)
-#         # Single fused gather
-#         return self.embed(idxs)
-
-
-
-
 
 
 

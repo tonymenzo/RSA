@@ -85,12 +85,22 @@ def charged_mask_from_pdg(pdg_ids, charged=1):
     
     return np.isin(pdg_ids, list(charged_set))
 
-# 2D dataset
-sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_hadrons.npy'
-sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_id_mT2_accept_reject_z.npy'
-sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_fPrel.npy'
-exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
-exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
+
+nD = 2
+if nD == 2:
+    # 2D dataset
+    sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_hadrons.npy'
+    sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_id_mT2_accept_reject_z.npy'
+    sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_fPrel.npy'
+    exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
+    exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
+elif nD == 3:
+    # 3D dataset !change to actual 3D paths when available
+    sim_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.305_N_1.0e+05_hadrons.npy'
+    sim_accept_reject_PATH = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.305_N_1.0e+05_id_mT2_accept_reject_z.npy'
+    sim_fPrel_PATH         = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.305_N_1.0e+05_fPrel.npy'
+    exp_hadrons_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy'
+    exp_accept_reject_PATH       = '/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy'
 
 
 
@@ -105,7 +115,9 @@ exp_accept_reject = np.load(exp_accept_reject_PATH, mmap_mode = "r")
 
 
 N_events = int(100_000)
+N_events = int(100)
 N_target = min(int(100_000), len(exp_hadrons)) # the number of events in the experimental dataset
+N_target = min(int(100), len(exp_hadrons)) # the number of events in the experimental dataset
 print('N_target: ', N_target)
 
 # Observables:
@@ -121,48 +133,11 @@ E_sim, m_sim, pid_sim = sim_hadrons_temp[..., 3], sim_hadrons_temp[..., 4], sim_
 p_mag_exp = np.sqrt(px_exp**2 + py_exp**2 + pz_exp**2)
 p_mag_sim = np.sqrt(px_sim**2 + py_sim**2 + pz_sim**2)
 
-# # Charged masks
-# charged_mask_exp = charged_mask_from_pdg(pid_exp) & (pid_exp != 0)
-# charged_mask_sim = charged_mask_from_pdg(pid_sim) & (pid_sim != 0)
-# uncharged_mask_exp = ~charged_mask_exp & (pid_exp != 0)
-# uncharged_mask_sim = ~charged_mask_sim & (pid_sim != 0)
 pion_mask_exp = (pid_exp == 211) | (pid_exp == -211) | (pid_exp == 111)
 pion_mask_sim = (pid_sim == 211) | (pid_sim == -211) | (pid_sim == 111)
 
-# # --- Charged-only views (same shape as originals; others set to 0.0) ---
-# px_exp_charged = np.where(charged_mask_exp, px_exp, 0.0)
-# py_exp_charged = np.where(charged_mask_exp, py_exp, 0.0)
-# pz_exp_charged = np.where(charged_mask_exp, pz_exp, 0.0)
-# E_exp_charged  = np.where(charged_mask_exp,  E_exp, 0.0)
-# m_exp_charged  = np.where(charged_mask_exp,  m_exp, 0.0)
-
-# px_sim_charged = np.where(charged_mask_sim, px_sim, 0.0)
-# py_sim_charged = np.where(charged_mask_sim, py_sim, 0.0)
-# pz_sim_charged = np.where(charged_mask_sim, pz_sim, 0.0)
-# E_sim_charged  = np.where(charged_mask_sim,  E_sim, 0.0)
-# m_sim_charged  = np.where(charged_mask_sim,  m_sim, 0.0)
-
-# # --- Uncharged-only views (same shape; charged entries set to 0.0) ---
-# px_exp_uncharged = np.where(uncharged_mask_exp, px_exp, 0.0)
-# py_exp_uncharged = np.where(uncharged_mask_exp, py_exp, 0.0)
-# pz_exp_uncharged = np.where(uncharged_mask_exp, pz_exp, 0.0)
-# E_exp_uncharged  = np.where(uncharged_mask_exp,  E_exp, 0.0)
-# m_exp_uncharged  = np.where(uncharged_mask_exp,  m_exp, 0.0)
-
-# px_sim_uncharged = np.where(uncharged_mask_sim, px_sim, 0.0)
-# py_sim_uncharged = np.where(uncharged_mask_sim, py_sim, 0.0)
-# pz_sim_uncharged = np.where(uncharged_mask_sim, pz_sim, 0.0)
-# E_sim_uncharged  = np.where(uncharged_mask_sim,  E_sim, 0.0)
-# m_sim_uncharged  = np.where(uncharged_mask_sim,  m_sim, 0.0)
-
-# charged_mult_exp = np.sum(charged_mask_exp, axis=1)
-# charged_mult_sim = np.sum(charged_mask_sim, axis=1)
-
 pion_mult_exp = np.sum(pion_mask_exp, axis=1)
 pion_mult_sim = np.sum(pion_mask_sim, axis=1)
-
-# uncharged_mult_exp = np.sum(uncharged_mask_exp, axis=1)
-# uncharged_mult_sim = np.sum(uncharged_mask_sim, axis=1)
 
 mask = np.abs(exp_hadrons_temp[:, :, 0]) > 0.0
 exp_mult = np.sum(mask, axis=1)
@@ -174,26 +149,6 @@ p_mag_sim = np.sqrt(px_sim**2 + py_sim**2 + pz_sim**2)
 
 p_frac_exp = p_mag_exp / np.sum(p_mag_exp, axis=1, keepdims=True)
 p_frac_sim = p_mag_sim / np.sum(p_mag_sim, axis=1, keepdims=True)
-
-
-# # --- Experimental data ---
-# p_charged_1mom_exp, p_charged_2raw_exp, p_charged_var_exp, p_charged_skew_exp = \
-#     momentum_fraction_moments(p_frac_exp, charged_mask_exp)
-
-# # --- Simulated data ---
-# p_charged_1mom_sim, p_charged_2raw_sim, p_charged_var_sim, p_charged_skew_sim = \
-#     momentum_fraction_moments(p_frac_sim, charged_mask_sim)
-
-# # Mask for all real particles (exclude padding)
-# all_mask_exp = pid_exp != 0
-# all_mask_sim = pid_sim != 0
-
-# p_all_1mom_exp, p_all_2raw_exp, p_all_var_exp, p_all_skew_exp = \
-#     momentum_fraction_moments(p_frac_exp, all_mask_exp)
-
-# p_all_1mom_sim, p_all_2raw_sim, p_all_var_sim, p_all_skew_sim = \
-#     momentum_fraction_moments(p_frac_sim, all_mask_sim)
-
 
 exp_accept_reject = torch.Tensor(exp_accept_reject[0:N_target].copy())
 sim_accept_reject = torch.Tensor(sim_accept_reject[0:N_events].copy())
@@ -209,11 +164,15 @@ exp_accept_reject[:,:,2:][exp_accept_reject[:,:,2:] == 1] = 1 - epsilon # Do not
 
 mask_base = sim_accept_reject[:, :, 5] > 0.0
 mask_sim = exp_accept_reject[:, :, 5] > 0.0
-px_sim = torch.tensor(sim_accept_reject[:, :, 3])
-py_sim = torch.tensor(sim_accept_reject[:, :, 4])
+# px_sim = torch.tensor(sim_accept_reject[:, :, 3])
+px_sim = sim_accept_reject[:, :, 3].clone().detach()
+# py_sim = torch.tensor(sim_accept_reject[:, :, 4])
+py_sim = sim_accept_reject[:, :, 4].clone().detach()
 pT_sim = torch.pow(torch.pow(px_sim,2) + torch.pow(py_sim,2), 1/2)
-px_exp = torch.tensor(exp_accept_reject[:, :, 3])
-py_exp = torch.tensor(exp_accept_reject[:, :, 4])
+# px_exp = torch.tensor(exp_accept_reject[:, :, 3])
+px_exp = exp_accept_reject[:, :, 3].clone().detach()
+# py_exp = torch.tensor(exp_accept_reject[:, :, 4])
+py_exp = exp_accept_reject[:, :, 4].clone().detach()
 pT_exp = torch.pow(torch.pow(px_exp,2) + torch.pow(py_exp,2), 1/2)
 
 #z_accept_obs
@@ -242,7 +201,9 @@ np.random.seed(43)
 
 repeat = 100
 batch_size = 30_000  
+batch_size = 50
 N_events = int(30_000)   # -> 30k random events per each repetition
+N_events = int(50)   # -> 30k random events per each repetition
 epochs = 75
 
 
@@ -325,7 +286,12 @@ for i in range(repeat):
 
     aLund = 0.68
     bLund = 0.98
-    sigma_base = 0.335
+    if nD == 2:
+        #2d
+        sigma_base = 0.335
+    if nD == 3:
+        #3d
+        sigma_base = 0.305
 
     aLundD = aLund + aExtraDQuark
     bLundD = bNonstandardD
@@ -349,32 +315,36 @@ for i in range(repeat):
                 'a3103': torch.tensor(aLundDiquark), 'b3103': torch.tensor(bLundDiquark), 'a3201': torch.tensor(aLundDiquark), 'b3201': torch.tensor(bLundDiquark),
                 'a3203': torch.tensor(aLundDiquark), 'b3203': torch.tensor(bLundDiquark), 'a3303': torch.tensor(aLundDiquark), 'b3303': torch.tensor(bLundDiquark),
                 'sigma': torch.tensor(sigma_base)}
+    # Irrelevant parameters for the flow plot that must be initialized for the RSA class
 
     # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD), 'a2': torch.tensor(aLundU)}
     # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'a2': torch.tensor(aLundU),'sigma': torch.tensor(sigma_base)}
     # params_learn = {'a1': torch.tensor(aLundD), 'b1': torch.tensor(bLundD),'sigma': torch.tensor(sigma_base)}
 
-    #temp 2d
-    epsilon = 1e-5
-    params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon), 'a2': torch.tensor(aLundU+epsilon), 'b2': torch.tensor(bLundU+epsilon), "a3": torch.tensor(aLundS+epsilon), "b3": torch.tensor(bLundS+epsilon)}
-    global_param_groups = {'a1': 'a', 'a2': 'a', 'a3': 'a','b1': 'b', 'b2': 'b', 'b3': 'b'}
-    # params_learn = {
-    # 'a1':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},
-    # 'a2':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
-    # 'a3':    {'value': torch.tensor(aLundD + epsilon), 'group': 'a'},  # shares with a1
-    # 'b1':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
-    # 'b2':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
-    # 'b3':    {'value': torch.tensor(bLundD + epsilon), 'group': 'b'},
-    # 'sigma': {'value': torch.tensor(sigma_base + epsilon)}              # its own param
-    # }
-    # Irrelevant parameters for the flow plot that must be initialized for the RSA class
+    if nD == 2:
+        #temp 2d
+        epsilon = 1e-5
+        params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon), 'a2': torch.tensor(aLundU+epsilon), 'b2': torch.tensor(bLundU+epsilon), "a3": torch.tensor(aLundS+epsilon), "b3": torch.tensor(bLundS+epsilon)}
+        global_param_groups = {'a1': 'a', 'a2': 'a', 'a3': 'a','b1': 'b', 'b2': 'b', 'b3': 'b'}
+        
+    elif nD == 3:
+        #temp 3d
+        epsilon = 1e-5
+        params_learn = {'a1': torch.tensor(aLundD+epsilon), 'b1': torch.tensor(bLundD+epsilon), 'a2': torch.tensor(aLundU+epsilon), 'b2': torch.tensor(bLundU+epsilon), "a3": torch.tensor(aLundS+epsilon), "b3": torch.tensor(bLundS+epsilon), 'sigma': torch.tensor(sigma_base+epsilon)}
+        global_param_groups = {'a1': 'a', 'a2': 'a', 'a3': 'a','b1': 'b', 'b2': 'b', 'b3': 'b', 'sigma': 'sigma'}
 
-	
+
     # Create an RSA instance
-    RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
-                    params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
-                    sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
-                    results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker_nosigma', params_groups=global_param_groups)
+    if nD == 2:
+        RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
+                        params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
+                        sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
+                        results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker_nosigma', params_groups=global_param_groups)
+    elif nD == 3:
+        RSA = RSA_nD_tuner(epochs = epochs, dim_multiplicity = dim_multiplicity, dim_accept_reject = dim_accept_reject, over_sample_factor = over_sample_factor,
+                        params_base = params_base, sim_observable_dataloader = sim_observable_dataloader, sim_z_dataloader = sim_accept_reject_dataloader, 
+                        sim_fPrel_dataloader = sim_fPrel_dataloader, exp_observable_dataloader = exp_observable_dataloader, print_details = False, 
+                        results_dir = "/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_nD", params_init = params_learn, fixed_binning = True, loss_type='Joker', params_groups=global_param_groups)
 
     # optimizer = optim.Adahessian(RSA.weight_nexus.parameters())
     optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
@@ -389,7 +359,7 @@ for i in range(repeat):
     print(np.shape(all_params_list))
     # Save the parameters
     if i == 0:
-        save_nm = 4
+        save_nm = 5
         dim = len(params_learn)
 
         # Construct full path
