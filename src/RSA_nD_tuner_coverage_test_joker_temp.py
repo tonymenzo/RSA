@@ -112,21 +112,21 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # NT = 25          # bootstrap targets
-    NT = 3          # bootstrap targets
-    NB = 3          # bootstrap bases
+    NT = 25          # bootstrap targets
+    NB = 25          # bootstrap bases
     k_sigma = 1.0    # 1σ interval; set 2.0 for 2σ
     eps_z = 1e-5
 
     # Choose bootstrap sample sizes (usually = original sample sizes)
-    # N_target_draw = 30_000   # number of target events per pseudo-experiment
-    # N_base_draw   = 30_000   # number of base events per base-bootstrap fit
-    N_target_draw = 30   # number of target events per pseudo-experiment
-    N_base_draw   = 30   # number of base events per base-bootstrap fit
+    N_target_draw = 30_000   # number of target events per pseudo-experiment
+    N_base_draw   = 30_000   # number of base events per base-bootstrap fit
+    # N_target_draw = 30   # number of target events per pseudo-experiment
+    # N_base_draw   = 30   # number of base events per base-bootstrap fit
 
     # RSA hyperparams
     epochs = 75
-    # batch_size = 30_000
-    batch_size = 30
+    batch_size = 30_000
+    # batch_size = 30
     over_sample_factor = 10.0
     learning_rate = 0.1
     fixed_binning = True
@@ -144,13 +144,13 @@ def main():
     sim_fPrel_np         = np.load(sim_fPrel_PATH, mmap_mode="r")
     exp_accept_reject_np = np.load(exp_accept_reject_PATH, mmap_mode="r")
 
-    #temp: access only small slices to check loading (remove later):
-    N_temp = 10_000
-    exp_hadrons_np = exp_hadrons_np[:N_temp]
-    sim_hadrons_np = sim_hadrons_np[:N_temp]
-    sim_accept_reject_np = sim_accept_reject_np[:N_temp]
-    sim_fPrel_np = sim_fPrel_np[:N_temp]
-    exp_accept_reject_np = exp_accept_reject_np[:N_temp]
+    # #temp: access only small slices to check loading (remove later):
+    # N_temp = 10_000
+    # exp_hadrons_np = exp_hadrons_np[:N_temp]
+    # sim_hadrons_np = sim_hadrons_np[:N_temp]
+    # sim_accept_reject_np = sim_accept_reject_np[:N_temp]
+    # sim_fPrel_np = sim_fPrel_np[:N_temp]
+    # exp_accept_reject_np = exp_accept_reject_np[:N_temp]
 
     N_target_avail = exp_hadrons_np.shape[0]
     N_base_avail   = sim_hadrons_np.shape[0]
@@ -376,24 +376,26 @@ def main():
 
         print(f"--- Target bootstrap it={it+1}: mu={mu_t[it,:]}, sigma={sig_t[it,:]}, cov={cov_t[it,:]}")
 
-    # Empirical coverage (per dimension)
-    coverage_rate = cov_t.mean(axis=0)
-    print("\n============================================================")
-    print(f"Empirical coverage for k={k_sigma}σ: {coverage_rate}  (per parameter)")
-    print("============================================================\n")
 
-    # -----------------------------
-    # Save results
-    # -----------------------------
-    save_nm = 1
-    out_dir = f"/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Coverage_ND/Joker/locked/{D}D"
-    os.makedirs(out_dir, exist_ok=True)
+        #temp save intermediate results after each target bootstrap (can be large, but useful for debugging and analysis if something crashes later; also you can remove the large arrays if you just want the final coverage rates and losses)
+        # Empirical coverage (per dimension)
+        coverage_rate = cov_t.mean(axis=0)
+        print("\n============================================================")
+        print(f"Empirical coverage for k={k_sigma}σ: {coverage_rate}  (per parameter)")
+        print("============================================================\n")
 
-    np.save(os.path.join(out_dir, f"theta_hat_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), theta_hat)
-    np.save(os.path.join(out_dir, f"mu_t_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), mu_t)
-    np.save(os.path.join(out_dir, f"sigma_t_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), sig_t)
-    np.save(os.path.join(out_dir, f"cov_t_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), cov_t)
-    np.save(os.path.join(out_dir, f"final_loss_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), final_loss)
+        # -----------------------------
+        # Save results
+        # -----------------------------
+        save_nm = 1
+        out_dir = f"/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Coverage_ND/Joker/locked/{D}D"
+        os.makedirs(out_dir, exist_ok=True)
+
+        np.save(os.path.join(out_dir, f"theta_hat_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), theta_hat)
+        np.save(os.path.join(out_dir, f"mu_t_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), mu_t)
+        np.save(os.path.join(out_dir, f"sigma_t_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), sig_t)
+        np.save(os.path.join(out_dir, f"cov_t_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), cov_t)
+        np.save(os.path.join(out_dir, f"final_loss_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.npy"), final_loss)
 
     # Also save a tiny summary text
     with open(os.path.join(out_dir, f"summary_NT{NT}_NB{NB}_k{k_sigma}_{save_nm}.txt"), "w") as f:
