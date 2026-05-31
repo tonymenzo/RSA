@@ -43,7 +43,6 @@ class LundWeight(nn.Module):
             prefixes=("a", "b"),
         )
         a_groups = per_prefix_groups['a']
-        print('5', (a_groups))
         b_groups = per_prefix_groups['b']
 
         # Two lookups (one for 'a', one for 'b')
@@ -501,6 +500,20 @@ class PIDLookup(nn.Module):
         """
         # Map arbitrary PID values → indices in [0..V)
         idxs = torch.searchsorted(self.pid_keys, pid_values)  # (B, T)
+
+        # #!NOTE: new check for searchsorted (are all pid_values in pid_keys)
+        # Uncomment only for debugging:
+        # in_bounds = idxs < self.pid_keys.numel() # .numel() is the number of known pid_keys
+        # safe_idxs = idxs.clamp(max=self.pid_keys.numel() - 1)  # assigns indices not causing error just to perform a check
+
+        # valid = in_bounds & (self.pid_keys[safe_idxs] == pid_values) # perform the check (if all indices are defined and in bounds)
+
+        # if not torch.all(valid):
+        #     bad_pids = torch.unique(pid_values[~valid]).detach().cpu().tolist()
+        #     raise ValueError(
+        #         f"Unknown PID(s) encountered in PIDLookup: {bad_pids}. "
+        #         f"Known PIDs are {self.pid_keys.detach().cpu().tolist()}."
+        #     )
 
         # ALT case: we have an extra mapping PID-index -> group-index
         if hasattr(self, "pid_to_group_idx"):

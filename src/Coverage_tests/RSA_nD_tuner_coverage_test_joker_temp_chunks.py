@@ -160,7 +160,8 @@ def main():
 
     # RSA hyperparams
     epochs = 75
-    batch_size = 30_000
+    batch_size_target = N_target_draw
+    batch_size_base = N_base_draw
     # batch_size = 30
     over_sample_factor = 10.0
     learning_rate = 0.1
@@ -322,7 +323,7 @@ def main():
     for it_local in range(NT_local):
         it_global = it_start + it_local
         # --- bootstrap target (with replacement)
-        idx_t = rng.choice(N_target_avail, size=N_target_draw, replace=False)  # classic bootstrap
+        idx_t = rng.choice(N_target_avail, size=N_target_draw, replace=True)  # classic bootstrap
         # idx_t = rng.choice(N_target_avail, size=N_target_draw, replace=False)
 
         # Build target observables dataloader ONCE per it
@@ -334,12 +335,14 @@ def main():
             to_device_float(exp_pT_t, device),
             to_device_float(exp_zacc_t, device),
         )
-        exp_loader = DataLoader(exp_ds, batch_size=batch_size, shuffle=False)
+
+        #!NOTE: maybe wrong, here we take a batchsize of 30k target events out of 100k target events, but target events we want to keep constantly 100k
+        exp_loader = DataLoader(exp_ds, batch_size=batch_size_target, shuffle=False)
 
         # Inner loop: bootstrap base NB times
         for ib in range(NB):
             # --- bootstrap base (with replacement)
-            idx_b = rng.choice(N_base_avail, size=N_base_draw, replace=False)
+            idx_b = rng.choice(N_base_avail, size=N_base_draw, replace=True)
 
             # Base accept/reject + fPrel
             sim_acc_t = sim_accept_reject_full[idx_b]
@@ -357,13 +360,13 @@ def main():
                 to_device_float(sim_pT_b, device),
                 to_device_float(sim_zacc_b, device),
             )
-            sim_loader_obs = DataLoader(sim_ds_obs, batch_size=batch_size, shuffle=False)
+            sim_loader_obs = DataLoader(sim_ds_obs, batch_size=batch_size_base, shuffle=False)
 
             sim_ds_acc = ObservableDataset(to_device_float(sim_acc_t, device))
-            sim_loader_acc = DataLoader(sim_ds_acc, batch_size=batch_size, shuffle=False)
+            sim_loader_acc = DataLoader(sim_ds_acc, batch_size=batch_size_base, shuffle=False)
 
             sim_ds_fprel = ObservableDataset(to_device_float(sim_fPrel_t, device))
-            sim_loader_fprel = DataLoader(sim_ds_fprel, batch_size=batch_size, shuffle=False)
+            sim_loader_fprel = DataLoader(sim_ds_fprel, batch_size=batch_size_base, shuffle=False)
 
             # Dimensions inferred from accept/reject tensor
             dim_multiplicity  = sim_loader_acc.dataset.data.shape[1]
@@ -424,7 +427,7 @@ def main():
 
         #temp save intermediate results after each target bootstrap (can be large, but useful for debugging and analysis if something crashes later; also you can remove the large arrays if you just want the final coverage rates and losses)
         # Empirical coverage (per dimension)
-        coverage_rate = cov_t.mean(axis=0)
+        coverage_rate = cov_t[:it_local+1].mean(axis=0)
         print("\n============================================================")
         print(f"Empirical coverage for k={k_sigma}σ: {coverage_rate}  (per parameter)")
         print("============================================================\n")

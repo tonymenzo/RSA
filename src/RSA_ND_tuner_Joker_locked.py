@@ -18,10 +18,12 @@ import importlib
 import lund_weight_ND_Joker_locked as lund_weight_nD
 import pseudo_chi2_loss
 import wasserstein_loss
+import wasserstein_loss_nd
 
 importlib.reload(lund_weight_nD)
 importlib.reload(pseudo_chi2_loss)
 importlib.reload(wasserstein_loss)
+importlib.reload(wasserstein_loss_nd)
 
 from lund_weight_ND_Joker_locked import LundWeight
 from pseudo_chi2_loss import PseudoChiSquareLoss
