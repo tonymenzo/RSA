@@ -208,6 +208,16 @@ class RSA_nD_tuner():
                 epoch_loss += loss_cpu
                 # loss.backward(create_graph=True) # For AdaHessian
                 loss.backward()
+                
+                #!NOTE: new order optimizer.step moved before param_value saving
+                # Update the network weights
+                optimizer.step()
+                # Update the learning rate scheduler
+                if scheduler != None:
+                    scheduler.step(loss)
+                # Iterate the batch counter
+                batch_counter+=1
+
 
                 # Initialize gradient and value containers
                 N = len(self.params_init)
@@ -246,14 +256,13 @@ class RSA_nD_tuner():
                 #         for ip, param in enumerate(p for p in self.weight_nexus.parameters() if p.requires_grad):
                 #             print(param.grad.clone().detach().numpy())
 
-
-                # Update the network weights
-                optimizer.step()
-                # Update the learning rate scheduler
-                if scheduler != None:
-                    scheduler.step(loss)
-                # Iterate the batch counter
-                batch_counter+=1
+                # # Update the network weights
+                # optimizer.step()
+                # # Update the learning rate scheduler
+                # if scheduler != None:
+                #     scheduler.step(loss)
+                # # Iterate the batch counter
+                # batch_counter+=1
 
                 # Output the loss and learning rate 
                 # print(f'Loss: {loss_cpu:>8f}, \n LR: {optimizer.param_groups[0]["lr"]:>8f}')
