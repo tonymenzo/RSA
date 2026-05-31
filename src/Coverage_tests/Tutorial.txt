@@ -1,0 +1,36 @@
+Run chunks separately, example to run 25x25 coverage test in chunks of Nt=5
+run separately:
+
+# chunk 0 → it = 0..4
+python coverage_job.py \
+  --nt-total 25 --nb 25 --nt-chunk 5 --chunk-id 0 \
+  --out-dir /pscratch/.../coverage_chunks
+
+# chunk 1 → it = 5..9
+python coverage_job.py \
+  --nt-total 25 --nb 25 --nt-chunk 5 --chunk-id 1 \
+  --out-dir /pscratch/.../coverage_chunks
+
+# chunk 2 → it = 10..14
+python coverage_job.py \
+  --nt-total 25 --nb 25 --nt-chunk 5 --chunk-id 2 \
+  --out-dir /pscratch/.../coverage_chunks
+
+# chunk 3 → it = 15..19
+python coverage_job.py \
+  --nt-total 25 --nb 25 --nt-chunk 5 --chunk-id 3 \
+  --out-dir /pscratch/.../coverage_chunks
+
+# chunk 4 → it = 20..24
+python coverage_job.py \
+  --nt-total 25 --nb 25 --nt-chunk 5 --chunk-id 4 \
+  --out-dir /pscratch/.../coverage_chunks
+
+-> concrete example:
+
+
+batch:
+  python coverage_job.py \
+  --nt-total 25 --nb 25 --nt-chunk 5 \
+  --chunk-id $SLURM_ARRAY_TASK_ID \
+  --out-dir /pscratch/.../coverage_chunks

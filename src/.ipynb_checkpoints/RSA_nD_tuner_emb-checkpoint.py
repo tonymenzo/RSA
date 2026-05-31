@@ -31,7 +31,7 @@ from wasserstein_loss import WassersteinLoss
 class RSA_nD_tuner():
     def __init__(self, epochs, dim_multiplicity, dim_accept_reject, over_sample_factor, params_base,
                  sim_observable_dataloader, sim_z_dataloader, sim_fPrel_dataloader, exp_observable_dataloader,
-                 params_init = None, print_details = False, results_dir = None, fixed_binning = True):
+                 params_init = None, print_details = False, results_dir = None, fixed_binning = True, device = 'cuda'):
         """
         RSA-based training/tuning class for tuning microscopic dynamics (hadronization parameters) from macroscopic observables.
         
@@ -70,15 +70,26 @@ class RSA_nD_tuner():
         self.results_dir = results_dir
         self.fixed_binning = fixed_binning
 
+        # Device
+        if device == 'cuda':
+            if torch.cuda.is_available():
+                self.device = torch.device('cuda')
+            else:
+                print('CUDA is not available, using CPU instead.')
+                self.device = torch.device('cpu')
+        else:
+            self.device = torch.device('cpu')
+
         # Initialize the Lund weight module
         torch.cuda.empty_cache()
-        self.weight_nexus = LundWeight(self.params_base, self.params_init, over_sample_factor = self.over_sample_factor)
-        
+        self.weight_nexus = LundWeight(self.params_base, self.params_init, over_sample_factor = self.over_sample_factor, device= self.device)
+
         # Initialize the loss
         # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
-        self.wasserstein_loss = WassersteinLoss(p = 1)
+        self.wasserstein_loss = WassersteinLoss(p = 1, device = self.device)
 
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # self.device = 'cpu'
 
         # Create a results directory if it doesn't exist
@@ -97,17 +108,17 @@ class RSA_nD_tuner():
         device = self.device
         # Initialize a,b array
         # params_array = [[v.clone().detach().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]]
-        params_array = []
+        params_array = [[v for v in self.params_init.values()]]
         batch_counter = 0
         loss_values = []
 
         # Start the tuning (training) loop
-        for i in tqdm(range(self.epochs), ncols = 100):
+        for i in tqdm(range(self.epochs), ncols = 100, disable=False):
             epoch_loss = 0
             
             batch_counter = 0
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
-                print('Batch #', batch_counter)
+                # print('Batch #', batch_counter)
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
                 # Reset the gradients in the optimizer
                 optimizer.zero_grad()
@@ -118,7 +129,7 @@ class RSA_nD_tuner():
                 loss = self.wasserstein_loss(z, w, weights)
                 loss_cpu = loss.clone().detach().cpu().numpy()
                 loss_values.append(loss_cpu)
-                print('----------------------------------------------')
+                # print('----------------------------------------------')
                 # print('Loss:', loss.clone().detach().numpy())
                 # Compute gradients via backprop
                 # torch.autograd.set_detect_anomaly(True)
@@ -141,9 +152,10 @@ class RSA_nD_tuner():
                 batch_counter+=1
 
                 # Output the loss and learning rate 
-                print(f'Loss: {loss_cpu:>8f}, \n LR: {optimizer.param_groups[0]["lr"]:>8f}')
+                # print(f'Loss: {loss_cpu:>8f}, \n LR: {optimizer.param_groups[0]["lr"]:>8f}')
                 # array_temp = [v.clone().detach().numpy()  for k,v in self.weight_nexus.params.items() if v.requires_grad == True]
                 array_temp = []
+                grad_temp = []
                 for name, param in self.weight_nexus.named_parameters():
                     if not param.requires_grad or param.grad is None:
                         continue
@@ -153,20 +165,27 @@ class RSA_nD_tuner():
                     # print(name, grad.shape)
                     if val.numel() == 1:
                         array_temp.append(val.item())
+                        grad_temp.append(grad.item())
                     else:
                         nonzero = val[grad != 0]
                         array_temp.extend(nonzero.tolist())
+                        nonzero_grad = grad[grad != 0]
+                        grad_temp.extend(nonzero_grad.tolist())
 
                     if len(array_temp) >= 3:
                         break  # stop once we have 3 values
+                    
                     # print(param.grad.clone().detach().cpu().shape)
                     # print(param.grad.clone().detach().cpu().numpy())
                     # print(param.clone().detach().numpy())
                     # a_b_c_gradient_i[ip] = param.grad.clone().detach()
                 array_temp = torch.tensor(array_temp, device='cpu')
                 array_temp = torch.cat([array_temp[1:], array_temp[:1]])
+                grad_temp = torch.tensor(grad_temp, device='cpu')
+                grad_temp = torch.cat([grad_temp[1:], grad_temp[:1]])
                 print(f'Parameters: {array_temp}')
-                print('----------------------------------------------')
+                print(f'Gradients: {grad_temp}')
+                # print('----------------------------------------------')
 
                 # Record the tuned parameters
                 params_array.append(array_temp.detach())
@@ -177,12 +196,12 @@ class RSA_nD_tuner():
                     np.save(self.results_dir + '/RSA_tuning_loss.npy', np.array(loss_values))
                     
                 torch.cuda.empty_cache()
-                del x, y, z, w, weights, loss, grad, val, array_temp
+                del x, y, z, w, weights, loss, grad, val
 
                 
         # Return the final tuned parameters as well as the full search space path     
         # return np.array([v.clone().detach().cpu().numpy() for k,v in self.weight_nexus.params.items() if v.requires_grad == True]), np.array(params_array)
-        return array_temp, params_array
+        return array_temp, params_array, loss_values
     
     def RSA_flow(self, optimizer, a_b_c_init_grid):
 
@@ -222,7 +241,7 @@ class RSA_nD_tuner():
             if self.weight_nexus != None:
                 del self.weight_nexus
             torch.cuda.empty_cache()
-            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor).to(device)
+            self.weight_nexus = LundWeight(self.params_base, a_b_c_init_dict, over_sample_factor = self.over_sample_factor, device= self.device)
 
             for (x,y,z,w) in zip(self.sim_z_base, self.sim_fPrel_base, self.sim_observable_base, self.exp_observable):
                 x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)

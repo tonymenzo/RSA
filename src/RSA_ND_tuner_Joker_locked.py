@@ -209,13 +209,13 @@ class RSA_nD_tuner():
 
                 # Initialize gradient and value containers
                 N = len(self.params_init)
-                print('N parameters being tuned:', N)
+                # print('N parameters being tuned:', N)
                 param_gradient = torch.zeros(N, device='cpu')
                 param_value = torch.zeros(N, device='cpu')
 
                 for pname, param in self.weight_nexus.named_parameters():
-                    print('HEREEEE: ')
-                    print(pname, param)
+                    # print('HEREEEE: ')
+                    # print(pname, param)
                     if param.grad is None:
                         continue
 
@@ -227,8 +227,8 @@ class RSA_nD_tuner():
                         param_value[sigma_ind] = val
 
                     elif "a_lookup_alt" in pname:
-                        print('1: ', a_ind_lookup_pos)
-                        print('2: ', grad.shape)
+                        # print('1: ', a_ind_lookup_pos)
+                        # print('2: ', grad.shape)
                         param_gradient[a_ind_params_init_pos] = grad[a_ind_lookup_pos].view(-1)
                         param_value[a_ind_params_init_pos] = val[a_ind_lookup_pos].view(-1)
 
