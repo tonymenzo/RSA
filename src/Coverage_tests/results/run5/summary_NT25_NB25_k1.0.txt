@@ -2,8 +2,8 @@ NT=25
 NB=25
 k_sigma=1.0
 theta_true=[0.68, 0.98]
-coverage_rate=[0.8, 0.6]
-number of target events drawn per bootstrap: 100000  -> actually due to bug, the batch_size was still 30k so effectively this was 30k
+coverage_rate=[1.0, 0.0]
+number of target events drawn per bootstrap: 100000
 number of base events drawn per bootstrap: 30000
 parameter groups: {'a1': 'a', 'a2': 'a', 'a3': 'a', 'b1': 'b', 'b2': 'b', 'b3': 'b'}
 =============================================================

@@ -506,50 +506,80 @@ def loss_func(sim, exp, weights, wasserstein_loss):
     loss = z_loss
     return loss
 
+
 def loss_func_nosigma(sim, exp, weights, wasserstein_loss):
-    # calculates sliced wasserstein for Joker observables
-    
+    # Joker_nosigma loss using all nonzero z_accept values
+
     weights, accept_weights, reject_weights = weights
+
     mult_sim, pT_sim, z_accept_sim = sim
     mult_exp, pT_exp, z_accept_exp = exp
-    loss = 0.0
 
-    mult_loss = wasserstein_loss(mult_sim, mult_exp, weights) 
+    # Currently unused in the returned loss.
+    # Keep commented out to avoid unnecessary computation.
+    # mult_loss = wasserstein_loss(mult_sim, mult_exp, weights)
 
-    # z_accept_sim_1d = z_accept_sim[z_accept_sim[:,:] > 0].reshape(-1)
-    # z_accept_exp_1d = z_accept_exp[z_accept_exp[:,:] > 0].reshape(-1)
-    # accept_weights_1d = accept_weights[z_accept_sim[:,:] > 0.0].reshape(-1)
-    # reject_weights_1d = reject_weights[z_accept_sim[:,:] > 0.0]
-    # reject_weights_1d = torch.where(
-    # torch.isnan(reject_weights_1d),
-    #     torch.tensor(1., device=reject_weights_1d.device),
-    #     reject_weights_1d
-    # ).prod(dim=1)
-    # weights_1d = accept_weights_1d * reject_weights_1d
-    # z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
-    
-    # #only first line
-    # print('SHAPES: ')
-    # print(z_accept_sim.shape)
-    # print(z_accept_exp.shape)
-    # print(accept_weights.shape)
-    # print(reject_weights.shape)
-    # print('----------------------------------------------')
-    z_accept_sim_1d = z_accept_sim[:,1][z_accept_sim[:,1] > 0].reshape(-1)
-    z_accept_exp_1d = z_accept_exp[:,1][z_accept_exp[:,1] > 0].reshape(-1)
-    accept_weights_1d = accept_weights[:,1][z_accept_sim[:,1] > 0.0].reshape(-1)
-    reject_weights_1d = reject_weights[:,1][z_accept_sim[:,1] > 0.0]
+    # ------------------------------------------------------------
+    # Use all accepted z values over all events and all fragmentation
+    # positions, excluding zero-padded entries.
+    # z_accept_sim has shape (B, T)
+    # accept_weights has shape approximately (B, T, 1)
+    # reject_weights has shape approximately (B, T, R)
+    # ------------------------------------------------------------
+
+    sim_mask = z_accept_sim[:, :] > 0.0
+    exp_mask = z_accept_exp[:, :] > 0.0
+
+    z_accept_sim_1d = z_accept_sim[sim_mask].reshape(-1)
+    z_accept_exp_1d = z_accept_exp[exp_mask].reshape(-1)
+
+    accept_weights_1d = accept_weights[sim_mask].reshape(-1)
+
+    reject_weights_1d = reject_weights[sim_mask]
     reject_weights_1d = torch.where(
-    torch.isnan(reject_weights_1d),
-        torch.tensor(1., device=reject_weights_1d.device),
-        reject_weights_1d
+        torch.isnan(reject_weights_1d),
+        torch.tensor(1.0, device=reject_weights_1d.device, dtype=reject_weights_1d.dtype),
+        reject_weights_1d,
     ).prod(dim=1)
-    weights_1d = accept_weights_1d * reject_weights_1d 
-    z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
+
+    weights_1d = accept_weights_1d * reject_weights_1d
+
+    # z_loss = wasserstein_loss(
+    #     z_accept_sim_1d,
+    #     z_accept_exp_1d,
+    #     weights_1d,
+    # )
+    z_loss = PseudoChiSquareLoss
+
+    return z_loss
+
+
+# loss with only first z_accept entry
+# def loss_func_nosigma(sim, exp, weights, wasserstein_loss):
+#     # calculates sliced wasserstein for Joker observables
     
-    loss = z_loss
-    # loss = z_loss
-    return loss
+#     weights, accept_weights, reject_weights = weights
+#     mult_sim, pT_sim, z_accept_sim = sim
+#     mult_exp, pT_exp, z_accept_exp = exp
+#     loss = 0.0
+
+#     mult_loss = wasserstein_loss(mult_sim, mult_exp, weights) 
+
+#     z_accept_sim_1d = z_accept_sim[:,1][z_accept_sim[:,1] > 0].reshape(-1)
+#     z_accept_exp_1d = z_accept_exp[:,1][z_accept_exp[:,1] > 0].reshape(-1)
+#     accept_weights_1d = accept_weights[:,1][z_accept_sim[:,1] > 0.0].reshape(-1)
+#     reject_weights_1d = reject_weights[:,1][z_accept_sim[:,1] > 0.0]
+#     reject_weights_1d = torch.where(
+#     torch.isnan(reject_weights_1d),
+#         torch.tensor(1., device=reject_weights_1d.device),
+#         reject_weights_1d
+#     ).prod(dim=1)
+#     weights_1d = accept_weights_1d * reject_weights_1d 
+#     z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
+    
+#     loss = z_loss
+#     # loss = z_loss
+#     return loss
 
 
 
