@@ -5,6 +5,11 @@
 # Please respect the MCnet Guidelines, see GUIDELINES for details.
 """
 
+# Implementation of the RSA_ND_tuner_Joker_locked:
+# -> Joker: returns full arrays of accept, reject weights not just weights (which is accept * reject)
+# -> Locked: implementation of multiple parameters locked to the same value, eg. a_d = a_u = a, where they are fitted together not separately
+# -> also in this implementation we have an embedding approach for parameter value lookup in weight computation
+
 import numpy as np
 from tqdm import tqdm
 import os

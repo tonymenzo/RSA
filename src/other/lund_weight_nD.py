@@ -4,14 +4,13 @@
 # RSA is licensed under the GNU GPL v3 or later, see LICENSE for details.
 # Please respect the MCnet Guidelines, see GUIDELINES for details.
 """
-# Added reweighting of sigma parameter
-
+#without sigma
 import torch
 from torch import nn
-
+import numpy as np
 
 class LundWeight(nn.Module):
-    def __init__(self, params_base, params, over_sample_factor, device):
+    def __init__(self, params_base, params, over_sample_factor):
         super(LundWeight, self).__init__()
         """
         LundWeight class for computing event weights for the Lund fragmentation function
@@ -22,36 +21,25 @@ class LundWeight(nn.Module):
             over_sample_factor (int): -------- Over-sampling factor for the rejected events
         """
 
-        # Device
-        self.device = device
-
         # Intialize the module parameters
         self.params_base = params_base
-        self.params = params
-
-        if "sigma" in self.params and self.params["sigma"] is not None:
-            #!NOTE: don't change variable name
-            self.sigma_alt = torch.nn.Parameter(self.params['sigma'].to(self.device), requires_grad = True)
-
         # Initialize the params dictionary
-        # Two lookups (one for 'a', one for 'b')
-        #!NOTE: don't change variable name
-        self.a_lookup_alt = PIDLookup(params_base, params, prefix='a', device=self.device, alt=True)
-        self.b_lookup_alt = PIDLookup(params_base, params, prefix='b', device=self.device, alt=True)
-        self.a_lookup_base = PIDLookup(params_base, params, prefix='a', device=self.device, alt=False)
-        self.b_lookup_base = PIDLookup(params_base, params, prefix='b', device=self.device, alt=False)
 
-        # Register pid_keys to use for gradient saving
-        self.pid_keys = self.a_lookup_alt.pid_keys
+        self.params = torch.nn.ParameterDict({})
+        # Iterate of all keys in the dictionary and create a parameter for each key
+        for key in params_base.keys():
+            if key in params:
+                self.params[key] = torch.nn.Parameter(params[key], requires_grad = True)
+            else:
+                self.params[key] = torch.nn.Parameter(params_base[key].clone().detach(), requires_grad = False)
 
-        # Initialize the over-sampling factor 
+        # Initialize the over-sampling factor
         self.over_sample_factor = over_sample_factor
 
         # Constants for numerical stability checks
         self.AFROMZERO = 0.02
         self.EXPMAX = 50.
         self.AFROMC = 0.01
-
 
     def zMaxCalc(self, a, b, c):
         """
@@ -124,6 +112,7 @@ class LundWeight(nn.Module):
         """
         # Determine the shape after broadcasting
         broadcast_shape = torch.broadcast_shapes(z.shape, mT.shape, a.shape, b.shape, c.shape)
+
         # If no masks are provided, consider all elements
         if z_mask is None:
             z_mask = torch.ones(z.shape, dtype=torch.bool, device=z.device)
@@ -147,6 +136,7 @@ class LundWeight(nn.Module):
         a_mask_broad = a_mask.expand(broadcast_shape)
         b_mask_broad = b_mask.expand(broadcast_shape)
         c_mask_broad = c_mask.expand(broadcast_shape)
+    
         # Combine masks
         combined_mask = z_mask_broad & mT_mask_broad & a_mask_broad & b_mask_broad & c_mask_broad
         
@@ -193,20 +183,6 @@ class LundWeight(nn.Module):
 
         return likelihood
 
-    def sigma_weights(self, px, py, p_mask):
-        weights = torch.ones(px.shape, dtype=px.dtype, device=self.device)
-        sigma_base = self.params_base['sigma'] / torch.sqrt(torch.tensor(2.0, device=self.device))
-        sigma_target = self.sigma_alt / torch.sqrt(torch.tensor(2.0, device=self.device))
-        px, py = px[p_mask], py[p_mask]
-        kappa = (torch.pow(px,2) + torch.pow(py,2))/(2 * torch.pow(sigma_base, 2))
-        ratio = torch.pow(sigma_base,2)/torch.pow(sigma_target,2)
-        weights[p_mask] = ratio * torch.exp(-kappa * (ratio-1))
-        self.weights_sigma_full = weights
-
-        return weights.prod(axis=1)
-
-
-    
     def forward(self, z_mT2_pid, fPrel):
         """
         Forward pass of the weight module -- consists of computing the event weights for a given batch
@@ -220,23 +196,22 @@ class LundWeight(nn.Module):
             weights (torch.Tensor): Computed event weights
         """
         batch_size = z_mT2_pid.shape[0]
-        weights = torch.ones(batch_size, device=self.device)
+        weights = torch.ones(batch_size)
 
+        # Extract the (absolute value) pid values
+        pid_old = torch.abs(z_mT2_pid[:, :, 0])
+        pid_new = torch.abs(z_mT2_pid[:, :, 1])
 
-        # z_mT2_pid: Tensor of shape (B, T, 2)
-        pid_old = z_mT2_pid[..., 0].abs().round().long()  # → (B, T)
-        pid_new = z_mT2_pid[..., 1].abs().round().long()  # → (B, T)
-
-        # # Extract the (absolute value) pid values
-        # Four batched lookups, no Python loops
-        a_old_base = self.a_lookup_base(pid_old)
-        a_base     = self.a_lookup_base(pid_new)
-        b_base     = self.b_lookup_base(pid_new)
+        # Compute and create a, b, and c tensors for base and alternative parameters (This is a bottleneck, there isn't a good way to vectorize)
+        a_old_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_base = torch.stack([torch.stack([self.params_base[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        b_base = torch.stack([torch.stack([self.params_base[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
         c_base = 1 + a_base - a_old_base
+        temp = np.array([([f'a{int(pid_new[i,j].item())}' for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)])
 
-        a_old_alt  = self.a_lookup_alt(pid_old)
-        a_alt      = self.a_lookup_alt(pid_new)
-        b_alt      = self.b_lookup_alt(pid_new)
+        a_old_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_old[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        a_alt = torch.stack([torch.stack([self.params[f'a{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
+        b_alt = torch.stack([torch.stack([self.params[f'b{int(round(pid_new[i,j].item()))}'] for j in range(z_mT2_pid.shape[1])]) for i in range(batch_size)]).view(batch_size, z_mT2_pid.shape[1], 1)
         c_alt = 1 + a_alt - a_old_alt
 
         # Create masks for base and alternate parameters (masks should be the same)
@@ -245,23 +220,21 @@ class LundWeight(nn.Module):
         c_mask = a_base != 0.
 
         # Extract the mT2 values 
-        # mT2 = torch.tensor(z_mT2_pid[:, :, 2], dtype=a_base.dtype)
-        mT2 = z_mT2_pid[:, :, 2].clone().detach().to(dtype=a_base.dtype)
-
+        mT2 = z_mT2_pid[:, :, 2]
         # Reshape into column tensor
         mT2 = mT2.view(mT2.shape[0], mT2.shape[1], 1)
         # Create a mask for zero values
         mT2_mask = mT2 != 0.
 
         # Extract the accepted z values
-        z_accept = z_mT2_pid[:, :, 5]
+        z_accept = z_mT2_pid[:, :, 3]
         # Reshape into column tensor
         z_accept = z_accept.view(z_accept.shape[0], z_accept.shape[1], 1)
         # Remove any zero values
         z_accept_mask = z_accept != 0.
 
         # Extract the rejected z values
-        z_reject = z_mT2_pid[:, :, 6:]
+        z_reject = z_mT2_pid[:, :, 4:]
         # Reshape into column tensor
         z_reject = z_reject.view(z_reject.shape[0], z_reject.shape[1], z_reject.shape[2])
         # Remove any zero values along the event index
@@ -277,118 +250,12 @@ class LundWeight(nn.Module):
                          / self.likelihood(z_accept, mT2, a_base, b_base, c_base, z_mask = z_accept_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask)    
         reject_weights = ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_alt, b_alt, c_alt, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask)) \
                          / ((self.over_sample_factor * (fPrel_reject * fPrel_reject_mask.masked_fill(z_accept_mask == 0, 1))) - self.likelihood(z_reject, mT2, a_base, b_base, c_base, z_mask = z_reject_mask, mT_mask = mT2_mask, a_mask = a_mask, b_mask = b_mask, c_mask = c_mask))
-        
-        # Save individual weights for individual z_accept values
-        self.accept_weights = accept_weights
-        self.reject_weights = reject_weights
 
         # Flatten the weights
         accept_weights = (accept_weights * z_accept_mask).masked_fill(z_accept_mask == 0, 1).prod(dim=2).prod(dim=1)
         reject_weights = (reject_weights * z_reject_mask).masked_fill(z_reject_mask == 0, 1).prod(dim=2).prod(dim=1)
-
+            
         # The final event weight is the product of accepted and rejected weights
         weights = accept_weights * reject_weights
 
-        # Add weights for reweighting sigma_pT
-        if getattr(self, "sigma_alt", None) is not None:
-            px, py = z_mT2_pid[:, :, 3], z_mT2_pid[:, :, 4]
-            p_mask = (px != 0)
-            weights_sigma = self.sigma_weights(px,py,p_mask)
-            weights = weights * weights_sigma
-
-        if getattr(self, "sigma_alt", None) is not None:
-            return weights, self.weights_sigma_full, self.accept_weights, self.reject_weights
-        else:
-            return weights, self.accept_weights, self.reject_weights
-
-
-class PIDLookup(nn.Module):
-    def __init__(
-        self,
-        params_base: dict[str, torch.Tensor],
-        params:      dict[str, torch.Tensor],
-        prefix:      str,               # e.g. 'a' or 'b'
-        device:      str = 'cuda',
-        alt:         bool = False # True if this is the alternative parameters
-    ):
-        super().__init__()
-        self.device = device
-
-        # For the alternative parameters, the look up table is partly trainable
-        if alt:
-            # 1) Single pass over both dicts to collect actual PIDs
-            all_pids = set()
-            # for key in list(params_base.keys()) + list(params.keys()):
-            for key in list(params_base.keys()):
-                if key.startswith(prefix):
-                    pid = int(key[len(prefix):])
-                    all_pids.add(pid)
-
-            # 2) Sort and register as a tensor of length V
-            self.pid_keys = torch.tensor(
-                sorted(all_pids),
-                dtype=torch.long,
-                device=device
-            )                           # shape (V,)
-            V = self.pid_keys.size(0)
-
-            # 3) Build the (V, 1) weight matrix, marking frozen rows
-            weight = torch.zeros(V, 1, device=device)
-            fixed_rows: list[int] = []
-            for i, pid in enumerate(self.pid_keys.tolist()):
-                key = f'{prefix}{pid}'
-                if key in params:
-                    # trainable
-                    weight[i, 0] = params[key].to(device)
-                else:
-                    # frozen
-                    weight[i, 0] = params_base[key].to(device)
-                    fixed_rows.append(i)
-
-            # 4) Create an Embedding from this weight (all rows trainable initially)
-            self.embed = nn.Embedding.from_pretrained(weight, freeze=False)
-            
-            # 5) Hook to zero out grads on frozen rows
-            fixed_rows_tensor = torch.tensor(fixed_rows, dtype=torch.long, device=device)
-            def _freeze_rows(grad: torch.Tensor) -> torch.Tensor:
-                grad[fixed_rows_tensor] = 0.
-                return grad
-            self.embed.weight.register_hook(_freeze_rows)
-
-        # For the base parameters, the look up table is fixed    
-        else:
-            # 1) Collect all PIDs with the given prefix (e.g., 'a', 'b', etc.)
-            all_pids = {
-                int(key[len(prefix):])
-                for key in params_base.keys()
-                if key.startswith(prefix)
-            }
-
-            # 2) Sort PIDs and register as tensor of shape (V,)
-            self.pid_keys = torch.tensor(
-                sorted(all_pids),
-                dtype=torch.long,
-                device=device
-            )
-            V = self.pid_keys.size(0)
-
-            # 3) Build the (V, 1) frozen weight matrix
-            weight = torch.zeros(V, 1, device=device)
-            for i, pid in enumerate(self.pid_keys.tolist()):
-                key = f'{prefix}{pid}'
-                weight[i, 0] = params_base[key].to(device)
-
-            # 4) Create nn.Embedding with freeze=True (weights won't update)
-            self.embed = nn.Embedding.from_pretrained(weight, freeze=True)
-
-
-
-    def forward(self, pid_values: torch.LongTensor) -> torch.Tensor:
-        """
-        pid_values: LongTensor of shape (B, T), arbitrary integers
-        Returns:    Tensor of shape (B, T, 1)
-        """
-        # Map arbitrary PID values → [0..V) with one C/CUDA call
-        idxs = torch.searchsorted(self.pid_keys, pid_values)
-        # Single fused gather
-        return self.embed(idxs)
+        return weights

@@ -2,18 +2,18 @@ import os
 import sys
 import torch
 
-from RSAnets import (StatisticNetwork, InferenceNetwork,
+from RSA.RSA.src.other.neural_statistician.RSAnets import (StatisticNetwork, InferenceNetwork,
                        LatentDecoder, ObservationDecoder)
 from torch.autograd import Variable
 from torch import nn
 from torch.nn import functional as F, init
 try:
-    from utils import (kl_diagnormal_diagnormal, kl_diagnormal_stdnormal,
+    from RSA.RSA.src.other.neural_statistician.utils import (kl_diagnormal_diagnormal, kl_diagnormal_stdnormal,
                        gaussian_log_likelihood)
 except ModuleNotFoundError:
     # put parent directory in path for utils
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    from utils import (kl_diagnormal_diagnormal, kl_diagnormal_stdnormal,
+    from RSA.RSA.src.other.neural_statistician.utils import (kl_diagnormal_diagnormal, kl_diagnormal_stdnormal,
                        gaussian_log_likelihood)
 
 

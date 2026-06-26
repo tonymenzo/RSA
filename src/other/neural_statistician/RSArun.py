@@ -2,9 +2,9 @@ import argparse
 import os
 import time
 
-from RSAdata import RSA_Dataset, prepare_datasets
-from RSAmodel import Statistician
-from RSAplot import scatter_contexts, contexts_by_moment
+from RSA.RSA.src.other.neural_statistician.RSAdata import RSA_Dataset, prepare_datasets
+from RSA.RSA.src.other.neural_statistician.RSAmodel import Statistician
+from RSA.RSA.src.other.neural_statistician.RSAplot import scatter_contexts, contexts_by_moment
 from torch import optim
 from torch.autograd import Variable
 from torch.nn import functional as F
