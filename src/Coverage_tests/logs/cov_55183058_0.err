@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 507, in <module>
+    main()
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 383, in main
+    RSA = RSA_nD_tuner(
+          ^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 104, in __init__
+    self.loss_metric = _build_loss_metric(
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 460, in _build_loss_metric
+    return _PseudoChiSquareMetric(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 442, in __init__
+    self.loss = PseudoChiSquareLoss(
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/pseudo_chi2_loss.py", line 38, in __init__
+    if self.fixed_binning:
+       ^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/.conda/envs/pt311_new/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1931, in __getattr__
+    raise AttributeError(
+AttributeError: 'PseudoChiSquareLoss' object has no attribute 'fixed_binning'
+srun: error: nid002048: task 0: Exited with exit code 1
+srun: Terminating StepId=55183058.0

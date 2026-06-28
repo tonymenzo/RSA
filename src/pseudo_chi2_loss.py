@@ -23,24 +23,22 @@ class PseudoChiSquareLoss(torch.nn.Module):
             print_details (bool): Print detailed information (default: False)
             fixed_binning (bool): Use fixed binning for the pseudo-chi^2 loss (default: True)
         """
-        self.bins = torch.as_tensor(
-            np.load(Path(__file__).resolve().parent / "bins" / "monash_binning.npy"),
-            dtype=torch.float32,
-        )
-
-        self.histo_exp = torch.as_tensor(
-            np.load(Path(__file__).resolve().parent / "bins" / "monash_counts.npy"),
-            dtype=torch.float32,
-        )
-
-        self.histo_exp_norm = self.histo_exp / torch.sum(self.histo_exp)
+        self.print_details = print_details
+        self.results_dir = results_dir
+        self.fixed_binning = fixed_binning
 
         if self.fixed_binning:
             # Load a fixed binning for the pseudo-chi^2 loss
             # self.bins = torch.tensor(np.load('bins/monash_binning.npy'))
-            self.bins = torch.tensor(np.load(Path(__file__).resolve().parent / "bins" / "monash_binning.npy"))
+            self.bins = torch.as_tensor(
+                np.load(Path(__file__).resolve().parent / "bins" / "monash_binning.npy"),
+                dtype=torch.float32,
+            )
             # Set in stone the bin counts and uncertainty for the 'experimental' dataset using large statistics
-            self.histo_exp = torch.tensor(np.load(Path(__file__).resolve().parent / "bins" / "monash_counts.npy"))
+            self.histo_exp = torch.as_tensor(
+                np.load(Path(__file__).resolve().parent / "bins" / "monash_counts.npy"),
+                dtype=torch.float32,
+            )
             self.histo_exp_norm = self.histo_exp / torch.sum(self.histo_exp)
 
     def histogram(self, observable, weights=None, bins=None, min=0.0, max=1.0):
