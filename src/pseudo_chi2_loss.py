@@ -8,6 +8,9 @@
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
+
+
 
 class PseudoChiSquareLoss(torch.nn.Module):
     def __init__(self, results_dir, print_details = False, fixed_binning = True):
@@ -20,15 +23,24 @@ class PseudoChiSquareLoss(torch.nn.Module):
             print_details (bool): Print detailed information (default: False)
             fixed_binning (bool): Use fixed binning for the pseudo-chi^2 loss (default: True)
         """
-        self.print_details = print_details
-        self.results_dir = results_dir
-        self.fixed_binning = fixed_binning
+        self.bins = torch.as_tensor(
+            np.load(Path(__file__).resolve().parent / "bins" / "monash_binning.npy"),
+            dtype=torch.float32,
+        )
+
+        self.histo_exp = torch.as_tensor(
+            np.load(Path(__file__).resolve().parent / "bins" / "monash_counts.npy"),
+            dtype=torch.float32,
+        )
+
+        self.histo_exp_norm = self.histo_exp / torch.sum(self.histo_exp)
 
         if self.fixed_binning:
             # Load a fixed binning for the pseudo-chi^2 loss
-            self.bins = torch.tensor(np.load('bins/monash_binning.npy'))
+            # self.bins = torch.tensor(np.load('bins/monash_binning.npy'))
+            self.bins = torch.tensor(np.load(Path(__file__).resolve().parent / "bins" / "monash_binning.npy"))
             # Set in stone the bin counts and uncertainty for the 'experimental' dataset using large statistics
-            self.histo_exp = torch.tensor(np.load('bins/monash_counts.npy'))
+            self.histo_exp = torch.tensor(np.load(Path(__file__).resolve().parent / "bins" / "monash_counts.npy"))
             self.histo_exp_norm = self.histo_exp / torch.sum(self.histo_exp)
 
     def histogram(self, observable, weights=None, bins=None, min=0.0, max=1.0):
@@ -130,20 +142,48 @@ class PseudoChiSquareLoss(torch.nn.Module):
 
         else:
             # Perform the binning of the macroscopic observables
-            histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(sim_observable[:].unsqueeze(0), weights = weights, bins = self.bins)
-            # Compute the psuedo-chi^2
-            # For bins with zero counts, add a small constant to avoid division by zero
-            epsilon = 1e-10
-            # The uncertainty on a weighted bin is given by sig^2 = sum_i (w_i^2) where w_i represents all weights in the given bin.
-            # For a normalized distribution the weighted/unweighted uncertainty is normalized by the 'area' of the distribution squared.
-            uncertainty_sim = weight_sum_sq_sim / torch.pow((torch.sum(histo_sim) + epsilon), 2) + epsilon
-            uncertainty_exp = (self.histo_exp * (1 - self.histo_exp / torch.sum(self.histo_exp))) / torch.pow((torch.sum(self.histo_exp) + epsilon), 2) + epsilon # Poisson uncertainty
-            
+            histo_sim, bins_sim, weight_sum_sq_sim = self.histogram(
+                sim_observable[:].unsqueeze(0),
+                weights=weights,
+                bins=self.bins,
+            )
+
+            # Move fixed reference histogram tensors to the same device/dtype
+            # as the simulated histogram.
+            histo_exp = self.histo_exp.to(
+                device=histo_sim.device,
+                dtype=histo_sim.dtype,
+            )
+            histo_exp_norm = self.histo_exp_norm.to(
+                device=histo_sim.device,
+                dtype=histo_sim.dtype,
+            )
+
+            epsilon = torch.tensor(
+                1e-10,
+                device=histo_sim.device,
+                dtype=histo_sim.dtype,
+            )
+
+            uncertainty_sim = (
+                weight_sum_sq_sim / torch.pow(torch.sum(histo_sim) + epsilon, 2)
+                + epsilon
+            )
+
+            uncertainty_exp = (
+                histo_exp * (1 - histo_exp / torch.sum(histo_exp))
+                / torch.pow(torch.sum(histo_exp) + epsilon, 2)
+                + epsilon
+            )
+
             # Normalize the simulated histogram
             histo_sim = histo_sim / torch.sum(histo_sim)
 
-            # Compute the chi-squared statistic)
-            pseudo_chi2 = torch.pow((histo_sim - self.histo_exp_norm), 2) / (uncertainty_sim + uncertainty_exp)
+            # Compute the chi-squared statistic
+            pseudo_chi2 = torch.pow(
+                histo_sim - histo_exp_norm,
+                2,
+            ) / (uncertainty_sim + uncertainty_exp)
 
         if self.print_details:
             # Bin the simulated observable
@@ -167,16 +207,16 @@ class PseudoChiSquareLoss(torch.nn.Module):
             error_bars_exp = torch.sqrt(uncertainty_exp)
             # Plot histograms to ensure re-weighting is working as expected
             fig, ax = plt.subplots(1,1,figsize = (6,5))
-            ax.plot(bins_sim.detach().numpy()[0:-1], histo_sim.detach().numpy(), '-o', label = 'Weighted', color = 'tab:blue')#label = r'$\mathrm{Weighted}$')
+            ax.plot(bins_sim.detach().cpu().numpy()[0:-1], histo_sim.detach().numpy(), '-o', label = 'Weighted', color = 'tab:blue')#label = r'$\mathrm{Weighted}$')
             if self.fixed_binning:
                 ax.plot(self.bins.detach().numpy()[0:-1], self.histo_exp_norm.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')
-                ax.errorbar(self.bins.detach().numpy()[0:-1], self.histo_exp_norm.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
+                ax.errorbar(self.bins.detach().cpu().numpy()[0:-1], self.histo_exp_norm.detach().numpy(), yerr=error_bars_exp.detach().cpu().numpy(), fmt='none', color='tab:orange', capsize=2)
             else:
-                ax.plot(bins_exp.detach().numpy()[0:-1], histo_exp.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')#label = r'$\mathrm{Exp.}$')
-                ax.errorbar(bins_exp.detach().numpy()[0:-1], histo_exp.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
+                ax.plot(bins_exp.detach().cpu().numpy()[0:-1], histo_exp.detach().cpu().numpy(), '-o', label = 'Exp.', color = 'tab:orange')#label = r'$\mathrm{Exp.}$')
+                ax.errorbar(bins_exp.detach().cpu().numpy()[0:-1], histo_exp.detach().cpu().numpy(), yerr=error_bars_exp.detach().cpu().numpy(), fmt='none', color='tab:orange', capsize=2)
                 # ax.plot(bins_exp.detach().numpy(), histo_exp.detach().numpy(), '-o', label = 'Exp.', color = 'tab:orange')#label = r'$\mathrm{Exp.}$')
                 # ax.errorbar(bins_exp.detach().numpy(), histo_exp.detach().numpy(), yerr=error_bars_exp.detach().numpy(), fmt='none', color='tab:orange', capsize=2)
-            ax.plot(bins_sim_OG.detach().numpy()[0:-1], histo_sim_OG.detach().numpy(), '-o', label = 'Sim.', color = 'tab:green')#label = r'$\mathrm{Sim.}$')
+            ax.plot(bins_sim_OG.detach().cpu().numpy()[0:-1], histo_sim_OG.detach().cpu().numpy(), '-o', label = 'Sim.', color = 'tab:green')#label = r'$\mathrm{Sim.}$')
 
             # Plot the error bars
             ax.errorbar(bins_sim.detach().numpy()[0:-1], histo_sim.detach().numpy(), yerr=error_bars_sim.detach().numpy(), fmt='none', color='tab:blue', capsize=2)

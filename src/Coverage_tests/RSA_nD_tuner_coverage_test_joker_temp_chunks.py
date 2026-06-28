@@ -35,6 +35,8 @@ def parse_args():
     p.add_argument("--chunk-id", type=int, required=True)
     p.add_argument("--seed-base", type=int, default=43)
     p.add_argument("--out-dir", type=str, required=True)
+    p.add_argument("--loss_type", type=str, required=True)
+
     return p.parse_args()
 
 # -----------------------------
@@ -118,6 +120,7 @@ def params_to_vector(params_final, group_order):
 # Main
 # -----------------------------
 def main():
+    print("Test running...")
 
     # Define the id of the run:
     args = parse_args()
@@ -126,6 +129,7 @@ def main():
     NB = args.nb
     nt_chunk = args.nt_chunk
     chunk_id = args.chunk_id
+    loss_type = args.loss_type
 
     it_start = chunk_id * nt_chunk
     it_end = min(it_start + nt_chunk, NT_total)
@@ -165,9 +169,9 @@ def main():
     # batch_size = 30
     over_sample_factor = 10.0
     learning_rate = 0.1
-    fixed_binning = False
-    # loss_type = "Joker_nosigma"
-    loss_type = "Joker_nosigma_chi2"
+    fixed_binning = True
+    # loss_type = "Joker_nosigma_chi2"
+    # loss_type = "emd"
 
     # Random seed for reproducibility
     rng = np.random.default_rng(args.seed_base + chunk_id)
@@ -309,6 +313,8 @@ def main():
     sig_t = np.zeros((NT_local, D))
     cov_t = np.zeros((NT_local, D), dtype=np.int32)
     final_loss = np.zeros((NT_local, NB))
+    n_loss_steps = epochs * int(np.ceil(N_base_draw / batch_size_base))
+    all_loss_values = np.full((NT_local, NB, n_loss_steps), np.nan, dtype=np.float64)
 
     # theta_hat = np.zeros((NT, NB, D), dtype=np.float64)
     # mu_t = np.zeros((NT, D), dtype=np.float64)
@@ -405,10 +411,15 @@ def main():
             # Convert params_final to stable vector [a, b]
             theta_hat[it_local, ib, :] = params_to_vector(params_final, group_order=group_order)
 
-            # Save final loss (optional)
-            try:
-                final_loss[it_local, ib] = float(loss_values[-1])
-            except Exception:
+            # Save loss curve and final loss
+            loss_values_np = np.asarray(loss_values, dtype=np.float64).reshape(-1)
+
+            n_steps = min(loss_values_np.shape[0], all_loss_values.shape[-1])
+            all_loss_values[it_local, ib, :n_steps] = loss_values_np[:n_steps]
+
+            if loss_values_np.shape[0] > 0:
+                final_loss[it_local, ib] = float(loss_values_np[-1])
+            else:
                 final_loss[it_local, ib] = np.nan
 
             print(f"[it={it_local+1}/{NT_local}] [ib={ib+1}/{NB}] theta_hat={theta_hat[it_local, ib, :]} final_loss={final_loss[it_local, ib]:.6g}")
@@ -447,6 +458,7 @@ def main():
         np.save(out / f"sigma_t_{tag}.npy", sig_t)
         np.save(out / f"cov_t_{tag}.npy", cov_t)
         np.save(out / f"final_loss_{tag}.npy", final_loss)
+        np.save(out / f"loss_values_{tag}.npy", all_loss_values)
 
         # save_nm = 1
         # out_dir = f"/pscratch/sd/l/ljpuslar/RSA/RSA/src/temp_results/Tuner_Coverage_ND/Joker/locked/{D}D"

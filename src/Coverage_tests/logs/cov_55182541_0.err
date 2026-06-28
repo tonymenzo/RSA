@@ -1,0 +1,28 @@
+  0%|                                                                        | 0/75 [00:00<?, ?it/s]  0%|                                                                        | 0/75 [00:02<?, ?it/s]
+Traceback (most recent call last):
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 507, in <module>
+    main()
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 403, in main
+    params_final, all_params, loss_values = RSA.RSA_tune(optimizer)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 177, in RSA_tune
+    loss = self.loss_func(
+           ^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 658, in loss_func
+    return loss_metric(
+           ^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 449, in __call__
+    return self.loss(sim_values, exp_values, sim_weights) / sim_values.shape[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/.conda/envs/pt311_new/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/.conda/envs/pt311_new/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/pseudo_chi2_loss.py", line 150, in forward
+    pseudo_chi2 = torch.pow((histo_sim - self.histo_exp_norm), 2) / (uncertainty_sim + uncertainty_exp)
+                             ~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!
+srun: error: nid002036: task 0: Exited with exit code 1
+srun: Terminating StepId=55182541.0

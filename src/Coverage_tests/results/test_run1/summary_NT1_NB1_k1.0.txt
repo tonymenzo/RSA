@@ -1,0 +1,56 @@
+NT=1
+NB=1
+k_sigma=1.0
+theta_true=[0.68, 0.98]
+coverage_rate=[0.0, 0.0]
+number of target events drawn per bootstrap: 100000
+number of base events drawn per bootstrap: 30000
+parameter groups: {'a1': 'a', 'a2': 'a', 'a3': 'a', 'b1': 'b', 'b2': 'b', 'b3': 'b'}
+=============================================================
+RSA hyperparameters:
+epochs=75
+dim_multiplicity=250
+dim_accept_reject=105
+over_sample_factor=10.0
+learning_rate=0.1
+loss_type=emd
+=============================================================
+Parameter values at base:
+  a0: 0.0
+  b0: 0.0
+  a1: 0.7200000286102295
+  b1: 0.8799999952316284
+  a2: 0.7200000286102295
+  b2: 0.8799999952316284
+  a3: 0.7200000286102295
+  b3: 0.8799999952316284
+  a1103: 1.649999976158142
+  b1103: 0.9800000190734863
+  a2101: 1.649999976158142
+  b2101: 0.9800000190734863
+  a2103: 1.649999976158142
+  b2103: 0.9800000190734863
+  a2203: 1.649999976158142
+  b2203: 0.9800000190734863
+  a3101: 1.649999976158142
+  b3101: 0.9800000190734863
+  a3103: 1.649999976158142
+  b3103: 0.9800000190734863
+  a3201: 1.649999976158142
+  b3201: 0.9800000190734863
+  a3203: 1.649999976158142
+  b3203: 0.9800000190734863
+  a3303: 1.649999976158142
+  b3303: 0.9800000190734863
+  sigma: 0.33500000834465027
+Parameter values at target:
+  0.68
+  0.98
+=============================================================
+dataset_paths:
+sim_hadrons_PATH=/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_hadrons.npy
+sim_accept_reject_PATH=/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_id_mT2_accept_reject_z.npy
+sim_fPrel_PATH=/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_fPrel.npy
+exp_hadrons_PATH=/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy
+exp_accept_reject_PATH=/pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy
+=============================================================

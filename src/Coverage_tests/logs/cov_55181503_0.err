@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 497, in <module>
+    main()
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 130, in main
+    loss_type = args.loss_type
+                ^^^^^^^^^^^^^^
+AttributeError: 'Namespace' object has no attribute 'loss_type'
+srun: error: nid002964: task 0: Exited with exit code 1
+srun: Terminating StepId=55181503.0
