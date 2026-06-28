@@ -19,9 +19,9 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 import importlib
-import RSA_ND_tuner_Joker_locked
-importlib.reload(RSA_ND_tuner_Joker_locked)
-from RSA_ND_tuner_Joker_locked import RSA_nD_tuner
+import RSA_ND_tuner_Joker
+importlib.reload(RSA_ND_tuner_Joker)
+from RSA_ND_tuner_Joker import RSA_nD_tuner
 
 import argparse
 from pathlib import Path
@@ -165,8 +165,9 @@ def main():
     # batch_size = 30
     over_sample_factor = 10.0
     learning_rate = 0.1
-    fixed_binning = True
-    loss_type = "Joker_nosigma"
+    fixed_binning = False
+    # loss_type = "Joker_nosigma"
+    loss_type = "Joker_nosigma_chi2"
 
     # Random seed for reproducibility
     rng = np.random.default_rng(args.seed_base + chunk_id)

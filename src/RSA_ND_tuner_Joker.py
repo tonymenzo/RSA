@@ -100,19 +100,15 @@ class RSA_nD_tuner():
         self.weight_nexus = LundWeight(self.params_base, self.params_init, self.params_groups, over_sample_factor = self.over_sample_factor, device= self.device)
 
         # Initialize the loss
-        # self.pseudo_chi2_loss = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
-        if self.loss_type == 'emd':
-            self.loss_func = WassersteinLoss(p = 1, device = self.device)
-        elif self.loss_type == 'sliced_emd':
-            self.loss_func = WassersteinLoss_nD(device = self.device, p = 1, n_projections = 128, seed = 42)
-        elif self.loss_type == 'chi2':
-            self.loss_func = PseudoChiSquareLoss(results_dir = self.results_dir , print_details = self.print_details, fixed_binning = self.fixed_binning)
-        elif self.loss_type == 'Joker':
-            self.wasserstein_loss = WassersteinLoss(p = 1, device = self.device)
-            self.loss_func = loss_func
-        elif self.loss_type == 'Joker_nosigma':
-            self.wasserstein_loss = WassersteinLoss(p = 2, device = self.device)
-            self.loss_func = loss_func_nosigma
+        self.loss_metric_type, self.loss_component = _default_loss_settings(self.loss_type)
+        self.loss_metric = _build_loss_metric(
+            self.loss_metric_type,
+            device = self.device,
+            results_dir = self.results_dir,
+            print_details = self.print_details,
+            fixed_binning = self.fixed_binning,
+        )
+        self.loss_func = loss_func
                 
 
         # Create a results directory if it doesn't exist
@@ -174,35 +170,17 @@ class RSA_nD_tuner():
                 # Reset the gradients
                 optimizer.zero_grad()
                 # Compute the weights
-                if self.loss_type == 'Joker_nosigma':
-                    weights, accept_weights, reject_weights = self.weight_nexus(x, y)
-                else:
-                    weights, weights_sigma, accept_weights, reject_weights = self.weight_nexus(x, y)
+                weight_outputs = self.weight_nexus(x, y)
+                weights, weights_sigma, accept_weights, reject_weights = _unpack_weight_outputs(weight_outputs)
+
                 # Compute the loss
-                if self.loss_type == 'chi2':
-                    loss = self.loss_func(z, w, weights) / x.shape[0]
-                elif self.loss_type == 'Joker':
-                    loss = self.loss_func([z1,z2,z3], [w1,w2,w3], (weights, weights_sigma, accept_weights, reject_weights), self.wasserstein_loss)
-                elif self.loss_type == 'Joker_nosigma':
-                    loss = self.loss_func([z1,z2,z3], [w1,w2,w3], (weights, accept_weights, reject_weights), self.wasserstein_loss)
-                else:
-                    loss = self.loss_func(z, w, weights)
-
-                # # print('Batch #', batch_counter)
-                # x, y, z, w = x.to(device), y.to(device), z.to(device), w.to(device)
-                # # Reset the gradients in the optimizer
-                # optimizer.zero_grad()
-
-                # # Compute the weights
-                # weights, weights_sigma, accept_weights, reject_weights = self.weight_nexus(x, y)
-
-                # # Compute the loss
-                # if self.loss_type == 'chi2':
-                #     loss = self.loss_func(z, w, weights) / x.shape[0]
-                # elif self.loss_type == 'Joker':
-                #     loss = self.loss_func(z, w, (weights, weights_sigma, accept_weights, reject_weights), self.wasserstein_loss)
-                # else:
-                #     loss = self.loss_func(z, w, weights)
+                loss = self.loss_func(
+                    [z1,z2,z3], # The 3 observables inputed into the model as observables_dataloader
+                    [w1,w2,w3],
+                    (weights, weights_sigma, accept_weights, reject_weights),
+                    self.loss_metric, # Defines the type of metric and initializes it (eg. wasserstein distance)
+                    self.loss_component,  # Dictionary with info about what kind of loss to use
+                )
 
                 loss_cpu = loss.clone().detach().cpu().numpy()
                 loss_values.append(loss_cpu)
@@ -392,19 +370,17 @@ class RSA_nD_tuner():
                 # Reset the gradients
                 optimizer.zero_grad()
                 # Compute the weights
-                if self.loss_type == 'Joker_nosigma':
-                    weights, accept_weights, reject_weights = self.weight_nexus(x, y)
-                else:
-                    weights, weights_sigma, accept_weights, reject_weights = self.weight_nexus(x, y)
+                weight_outputs = self.weight_nexus(x, y)
+                weights, weights_sigma, accept_weights, reject_weights = _unpack_weight_outputs(weight_outputs)
+
                 # Compute the loss
-                if self.loss_type == 'chi2':
-                    loss = self.loss_func(z, w, weights) / x.shape[0]
-                elif self.loss_type == 'Joker':
-                    loss = self.loss_func([z1,z2,z3], [w1,w2,w3], (weights, weights_sigma, accept_weights, reject_weights), self.wasserstein_loss)
-                elif self.loss_type == 'Joker_nosigma':
-                    loss = self.loss_func([z1,z2,z3], [w1,w2,w3], (weights, accept_weights, reject_weights), self.wasserstein_loss)
-                else:
-                    loss = self.loss_func(z, w, weights)
+                loss = self.loss_func(
+                    [z1,z2,z3],
+                    [w1,w2,w3],
+                    (weights, weights_sigma, accept_weights, reject_weights),
+                    self.loss_metric,
+                    self.loss_component,
+                )
                 
                 # Compute Performance Metrics
                 mu = torch.mean(weights)
@@ -449,213 +425,253 @@ class RSA_nD_tuner():
             [mu_metric.detach().cpu().numpy(), N_eff_metric.detach().cpu().numpy()],
         )
 
-def loss_func(sim, exp, weights, wasserstein_loss):
-    # calculates sliced wasserstein for Joker observables
-    
-    weights, sigma_weights, accept_weights, reject_weights = weights
-    mult_sim, pT_sim, z_accept_sim = sim
-    mult_exp, pT_exp, z_accept_exp = exp
-    loss = 0.0
-
-    mult_loss = wasserstein_loss(mult_sim, mult_exp, weights)
-
-    # sigma_weights_1d = sigma_weights.reshape(-1)
-    # pT_exp_1d = pT_exp.reshape(-1)
-    # pT_sim_1d = pT_sim.reshape(-1)
-    
-    # mask_sim = (pT_sim_1d!=0)
-    # mask_exp = (pT_exp_1d!=0)
-
-    # pT_exp_1d = pT_exp_1d[mask_exp]
-    # pT_sim_1d = pT_sim_1d[mask_sim]
-    # sigma_weights_1d = sigma_weights_1d[mask_sim]
-    # sigma_weights_1d.reshape(-1)
-
-    # pT_loss = wasserstein_loss(pT_sim_1d, pT_exp_1d, sigma_weights_1d)  
-
-    # z_accept_sim_1d = z_accept_sim[z_accept_sim[:,:] > 0].reshape(-1)
-    # z_accept_exp_1d = z_accept_exp[z_accept_exp[:,:] > 0].reshape(-1)
-    # accept_weights_1d = accept_weights[z_accept_sim[:,:] > 0.0].reshape(-1)
-    # reject_weights_1d = reject_weights[z_accept_sim[:,:] > 0.0]
-    # reject_weights_1d = torch.where(
-    # torch.isnan(reject_weights_1d),
-    #     torch.tensor(1., device=reject_weights_1d.device),
-    #     reject_weights_1d
-    # ).prod(dim=1)
-    # sigma_weights_1d = sigma_weights[z_accept_sim[:,:] > 0.0]
-    # weights_1d = accept_weights_1d * reject_weights_1d * sigma_weights_1d
-    # z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
-    
-    #only first line
-    # print('SHAPES: ')
-    # print(z_accept_sim.shape)
-    # print(z_accept_exp.shape)
-    # print(accept_weights.shape)
-    # print(reject_weights.shape)
-    # print(sigma_weights.shape)
-    # print('----------------------------------------------')
-    z_accept_sim_1d = z_accept_sim[:,1][z_accept_sim[:,1] > 0].reshape(-1)
-    z_accept_exp_1d = z_accept_exp[:,1][z_accept_exp[:,1] > 0].reshape(-1)
-    accept_weights_1d = accept_weights[:,1][z_accept_sim[:,1] > 0.0].reshape(-1)
-    reject_weights_1d = reject_weights[:,1][z_accept_sim[:,1] > 0.0]
-    reject_weights_1d = torch.where(
-    torch.isnan(reject_weights_1d),
-        torch.tensor(1., device=reject_weights_1d.device),
-        reject_weights_1d
-    ).prod(dim=1)
-    sigma_weights_1d = sigma_weights[:,1][z_accept_sim[:,1] > 0.0]
-    weights_1d = accept_weights_1d * reject_weights_1d * sigma_weights_1d
-    z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
-    
-    # loss = mult_loss + pT_loss + z_loss
-    loss = z_loss
-    return loss
 
 
-def loss_func_nosigma(sim, exp, weights, wasserstein_loss):
-    # Joker_nosigma loss using all nonzero z_accept values
+# Temporary Helpers for loss computation:
 
-    weights, accept_weights, reject_weights = weights
+class _PseudoChiSquareMetric:
+    """
+    Adapter that gives PseudoChiSquareLoss the same call interface as the
+    other loss metrics:
+        metric(sim_values, exp_values, sim_weights)
 
-    mult_sim, pT_sim, z_accept_sim = sim
-    mult_exp, pT_exp, z_accept_exp = exp
+    The division by the number of simulated entries preserves the previous
+    chi2 behavior, where the raw pseudo-chi2 loss was divided by the batch size.
+    """
+    def __init__(self, results_dir = None, print_details = False, fixed_binning = True):
+        self.loss = PseudoChiSquareLoss(
+            results_dir = results_dir,
+            print_details = print_details,
+            fixed_binning = fixed_binning,
+        )
 
-    # Currently unused in the returned loss.
-    # Keep commented out to avoid unnecessary computation.
-    # mult_loss = wasserstein_loss(mult_sim, mult_exp, weights)
+    def __call__(self, sim_values, exp_values, sim_weights):
+        return self.loss(sim_values, exp_values, sim_weights) / sim_values.shape[0]
 
-    # ------------------------------------------------------------
-    # Use all accepted z values over all events and all fragmentation
-    # positions, excluding zero-padded entries.
-    # z_accept_sim has shape (B, T)
-    # accept_weights has shape approximately (B, T, 1)
-    # reject_weights has shape approximately (B, T, R)
-    # ------------------------------------------------------------
 
-    sim_mask = z_accept_sim[:, :] > 0.0
-    exp_mask = z_accept_exp[:, :] > 0.0
+def _build_loss_metric(loss_metric_type, device, results_dir = None, print_details = False, fixed_binning = True):
+    if loss_metric_type == 'wasserstein_p1':
+        return WassersteinLoss(p = 1, device = device)
+    elif loss_metric_type == 'wasserstein_p2':
+        return WassersteinLoss(p = 2, device = device)
+    elif loss_metric_type == 'sliced_wasserstein_p1':
+        return WassersteinLoss_nD(device = device, p = 1, n_projections = 128, seed = 42)
+    elif loss_metric_type == 'pseudo_chi2':
+        return _PseudoChiSquareMetric(
+            results_dir = results_dir,
+            print_details = print_details,
+            fixed_binning = fixed_binning,
+        )
+    else:
+        raise ValueError(f"Unknown loss metric type: {loss_metric_type}")
 
-    z_accept_sim_1d = z_accept_sim[sim_mask].reshape(-1)
-    z_accept_exp_1d = z_accept_exp[exp_mask].reshape(-1)
 
-    accept_weights_1d = accept_weights[sim_mask].reshape(-1)
+def _default_loss_settings(loss_type):
+    """
+    Translate the existing loss_type strings into two separate choices:
+      1. the metric used to compare prepared distributions;
+      2. the single loss component that prepares the distributions.
+    """
+    if loss_type == 'emd':
+        return 'wasserstein_p1', {
+            'observable': 'multiplicity',
+            'weighting': 'event',
+        }
+    elif loss_type == 'sliced_emd':
+        return 'sliced_wasserstein_p1', {
+            'observable': 'multiplicity',
+            'weighting': 'event',
+        }
+    elif loss_type == 'chi2':
+        return 'pseudo_chi2', {
+            'observable': 'multiplicity',
+            'weighting': 'event',
+        }
+    elif loss_type == 'Joker':
+        return 'wasserstein_p1', {
+            'observable': 'z_accept',
+            'mode': 'fixed_index',
+            'z_index': 1,
+            'weighting': 'local_accept_reject_sigma',
+        }
+    elif loss_type == 'Joker_nosigma':
+        return 'wasserstein_p2', {
+            'observable': 'z_accept',
+            'mode': 'all_nonzero',
+            'weighting': 'local_accept_reject',
+        }
+    elif loss_type == 'Joker_nosigma_chi2':
+        return 'pseudo_chi2', {
+            'observable': 'z_accept',
+            'mode': 'all_nonzero',
+            'weighting': 'local_accept_reject',
+        }
 
-    reject_weights_1d = reject_weights[sim_mask]
-    reject_weights_1d = torch.where(
-        torch.isnan(reject_weights_1d),
-        torch.tensor(1.0, device=reject_weights_1d.device, dtype=reject_weights_1d.dtype),
-        reject_weights_1d,
-    ).prod(dim=1)
+    else:
+        raise ValueError(f"Unknown loss type: {loss_type}")
 
-    weights_1d = accept_weights_1d * reject_weights_1d
 
-    z_loss = wasserstein_loss(
-        z_accept_sim_1d,
-        z_accept_exp_1d,
-        weights_1d,
+def _unpack_weight_outputs(weight_outputs):
+    """
+    Standardize LundWeight outputs to:
+        event_weights, sigma_weights, accept_weights, reject_weights
+
+    For no-sigma configurations, sigma_weights is None.
+    """
+    if len(weight_outputs) == 3:
+        event_weights, accept_weights, reject_weights = weight_outputs
+        sigma_weights = None
+    elif len(weight_outputs) == 4:
+        event_weights, sigma_weights, accept_weights, reject_weights = weight_outputs
+    else:
+        raise ValueError(f"Unexpected number of weight outputs: {len(weight_outputs)}")
+
+    return event_weights, sigma_weights, accept_weights, reject_weights
+
+
+def _product_reject_weights(reject_weights_selected):
+    """
+    Multiply reject weights over the stored rejected trials.
+    NaNs are treated as padded entries and replaced by the neutral factor 1.
+    """
+    reject_weights_selected = torch.where(
+        torch.isnan(reject_weights_selected),
+        torch.tensor(
+            1.0,
+            device = reject_weights_selected.device,
+            dtype = reject_weights_selected.dtype,
+        ),
+        reject_weights_selected,
     )
-    # z_loss = PseudoChiSquareLoss
-
-    return z_loss
+    return reject_weights_selected.prod(dim = 1)
 
 
-# loss with only first z_accept entry
-# def loss_func_nosigma(sim, exp, weights, wasserstein_loss):
-#     # calculates sliced wasserstein for Joker observables
-    
-#     weights, accept_weights, reject_weights = weights
-#     mult_sim, pT_sim, z_accept_sim = sim
-#     mult_exp, pT_exp, z_accept_exp = exp
-#     loss = 0.0
+def _local_accept_reject_weights(accept_weights, reject_weights, sim_mask):
+    """
+    Construct local accepted-z weights:
+        w_local = R_accept * product(R_reject)
+    """
+    accept_weights_1d = accept_weights[sim_mask].reshape(-1)
+    reject_weights_1d = reject_weights[sim_mask]
+    reject_weights_1d = _product_reject_weights(reject_weights_1d)
 
-#     mult_loss = wasserstein_loss(mult_sim, mult_exp, weights) 
-
-#     z_accept_sim_1d = z_accept_sim[:,1][z_accept_sim[:,1] > 0].reshape(-1)
-#     z_accept_exp_1d = z_accept_exp[:,1][z_accept_exp[:,1] > 0].reshape(-1)
-#     accept_weights_1d = accept_weights[:,1][z_accept_sim[:,1] > 0.0].reshape(-1)
-#     reject_weights_1d = reject_weights[:,1][z_accept_sim[:,1] > 0.0]
-#     reject_weights_1d = torch.where(
-#     torch.isnan(reject_weights_1d),
-#         torch.tensor(1., device=reject_weights_1d.device),
-#         reject_weights_1d
-#     ).prod(dim=1)
-#     weights_1d = accept_weights_1d * reject_weights_1d 
-#     z_loss = wasserstein_loss(z_accept_sim_1d, z_accept_exp_1d, weights_1d)
-    
-#     loss = z_loss
-#     # loss = z_loss
-#     return loss
+    return accept_weights_1d * reject_weights_1d
 
 
+def _prepare_multiplicity_loss_inputs(sim, exp, weights, component):
+    event_weights, sigma_weights, accept_weights, reject_weights = weights
+
+    mult_sim, pT_sim, z_accept_sim = sim
+    mult_exp, pT_exp, z_accept_exp = exp
+
+    if component.get('weighting') != 'event':
+        raise ValueError("Multiplicity loss currently supports only weighting='event'.")
+
+    return mult_sim, mult_exp, event_weights
 
 
-# def loss_func(sim, exp, weights, wasserstein_loss):
-#     """
-#     Memory-lean version of the original loss.
-#     Preserves exact functionality/results.
-#     """
-#     # Unpack
-#     mult_sim, pT_sim, z_accept_sim = sim
-#     mult_exp, pT_exp, z_accept_exp = exp
-#     weights, sigma_weights, accept_weights, reject_weights = weights  # keep order
+def _prepare_z_accept_loss_inputs(sim, exp, weights, component):
+    event_weights, sigma_weights, accept_weights, reject_weights = weights
 
-#     # --- 1) Multiplicity loss (as-is) ---
-#     mult_loss = wasserstein_loss(mult_sim, mult_exp, weights)
+    mult_sim, pT_sim, z_accept_sim = sim
+    mult_exp, pT_exp, z_accept_exp = exp
 
-#     # --- 2) pT loss (flatten by view, mask once) ---
-#     # Use .ravel() (view) to avoid allocations; boolean mask+select yields 1D as needed
-#     pT_sim_1d = pT_sim.ravel()
-#     pT_exp_1d = pT_exp.ravel()
-#     sigw_1d   = sigma_weights.ravel()
+    mode = component.get('mode', 'all_nonzero')
+    weighting = component.get('weighting', 'local_accept_reject')
 
-#     mask_sim = pT_sim_1d.ne(0)       # (sim mask)
-#     mask_exp = pT_exp_1d.ne(0)       # (exp mask)
+    if mode == 'all_nonzero':
+        sim_mask = z_accept_sim[:, :] > 0.0
+        exp_mask = z_accept_exp[:, :] > 0.0
 
-#     pT_sim_sel = pT_sim_1d.masked_select(mask_sim)
-#     pT_exp_sel = pT_exp_1d.masked_select(mask_exp)
-#     sigw_sel   = sigw_1d.masked_select(mask_sim)
+        z_accept_sim_1d = z_accept_sim[sim_mask].reshape(-1)
+        z_accept_exp_1d = z_accept_exp[exp_mask].reshape(-1)
+        sim_weights = _local_accept_reject_weights(accept_weights, reject_weights, sim_mask)
 
-#     pT_loss = wasserstein_loss(pT_sim_sel, pT_exp_sel, sigw_sel)
+        if weighting == 'local_accept_reject_sigma':
+            if sigma_weights is None:
+                raise ValueError("weighting='local_accept_reject_sigma' requires sigma weights.")
+            sim_weights = sim_weights * sigma_weights[sim_mask].reshape(-1)
+        elif weighting != 'local_accept_reject':
+            raise ValueError(f"Unsupported z_accept weighting: {weighting}")
 
-#     # --- 3) z-accept loss ---
-#     # Build a 2D mask once (same as (z_accept_sim[:,:] > 0.0))
-#     mask_z = z_accept_sim.gt(0.0)  # shape (B, T), True where "accept" exists
+        return z_accept_sim_1d, z_accept_exp_1d, sim_weights
 
-#     # Indices for once-only gather on the first two dims
-#     idx = mask_z.nonzero(as_tuple=True)  # (rows, cols)
+    elif mode == 'fixed_index':
+        z_index = component.get('z_index', 1)
 
-#     # Select z arrays
-#     z_accept_sim_sel = z_accept_sim[idx]
-#     z_accept_exp_sel = z_accept_exp[idx]
+        z_accept_sim_entry = z_accept_sim[:, z_index]
+        z_accept_exp_entry = z_accept_exp[:, z_index]
 
-#     # Accept weights selection
-#     accept_w_sel = accept_weights[idx]
+        sim_mask = z_accept_sim_entry > 0
+        exp_mask = z_accept_exp_entry > 0
 
-#     # Sigma weights aligned with the same (B,T) mask
-#     sigma_w_sel = sigma_weights[idx]
+        z_accept_sim_1d = z_accept_sim_entry[sim_mask].reshape(-1)
+        z_accept_exp_1d = z_accept_exp_entry[exp_mask].reshape(-1)
 
-#     # Reject weights:
-#     #   - Make NaNs -> 1 *once* to avoid creating multiple temp tensors
-#     #   - Then select corresponding (B,T, R) slices and reduce product over last dim
-#     #     NOTE: The original code did: select -> nan->1 -> prod(dim=1).
-#     #     Doing nan->1 first is mathematically identical and more memory-friendly.
-#     reject_weights_clean = torch.nan_to_num(reject_weights, nan=1.0)
-#     # Select with the same (B,T) mask on the first two dims; keep all rejects on last dim
-#     # idx expands naturally across the first two dims
-#     reject_w_sel = reject_weights_clean[idx]  # shape: (N_selected, R)
-#     reject_w_prod = reject_w_sel.prod(dim=-1)  # (N_selected,)
+        accept_weights_1d = accept_weights[:, z_index][sim_mask].reshape(-1)
+        reject_weights_1d = reject_weights[:, z_index][sim_mask]
+        reject_weights_1d = _product_reject_weights(reject_weights_1d)
+        sim_weights = accept_weights_1d * reject_weights_1d
 
-#     # Combine weights per selected accept
-#     weights_1d = accept_w_sel * reject_w_prod * sigma_w_sel
+        if weighting == 'local_accept_reject_sigma':
+            if sigma_weights is None:
+                raise ValueError("weighting='local_accept_reject_sigma' requires sigma weights.")
+            sim_weights = sim_weights * sigma_weights[:, z_index][sim_mask]
+        elif weighting != 'local_accept_reject':
+            raise ValueError(f"Unsupported z_accept weighting: {weighting}")
 
-#     # Final z-loss
-#     z_loss = wasserstein_loss(z_accept_sim_sel, z_accept_exp_sel, weights_1d)
+        return z_accept_sim_1d, z_accept_exp_1d, sim_weights
 
-#     # --- Total ---
-#     return mult_loss + pT_loss + z_loss
+    else:
+        raise ValueError(f"Unsupported z_accept mode: {mode}")
 
 
+def _prepare_loss_inputs(sim, exp, weights, component):
+    observable = component.get('observable')
 
+    if observable == 'multiplicity':
+        return _prepare_multiplicity_loss_inputs(sim, exp, weights, component)
+    elif observable == 'z_accept':
+        return _prepare_z_accept_loss_inputs(sim, exp, weights, component)
+    else:
+        raise ValueError(f"Unsupported loss observable: {observable}")
+
+
+def loss_func(sim, exp, weights, loss_metric, loss_component):
+    """
+    Single loss implementation.
+
+    The loss is computed in two steps:
+      1. prepare raw sim/exp tensors and weights into a standard form;
+      2. apply the selected metric to the prepared inputs.
+
+    The metric must have the common interface:
+        loss_metric(sim_values, exp_values, sim_weights)
+    """
+    sim_values, exp_values, sim_weights = _prepare_loss_inputs(
+        sim,
+        exp,
+        weights,
+        loss_component,
+    )
+
+    return loss_metric(
+        sim_values,
+        exp_values,
+        sim_weights,
+    )
+
+
+# Backwards-compatible wrapper for direct external calls to the old name.
+def loss_func_nosigma(sim, exp, weights, loss_metric):
+    event_weights, accept_weights, reject_weights = weights
+    weight_pack = (event_weights, None, accept_weights, reject_weights)
+    loss_component = {
+        'observable': 'z_accept',
+        'mode': 'all_nonzero',
+        'weighting': 'local_accept_reject',
+    }
+    return loss_func(sim, exp, weight_pack, loss_metric, loss_component)
 
 
 #FUTURE IDEAS:

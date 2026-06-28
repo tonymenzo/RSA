@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 495, in <module>
+    main()
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 377, in main
+    RSA = RSA_nD_tuner(
+          ^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 104, in __init__
+    self.loss_metric = _build_loss_metric(
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 460, in _build_loss_metric
+    return _PseudoChiSquareMetric(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 442, in __init__
+    self.loss = PseudoChiSquareLoss(
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/pseudo_chi2_loss.py", line 29, in __init__
+    self.bins = torch.tensor(np.load('bins/monash_binning.npy'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/.conda/envs/pt311_new/lib/python3.11/site-packages/numpy/lib/_npyio_impl.py", line 454, in load
+    fid = stack.enter_context(open(os.fspath(file), "rb"))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'bins/monash_binning.npy'
+srun: error: nid001460: task 0: Exited with exit code 1
+srun: Terminating StepId=55179413.0
