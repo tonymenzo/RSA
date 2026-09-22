@@ -169,7 +169,7 @@ def main():
     # batch_size = 30
     over_sample_factor = 10.0
     learning_rate = 0.1
-    fixed_binning = True
+    fixed_binning = False
     # loss_type = "Joker_nosigma_chi2"
     # loss_type = "emd"
 
