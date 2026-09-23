@@ -196,8 +196,8 @@ class RSA_nD_tuner():
                 # Update the network weights
                 optimizer.step()
                 # Update the learning rate scheduler
-                if scheduler != None:
-                    scheduler.step(loss)
+                if scheduler is not None:
+                    scheduler.step(float(loss.detach().cpu()))
                 # Iterate the batch counter
                 batch_counter+=1
 
