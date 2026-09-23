@@ -1,0 +1,28 @@
+  0%|                                                                        | 0/75 [00:00<?, ?it/s]  0%|                                                                        | 0/75 [00:04<?, ?it/s]
+Traceback (most recent call last):
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 507, in <module>
+    main()
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/Coverage_tests/RSA_nD_tuner_coverage_test_joker_temp_chunks.py", line 403, in main
+    params_final, all_params, loss_values = RSA.RSA_tune(optimizer)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 177, in RSA_tune
+    loss = self.loss_func(
+           ^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 658, in loss_func
+    return loss_metric(
+           ^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/RSA_ND_tuner_Joker.py", line 449, in __call__
+    return self.loss(sim_values, exp_values, sim_weights) / sim_values.shape[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/.conda/envs/pt311_new/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/.conda/envs/pt311_new/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pscratch/sd/l/ljpuslar/RSA/RSA/src/pseudo_chi2_loss.py", line 112, in forward
+    minimum = torch.min(torch.minimum(sim_observable[:], exp_observable[:]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (609981) must match the size of tensor b (1941224) at non-singleton dimension 0
+srun: error: nid008300: task 0: Exited with exit code 1
+srun: Terminating StepId=58790920.0
