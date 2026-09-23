@@ -37,7 +37,29 @@ def parse_args():
     p.add_argument("--out-dir", type=str, required=True)
     p.add_argument("--loss_type", type=str, required=True)
 
+    p.add_argument(
+        "--multiplicity-type",
+        type=str,
+        default="pion",
+        choices=["pion", "all"],
+        help="Multiplicity observable: 'pion' counts pi+, pi-, pi0; 'all' counts all nonzero PIDs.",
+    )
+
+    p.add_argument(
+        "--scheduler",
+        type=str,
+        default="none",
+        choices=["none", "plateau"],
+        help="Learning-rate scheduler. Use 'plateau' for ReduceLROnPlateau.",
+    )
+
+    p.add_argument("--scheduler-factor", type=float, default=0.5)
+    p.add_argument("--scheduler-patience", type=int, default=10)
+    p.add_argument("--scheduler-threshold", type=float, default=1e-4)
+    p.add_argument("--scheduler-min-lr", type=float, default=1e-5)
+
     return p.parse_args()
+
 
 # -----------------------------
 # Datasets
@@ -130,6 +152,8 @@ def main():
     nt_chunk = args.nt_chunk
     chunk_id = args.chunk_id
     loss_type = args.loss_type
+    multiplicity_type = args.multiplicity_type
+    scheduler_type = args.scheduler
 
     it_start = chunk_id * nt_chunk
     it_end = min(it_start + nt_chunk, NT_total)
@@ -205,13 +229,51 @@ def main():
     # Precompute EXP and SIM observables (full arrays),
     # then we just index them in the bootstraps.
     # -----------------------------
-    def compute_pion_mult(hadrons_np):
-        pid = hadrons_np[..., 5]
-        pion_mask = (pid == 211) | (pid == -211) | (pid == 111)
-        return pion_mask.sum(axis=1).astype(np.float32)  # (N,)
+    # def compute_pion_mult(hadrons_np):
+    #     pid = hadrons_np[..., 5]
+    #     pion_mask = (pid == 211) | (pid == -211) | (pid == 111)
+    #     return pion_mask.sum(axis=1).astype(np.float32)  # (N,)
 
-    pion_mult_exp_full = compute_pion_mult(exp_hadrons_np)
-    pion_mult_sim_full = compute_pion_mult(sim_hadrons_np)
+    # pion_mult_exp_full = compute_pion_mult(exp_hadrons_np)
+    # pion_mult_sim_full = compute_pion_mult(sim_hadrons_np)
+
+    def compute_multiplicity(hadrons_np, multiplicity_type="pion"):
+        """
+        Compute event multiplicity from padded hadron arrays.
+
+        multiplicity_type:
+            "pion" : count pi+, pi-, pi0
+            "all"  : count all nonzero PID entries
+        """
+        pid = hadrons_np[..., 5]
+
+        if multiplicity_type == "pion":
+            mask = (pid == 211) | (pid == -211) | (pid == 111)
+
+        elif multiplicity_type == "all":
+            mask = pid != 0
+
+        else:
+            raise ValueError(
+                f"Unknown multiplicity_type={multiplicity_type}. "
+                "Use 'pion' or 'all'."
+            )
+
+        return mask.sum(axis=1).astype(np.float32)
+
+
+    mult_exp_full = compute_multiplicity(
+        exp_hadrons_np,
+        multiplicity_type=multiplicity_type,
+    )
+
+    mult_sim_full = compute_multiplicity(
+        sim_hadrons_np,
+        multiplicity_type=multiplicity_type,
+    )
+
+    mult_exp_full_t = torch.from_numpy(mult_exp_full)
+    mult_sim_full_t = torch.from_numpy(mult_sim_full)
 
     # Convert accept/reject to torch (full), fix z==1 once globally
     exp_accept_reject_full = torch.from_numpy(exp_accept_reject_np.copy()).float()
@@ -232,8 +294,8 @@ def main():
     pT_sim_full, z_acc_sim_full = compute_pT_and_z(sim_accept_reject_full)
 
     # Convert multiplicities to torch
-    pion_mult_exp_full_t = torch.from_numpy(pion_mult_exp_full)  # (N,)
-    pion_mult_sim_full_t = torch.from_numpy(pion_mult_sim_full)
+    mult_exp_full_t = torch.from_numpy(mult_exp_full)
+    mult_sim_full_t = torch.from_numpy(mult_sim_full)
 
     # -----------------------------
     # Physics parameters (base + learn), grouped into {a,b} for 2D locked case
@@ -334,7 +396,7 @@ def main():
         # idx_t = rng.choice(N_target_avail, size=N_target_draw, replace=False)
 
         # Build target observables dataloader ONCE per it
-        exp_mult_t   = pion_mult_exp_full_t[idx_t]
+        exp_mult_t = mult_exp_full_t[idx_t]
         exp_pT_t     = pT_exp_full[idx_t]
         exp_zacc_t   = z_acc_exp_full[idx_t]
         exp_ds = ObservableDatasetJoker(
@@ -357,7 +419,7 @@ def main():
             sim_fPrel_t = torch.from_numpy(sim_fPrel_np[idx_b].copy()).float()
 
             # Base Joker observables
-            sim_mult_b = pion_mult_sim_full_t[idx_b]
+            sim_mult_b = mult_sim_full_t[idx_b]
             sim_pT_b   = pT_sim_full[idx_b]
             sim_zacc_b = z_acc_sim_full[idx_b]
 
@@ -398,7 +460,32 @@ def main():
                 params_groups=global_param_groups,
             )
 
-            optimizer = torch.optim.Adam(RSA.weight_nexus.parameters(), lr=learning_rate)
+            optimizer = torch.optim.Adam(
+                RSA.weight_nexus.parameters(),
+                lr=learning_rate,
+            )
+
+            if scheduler_type == "none":
+                scheduler = None
+
+            elif scheduler_type == "plateau":
+                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                    optimizer,
+                    mode="min",
+                    factor=args.scheduler_factor,
+                    patience=args.scheduler_patience,
+                    threshold=args.scheduler_threshold,
+                    threshold_mode="rel",
+                    min_lr=args.scheduler_min_lr,
+                )
+
+            else:
+                raise ValueError(f"Unknown scheduler_type={scheduler_type}")
+
+            params_final, all_params, loss_values = RSA.RSA_tune(
+                optimizer,
+                scheduler=scheduler,
+            )
 
             params_final, all_params, loss_values = RSA.RSA_tune(optimizer)
             #temp ugly solution: all a_x and b_x should be exactly the same within each group, so just take the first one as representative for the vector. 
@@ -487,6 +574,12 @@ def main():
             f.write(f"over_sample_factor={over_sample_factor}\n")
             f.write(f"learning_rate={learning_rate}\n")
             f.write(f"loss_type={loss_type}\n")
+            f.write(f"multiplicity_type={multiplicity_type}\n")
+            f.write(f"scheduler={scheduler_type}\n")
+            f.write(f"scheduler_factor={args.scheduler_factor}\n")
+            f.write(f"scheduler_patience={args.scheduler_patience}\n")
+            f.write(f"scheduler_threshold={args.scheduler_threshold}\n")
+            f.write(f"scheduler_min_lr={args.scheduler_min_lr}\n")
             f.write(f"=============================================================\n")
             f.write('Parameter values at base:\n')
             for name, value in params_base.items():
