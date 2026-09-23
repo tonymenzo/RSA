@@ -27,11 +27,11 @@ from RSA_ND_tuner_Joker import RSA_nD_tuner
 # ------------------------------------------------------------
 SEED = 12345
 
-LOSS_TYPE = "emd"
+# LOSS_TYPE = "emd"
 # Other examples:
 # LOSS_TYPE = "chi2"
 # LOSS_TYPE = "Joker_nosigma"
-# LOSS_TYPE = "Joker_nosigma_chi2"   # only if implemented in RSA_ND_tuner_Joker
+LOSS_TYPE = "Joker_nosigma_chi2"   # only if implemented in RSA_ND_tuner_Joker
 
 MULTIPLICITY_TYPE = "pion"
 # Options:
@@ -49,8 +49,8 @@ FIXED_BINNING = False
 EPS_Z = 1e-5
 EPS_PARAMS = 1e-5
 
-RUN_NM = 1
-OUT_DIR = Path(f"./single_tune_results_{RUN_NM}")
+RUN_NM = 2
+OUT_DIR = Path(f"./single_tune_results/run_{RUN_NM}")
 
 
 # ------------------------------------------------------------
@@ -451,7 +451,7 @@ def main():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="min",        # reduce LR when loss stops decreasing
-        factor=0.5,        # multiply LR by 0.5
+        factor=0.9,        # multiply LR by 0.5
         patience=10,       # wait 10 scheduler steps before reducing
         threshold=1e-4,    # minimum relative improvement
         threshold_mode="rel",

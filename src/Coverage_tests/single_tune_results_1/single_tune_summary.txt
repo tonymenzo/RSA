@@ -1,0 +1,20 @@
+Single RSA tuning result
+============================================================
+loss_type: emd
+multiplicity_type: pion
+N_TARGET_DRAW: 100000
+N_BASE_DRAW: 30000
+epochs: 75
+over_sample_factor: 10.0
+learning_rate: 0.1
+fixed_binning: False
+------------------------------------------------------------
+theta_true: [0.68, 0.98]
+theta_fit: [0.6619089841842651, 0.9599459767341614]
+final_loss: 0.015393172390758991
+------------------------------------------------------------
+sim_hadrons_PATH: /pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_hadrons.npy
+sim_accept_reject_PATH: /pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_id_mT2_accept_reject_z.npy
+sim_fPrel_PATH: /pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0.04_aU0.04_aS0.04_aC0.04_aB0.04_aH0.97_bD0.88_bU0.88_bS0.88_bC0.88_bB0.88_bH0.98_sigma_0.335_N_5.0e+05_fPrel.npy
+exp_hadrons_PATH: /pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_hadrons.npy
+exp_accept_reject_PATH: /pscratch/sd/l/ljpuslar/RSA/RSA/data/structured_data/pgun_uubar_allhadsigma_a0.68_b0.98_aD0_aU0_aS0_aC0_aB0_aH0.97_bD0.98_bU0.98_bS0.98_bC0.98_bB0.98_bH0.98_sigma_0.335_N_1.5e+05_id_mT2_accept_reject_z.npy
